@@ -1,0 +1,14 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%.-1level|%d{HH:mm:ss.SSS}|%logger{36}|%message%n%exception</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.zaxxer.hikari" level="info" />
+    <logger name="slick.backend.DatabaseComponent.action" level="info" />
+
+    <root level="${rootLevel:-info}">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>
