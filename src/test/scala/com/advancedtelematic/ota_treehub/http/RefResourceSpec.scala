@@ -19,4 +19,10 @@ class RefResourceSpec extends TreeHubSpec with ResourceSpec {
       responseAs[String] shouldBe ref
     }
   }
+
+  test("404 when ref is not found") {
+    Get(apiUri("refs/some/other/ref")) ~> routes ~> check {
+      status shouldBe StatusCodes.NotFound
+    }
+  }
 }

@@ -13,3 +13,5 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec {
 
   lazy val routes = new TreeHubRoutes().routes
 }
+
+

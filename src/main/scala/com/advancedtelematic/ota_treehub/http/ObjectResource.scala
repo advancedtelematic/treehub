@@ -12,7 +12,6 @@ import slick.driver.MySQLDriver.api._
 import scala.concurrent.ExecutionContext
 
 class ObjectResource()(implicit db: Database, ec: ExecutionContext, mat: Materializer) {
-
   import akka.http.scaladsl.server.Directives._
 
   val route =

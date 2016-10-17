@@ -1,28 +1,33 @@
 package com.advancedtelematic.ota_treehub.http
 
 import akka.stream.Materializer
-import com.advancedtelematic.ota_treehub.db.Schema
+import com.advancedtelematic.ota_treehub.db.{RefRepositorySupport, Schema}
 import com.advancedtelematic.ota_treehub.db.Schema.Ref
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
+import Schema.RefName
+import com.advancedtelematic.data.DataType.Commit
 
-class RefResource()(implicit db: Database, ec: ExecutionContext, mat: Materializer) {
 
+class RefResource()(implicit db: Database, ec: ExecutionContext, mat: Materializer)
+  extends RefRepositorySupport
+{
   import akka.http.scaladsl.server.Directives._
+  import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+
+  val RefNameUri = Segments.map(s => RefName(s.mkString("/")))
 
   val route =
-      path("refs" / Segments) { segments =>
+      path("refs" / RefNameUri) { refName =>
         post {
-          entity(as[String]) { value =>
-            val refId = segments.mkString("/")
-            val dbIO = Schema.refs.insertOrUpdate(Ref(refId, value))
-            complete(db.run(dbIO).map(_ => value))
+          entity(as[Commit]) { value =>
+            val dbIO = refRepository.persist(Ref(refName, value))
+            complete(db.run(dbIO).map(_ => value.get))
           }
         } ~
           get {
-            val s = segments.mkString("/")
-            val dbIO = Schema.refs.filter(_.name === s).map(_.value).take(1).result.map(_.head)
+            val dbIO = refRepository.find(refName).map(_.value.get)
             complete(db.run(dbIO))
           }
       }
