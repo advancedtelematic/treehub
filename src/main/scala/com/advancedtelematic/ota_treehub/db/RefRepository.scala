@@ -13,6 +13,7 @@ trait RefRepositorySupport {
 protected class RefRepository()(implicit ec: ExecutionContext) {
   import org.genivi.sota.db.Operators._
   import SlickAnyVal._
+  import com.advancedtelematic.data.DataType._
 
   val RefNotFound = MissingEntity(classOf[Ref])
 
@@ -23,6 +24,6 @@ protected class RefRepository()(implicit ec: ExecutionContext) {
   def find(name: RefName): DBIO[Ref] = {
     Schema.refs
       .filter(_.name === name)
-      .take(1).result.failIfNotSingle(RefNotFound)
+      .result.failIfNotSingle(RefNotFound)
   }
 }

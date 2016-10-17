@@ -13,4 +13,14 @@ object DataType {
       hash => s"($hash is not a sha-256 commit hash)",
       ValidCommit()
     )
+
+  case class Ref(name: RefName, value: Commit)
+
+  case class RefName(get: String) extends AnyVal
+
+  case class ObjectId(get: String) extends AnyVal {
+    def checkSum = get.split('.').headOption.getOrElse(get)
+  }
+
+  case class TObject(id: ObjectId, blob: Array[Byte])
 }

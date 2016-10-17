@@ -1,48 +1,34 @@
 package com.advancedtelematic.ota_treehub.http
 
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.PathMatcher1
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Keep, Sink}
-import akka.util.ByteString
-import com.advancedtelematic.common.DigestCalculator
-import com.advancedtelematic.ota_treehub.db.Schema
-import com.advancedtelematic.ota_treehub.db.Schema.{Ref, TObject}
+import com.advancedtelematic.data.DataType.{ObjectId, TObject}
+import com.advancedtelematic.ota_treehub.db.ObjectRepositorySupport
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
-class ObjectResource()(implicit db: Database, ec: ExecutionContext, mat: Materializer) {
+
+class ObjectResource()(implicit db: Database, ec: ExecutionContext, mat: Materializer) extends ObjectRepositorySupport {
   import akka.http.scaladsl.server.Directives._
 
+  val PrefixedObjectId: PathMatcher1[ObjectId] = (Segment / Segment).tmap { case (oprefix, osuffix) =>
+    Tuple1(ObjectId(oprefix + osuffix))
+  }
+
   val route =
-      path("objects" / Segment / Segment) { (oprefix, osuffix) =>
+      path("objects" / PrefixedObjectId) { objectId =>
         get {
-          val objectId = s"$oprefix$osuffix"
-          val dbIO = Schema.objects.filter(_.id === objectId).take(1).map(_.blob).result.map(_.headOption)
-
+          val dbIO = objectRepository.findBlob(objectId)
           val f = db.run(dbIO)
-
-          onSuccess(f) {
-            case Some(o) => complete(o)
-            case None => complete(StatusCodes.NotFound -> s"object $objectId not found")
-          }
+          complete(f)
         } ~
           post {
-            val objectId = s"$oprefix$osuffix"
-            fileUpload("file") { case (fileInfo, content) =>
-              val digestCalculator = DigestCalculator()
-
-              val (digestF, contentF) =
-                content
-                  .alsoToMat(digestCalculator)(Keep.right)
-                  .toMat(Sink.reduce[ByteString]((a: ByteString, b: ByteString) => a ++ b))(Keep.both)
-                  .run()
-
+            fileUpload("file") { case (_, content) =>
               val f = for {
-                by <- contentF
-                d <- digestF
-                _ <- db.run(Schema.objects.insertOrUpdate(TObject(objectId, by.toArray)))
-              } yield d
+                (digest, content) <- ObjectUpload.readFile(content)
+                _ <- db.run(objectRepository.create(TObject(objectId, content.toArray)))
+              } yield digest
 
               complete(f)
             }

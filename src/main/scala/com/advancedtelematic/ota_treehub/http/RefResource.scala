@@ -2,12 +2,10 @@ package com.advancedtelematic.ota_treehub.http
 
 import akka.stream.Materializer
 import com.advancedtelematic.ota_treehub.db.{RefRepositorySupport, Schema}
-import com.advancedtelematic.ota_treehub.db.Schema.Ref
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
-import Schema.RefName
-import com.advancedtelematic.data.DataType.Commit
+import com.advancedtelematic.data.DataType.{Commit, Ref, RefName}
 
 
 class RefResource()(implicit db: Database, ec: ExecutionContext, mat: Materializer)
