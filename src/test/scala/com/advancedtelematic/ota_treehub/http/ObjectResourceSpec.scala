@@ -1,7 +1,5 @@
 package com.advancedtelematic.ota_treehub.http
 
-import java.io.File
-
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import com.advancedtelematic.common.DigestCalculator
