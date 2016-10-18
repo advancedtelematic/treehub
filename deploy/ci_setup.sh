@@ -1,11 +1,11 @@
 #!/bin/bash
 
-set -e
 set -u
 
 docker rm --force treehub-mariadb || true
 
-mkdir entrypoint.d/
+mkdir entrypoint.d/ || true
+
 echo "
 CREATE DATABASE ota_treehub;
 GRANT ALL PRIVILEGES ON \`ota\_treehub%\`.* TO 'treehub'@'%';
