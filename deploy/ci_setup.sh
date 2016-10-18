@@ -24,7 +24,7 @@ docker run -d \
   --max_connections=1000
 
 function mysqladmin_alive {
-    docker run --name mysqladmin \
+    docker run --rm --name mysqladmin \
            --link treehub-mariadb \
            mariadb:10.1 \
            mysqladmin ping --protocol=TCP -h treehub-mariadb -P 3306 -u root -proot
@@ -43,3 +43,6 @@ for t in `seq $TRIES`; do
         sleep $TIMEOUT
     fi
 done
+
+exit -1
+
