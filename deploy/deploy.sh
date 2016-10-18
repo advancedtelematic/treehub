@@ -12,6 +12,8 @@ export VAULT_ENDPOINT=${VAULT_ENDPOINT-$(echo $JOB_NAME | tr "-" "_")}
 export IMAGE_NAME="treehub"
 export REGISTRY="advancedtelematic"
 export IMAGE_ARTIFACT=${REGISTRY}/${IMAGE_NAME}:${DOCKER_TAG}
+export HOST="0.0.0.0"
+export PORT="8084"
 
 # Merge service environment variables with secrets from this vault endpoint.
 export CATALOG_ADDR="http://catalog.gw.prod01.internal.advancedtelematic.com"
