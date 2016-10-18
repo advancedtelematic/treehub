@@ -7,9 +7,9 @@ if [[ "$1" == "" ]]; then
 fi
 
 export DOCKER_TAG=$1
-export JOB_NAME="${JOB_NAME-ota-treehub}"
+export JOB_NAME="${JOB_NAME-treehub}"
 export VAULT_ENDPOINT=${VAULT_ENDPOINT-$(echo $JOB_NAME | tr "-" "_")}
-export IMAGE_NAME="ota-treehub"
+export IMAGE_NAME="treehub"
 export REGISTRY="advancedtelematic"
 export IMAGE_ARTIFACT=${REGISTRY}/${IMAGE_NAME}:${DOCKER_TAG}
 

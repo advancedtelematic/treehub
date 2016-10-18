@@ -1,4 +1,4 @@
-package com.advancedtelematic.ota_treehub.db
+package com.advancedtelematic.treehub.db
 
 import shapeless.{::, Generic, HNil}
 import slick.driver.MySQLDriver.api._

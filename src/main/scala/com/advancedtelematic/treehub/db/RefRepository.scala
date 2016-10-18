@@ -1,6 +1,6 @@
-package com.advancedtelematic.ota_treehub.db
+package com.advancedtelematic.treehub.db
 
-import com.advancedtelematic.ota_treehub.http.Errors
+import com.advancedtelematic.treehub.http.Errors
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.http.Errors.MissingEntity
 

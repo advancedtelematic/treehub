@@ -1,11 +1,11 @@
-package com.advancedtelematic.ota_treehub
+package com.advancedtelematic.treehub
 
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.{ActorMaterializer, Materializer}
-import com.advancedtelematic.ota_treehub.http.{ConfResource, ObjectResource, RefResource}
+import com.advancedtelematic.treehub.http.{ConfResource, ObjectResource, RefResource}
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.http.{ErrorHandler, HealthResource}
 import org.slf4j.LoggerFactory
@@ -13,6 +13,7 @@ import slick.driver.MySQLDriver.api._
 import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
 import org.genivi.sota.http.VersionDirectives.versionHeaders
 import org.genivi.sota.http.LogDirectives.logResponseMetrics
+
 import scala.concurrent.ExecutionContext
 
 class TreeHubRoutes()

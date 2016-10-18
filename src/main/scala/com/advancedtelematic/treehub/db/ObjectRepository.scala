@@ -1,4 +1,4 @@
-package com.advancedtelematic.ota_treehub.db
+package com.advancedtelematic.treehub.db
 
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
 import org.genivi.sota.http.Errors.{EntityAlreadyExists, MissingEntity}

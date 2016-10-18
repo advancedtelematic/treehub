@@ -1,4 +1,4 @@
-name := "ota-treehub"
+name := "treehub"
 organization := "com.advancedtelematic.com"
 scalaVersion := "2.11.8"
 

@@ -1,9 +1,9 @@
-package com.advancedtelematic.ota_treehub.http
+package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model.StatusCodes
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
-import com.advancedtelematic.ota_treehub.db.ObjectRepositorySupport
+import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
 
 import scala.util.Random

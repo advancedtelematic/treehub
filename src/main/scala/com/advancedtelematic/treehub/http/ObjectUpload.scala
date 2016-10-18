@@ -1,4 +1,4 @@
-package com.advancedtelematic.ota_treehub.http
+package com.advancedtelematic.treehub.http
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, Sink, Source}

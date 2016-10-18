@@ -1,4 +1,4 @@
-package com.advancedtelematic.ota_treehub.http
+package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.server.directives.Credentials.{Missing, Provided}
 import akka.http.scaladsl.server.{Directives, _}

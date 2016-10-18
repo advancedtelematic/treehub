@@ -1,4 +1,4 @@
-package com.advancedtelematic.ota_treehub.http
+package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model.StatusCodes
 import org.genivi.sota.http.Errors.RawError

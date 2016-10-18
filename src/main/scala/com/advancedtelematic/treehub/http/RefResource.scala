@@ -1,12 +1,12 @@
-package com.advancedtelematic.ota_treehub.http
+package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.server.Directive1
 import akka.stream.Materializer
-import com.advancedtelematic.ota_treehub.db.RefRepositorySupport
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 import com.advancedtelematic.data.DataType.{Commit, ObjectId, Ref, RefName}
+import com.advancedtelematic.treehub.db.RefRepositorySupport
 import org.genivi.sota.data.Namespace
 
 

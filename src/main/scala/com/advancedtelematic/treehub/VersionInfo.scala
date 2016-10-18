@@ -1,4 +1,4 @@
-package com.advancedtelematic.ota_treehub
+package com.advancedtelematic.treehub
 
 trait VersionInfo {
   lazy val projectName: String = buildinfo.BuildInfo.name

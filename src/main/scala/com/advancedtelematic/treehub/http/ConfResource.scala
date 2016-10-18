@@ -1,4 +1,4 @@
-package com.advancedtelematic.ota_treehub.http
+package com.advancedtelematic.treehub.http
 
 class ConfResource {
 

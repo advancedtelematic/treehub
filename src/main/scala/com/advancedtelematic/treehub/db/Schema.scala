@@ -1,4 +1,4 @@
-package com.advancedtelematic.ota_treehub.db
+package com.advancedtelematic.treehub.db
 
 import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._

@@ -1,11 +1,11 @@
-package com.advancedtelematic.ota_treehub.http
+package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.model.headers.{Authorization, BasicHttpCredentials, RawHeader}
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.{Commit, ObjectId}
-import com.advancedtelematic.ota_treehub.db.ObjectRepositorySupport
+import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.data.Namespace
