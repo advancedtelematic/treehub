@@ -1,4 +1,4 @@
-#!/bin/bash
+/--#!/bin/bash
 
 set -u
 
@@ -24,7 +24,7 @@ docker run -d \
   --max_connections=1000
 
 function mysqladmin_alive {
-    docker run --rm --name mysqladmin \
+    docker run \
            --link treehub-mariadb \
            mariadb:10.1 \
            mysqladmin ping --protocol=TCP -h treehub-mariadb -P 3306 -u root -proot
