@@ -22,3 +22,24 @@ docker run -d \
   mariadb:10.1 \
   --character-set-server=utf8 --collation-server=utf8_unicode_ci \
   --max_connections=1000
+
+function mysqladmin_alive {
+    docker run --name mysqladmin \
+           --link treehub-mariadb \
+           mariadb:10.1 \
+           mysqladmin ping --protocol=TCP -h treehub-mariadb -P 3306 -u root -proot
+}
+
+TRIES=60
+TIMEOUT=1s
+
+for t in `seq $TRIES`; do
+    res=$(mysqladmin_alive || true)
+    if [[ $res =~ "mysqld is alive" ]]; then
+        echo "mysql is ready"
+        exit 0
+    else
+        echo "Waiting for mariadb"
+        sleep $TIMEOUT
+    fi
+done
