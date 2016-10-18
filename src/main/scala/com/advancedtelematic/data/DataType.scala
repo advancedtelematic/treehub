@@ -1,6 +1,7 @@
 package com.advancedtelematic.data
 
 import eu.timepit.refined.api.{Refined, Validate}
+import org.genivi.sota.data.Namespace
 
 object DataType {
   case class ValidCommit()
@@ -14,7 +15,7 @@ object DataType {
       ValidCommit()
     )
 
-  case class Ref(name: RefName, value: Commit, objectId: ObjectId)
+  case class Ref(namespace: Namespace, name: RefName, value: Commit, objectId: ObjectId)
 
   case class RefName(get: String) extends AnyVal
 
@@ -24,5 +25,5 @@ object DataType {
     def from(commit: Commit): ObjectId = ObjectId(commit.get + ".commit")
   }
 
-  case class TObject(id: ObjectId, blob: Array[Byte])
+  case class TObject(namespace: Namespace, id: ObjectId, blob: Array[Byte])
 }

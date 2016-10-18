@@ -25,8 +25,8 @@ class TreeHubRoutes()
       ErrorHandler.handleErrors {
         pathPrefix("api" / "v1") {
           new ConfResource().route ~
-          new ObjectResource().route ~
-            new RefResource().route
+          new ObjectResource(http.Http.extractNamespace).route ~
+            new RefResource(http.Http.extractNamespace).route
         } ~ new HealthResource(db, versionMap).route
       }
     }

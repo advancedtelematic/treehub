@@ -22,9 +22,12 @@ protected class ObjectRepository()(implicit ec: ExecutionContext) {
     (Schema.objects += obj).map(_ => ()).handleIntegrityErrors(ObjectAlreadyExists)
   }
 
-  def findBlob(id: ObjectId): DBIO[Array[Byte]] = {
+  def findBlob(id: ObjectId): DBIO[Array[Byte]] =
+    find(id).map(_.blob)
+
+  def find(id: ObjectId): DBIO[TObject] = {
     Schema.objects
-      .filter(_.id === id).map(_.blob)
+      .filter(_.id === id)
       .result.failIfNotSingle(ObjectNotFound)
   }
 }

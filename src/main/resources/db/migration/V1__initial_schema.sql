@@ -5,9 +5,11 @@ ALTER DATABASE CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 --
 
 CREATE TABLE `object` (
+  `namespace` varchar(254) COLLATE utf8_unicode_ci NOT NULL,
   `object_id` varchar(254) COLLATE utf8_unicode_ci NOT NULL,
   `blob` LONGBLOB NOT NULL,
-  PRIMARY KEY (`object_id`)
+  PRIMARY KEY (`object_id`),
+  CONSTRAINT object_unique_namespace UNIQUE (`namespace`, `object_id`)
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
@@ -15,9 +17,10 @@ CREATE TABLE `object` (
 --
 
 CREATE TABLE `ref` (
+  `namespace` varchar(254) COLLATE utf8_unicode_ci NOT NULL,
   `name` varchar(254) COLLATE utf8_unicode_ci NOT NULL,
   `value` text COLLATE utf8_unicode_ci NOT NULL,
   `object_id` varchar(254) COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`name`),
+  PRIMARY KEY (`namespace`, `name`),
   FOREIGN KEY (object_id) REFERENCES object(object_id)
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
