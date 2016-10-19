@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -u
+set -e
+
+if [[ $# -lt 2 ]]; then
+    echo "usage: $0 <repo> <url> [user]"
+    exit -1
+fi
+
+REPO=$1
+URL=$2/api/v1
+USER=${3-console-user}
+
+echo "pushing $REPO to $URL for user $USER"
+
+function push_refs {
+    find $REPO/refs/heads -type f -print0 |
+        while read -d '' file; do
+            refId=${file/$REPO\//}
+            echo -en "pushing \033[0;32m$refId\033[0m: "
+            curl -XPOST --header "x-ats-namespace: $USER" $URL/$refId --data @$file
+            echo
+        done
+}
+
+function push_objects {
+    find $REPO/objects -type f -print0 |
+        while read -d '' file; do
+            objectId=${file/$REPO\//}
+            echo -e "\tPushing object \033[0;94m$objectId\033[0m"
+            curl -XPOST --header "x-ats-namespace: $USER" $URL/$objectId -F file=@$file
+            echo
+        done
+}
+
+push_objects
+
+push_refs
+
+
