@@ -1,12 +1,12 @@
 package com.advancedtelematic.treehub
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.{ActorMaterializer, Materializer}
 import com.advancedtelematic.treehub.http.{ConfResource, ObjectResource, RefResource}
 import com.typesafe.config.ConfigFactory
+import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http.{ErrorHandler, HealthResource}
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
@@ -40,7 +40,7 @@ trait Settings {
   val port = config.getInt("server.port")
 }
 
-object Boot extends App with Directives with Settings with VersionInfo {
+object Boot extends App with Directives with Settings with VersionInfo with BootMigrations {
 
   val _log = LoggerFactory.getLogger(this.getClass)
 
@@ -55,15 +55,9 @@ object Boot extends App with Directives with Settings with VersionInfo {
   _log.info(s"Starting $version on http://$host:$port")
 
   val routes: Route =
-    versionHeaders(version) {
-      Route.seal {
-        logResponseMetrics(projectName) {
-          logRequestResult((projectName, Logging.InfoLevel)) {
-            new TreeHubRoutes().routes
-          }
-        }
-      }
-  }
+    (versionHeaders(version) & logResponseMetrics(projectName)) {
+      new TreeHubRoutes().routes
+    }
 
   Http().bindAndHandle(routes, host, port)
 }

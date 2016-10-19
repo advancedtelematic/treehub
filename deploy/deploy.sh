@@ -19,8 +19,8 @@ export PORT="8084"
 export CATALOG_ADDR="http://catalog.gw.prod01.internal.advancedtelematic.com"
 
 REQ=$(envsubst < deploy/service.json)
-curl -Ssf                               \
-     -H "X-Vault-Token: ${VAULT_TOKEN}" \
-     -X POST                            \
-     -d"$REQ"                           \
+curl --show-error --silent --fail \
+     --header "X-Vault-Token: ${VAULT_TOKEN}" \
+     --request POST \
+     --data "$REQ" \
      ${CATALOG_ADDR}/service/${VAULT_ENDPOINT}
