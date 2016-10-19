@@ -4,34 +4,14 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.{ActorMaterializer, Materializer}
-import com.advancedtelematic.treehub.http.{ConfResource, ObjectResource, RefResource}
+import com.advancedtelematic.treehub.http.TreeHubRoutes
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.db.BootMigrations
-import org.genivi.sota.http.{ErrorHandler, HealthResource}
+import org.genivi.sota.http.LogDirectives.logResponseMetrics
+import org.genivi.sota.http.VersionDirectives.versionHeaders
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
-import org.genivi.sota.http.VersionDirectives.versionHeaders
-import org.genivi.sota.http.LogDirectives.logResponseMetrics
 
-import scala.concurrent.ExecutionContext
-
-class TreeHubRoutes()
-                   (implicit val db: Database, ec: ExecutionContext, mat: Materializer) extends VersionInfo {
-
-  import Directives._
-
-  val routes: Route =
-    handleRejections(rejectionHandler) {
-      ErrorHandler.handleErrors {
-        pathPrefix("api" / "v1") {
-          new ConfResource().route ~
-          new ObjectResource(http.Http.extractNamespace).route ~
-            new RefResource(http.Http.extractNamespace).route
-        } ~ new HealthResource(db, versionMap).route
-      }
-    }
-}
 
 trait Settings {
   lazy val config = ConfigFactory.load()
@@ -56,7 +36,7 @@ object Boot extends App with Directives with Settings with VersionInfo with Boot
 
   val routes: Route =
     (versionHeaders(version) & logResponseMetrics(projectName)) {
-      new TreeHubRoutes().routes
+      new TreeHubRoutes().routes(allowEmptyAuth = false)
     }
 
   Http().bindAndHandle(routes, host, port)

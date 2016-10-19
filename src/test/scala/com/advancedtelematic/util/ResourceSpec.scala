@@ -1,7 +1,7 @@
 package com.advancedtelematic.util
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.advancedtelematic.treehub.TreeHubRoutes
+import com.advancedtelematic.treehub.http.TreeHubRoutes
 import org.scalatest.Suite
 
 trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec {
@@ -11,7 +11,7 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec {
 
   def apiUri(path: String): String = "/api/v1/" + path
 
-  lazy val routes = new TreeHubRoutes().routes
+  lazy val routes = new TreeHubRoutes().routes(allowEmptyAuth = true)
 }
 
 

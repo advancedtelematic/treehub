@@ -25,6 +25,7 @@ protected class ObjectRepository()(implicit ec: ExecutionContext) {
   def findBlob(id: ObjectId): DBIO[Array[Byte]] =
     find(id).map(_.blob)
 
+  // TODO: No namespace, will error if there is more than one
   def find(id: ObjectId): DBIO[TObject] = {
     Schema.objects
       .filter(_.id === id)
