@@ -9,8 +9,10 @@ resolvers += "ATS Releases" at "http://nexus.prod01.internal.advancedtelematic.c
 resolvers += "ATS Snapshots" at "http://nexus.prod01.internal.advancedtelematic.com:8081/content/repositories/snapshots"
 
 libraryDependencies ++= {
-  val akkaV       = "2.4.11"
-  val scalaTestV  = "3.0.0"
+  val akkaV = "2.4.11"
+  val scalaTestV = "3.0.0"
+  val slickV = "3.1.1"
+
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,
     "com.typesafe.akka" %% "akka-stream" % akkaV,
@@ -20,11 +22,12 @@ libraryDependencies ++= {
     "org.scalatest"     %% "scalatest" % scalaTestV % "test",
 
     "ch.qos.logback" % "logback-classic" % "1.1.3",
+    "org.slf4j" % "slf4j-api" % "1.7.16",
 
     "org.genivi" %% "sota-common" % "0.1.201",
 
-    "com.typesafe.slick" %% "slick" % "3.1.1",
-    "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
+    "com.typesafe.slick" %% "slick" % slickV,
+    "com.typesafe.slick" %% "slick-hikaricp" % slickV,
     "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4",
     "org.flywaydb" % "flyway-core" % "4.0.3"
   )
