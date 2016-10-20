@@ -1,6 +1,7 @@
 package com.advancedtelematic.treehub.db
 
 import com.advancedtelematic.treehub.http.Errors
+import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.http.Errors.MissingEntity
 
@@ -23,9 +24,9 @@ protected class RefRepository()(implicit db: Database, ec: ExecutionContext) {
     db.run(dbIO)
   }
 
-  def find(name: RefName): Future[Ref] = {
+  def find(namespace: Namespace, name: RefName): Future[Ref] = {
     val dbIO = Schema.refs
-      .filter(_.name === name)
+      .filter(_.name === name).filter(_.namespace === namespace)
       .result.failIfNotSingle(RefNotFound)
     db.run(dbIO)
   }

@@ -28,7 +28,7 @@ class RefResource(namespace: Directive1[Namespace])
         }
       } ~
         get {
-          val f = refRepository.find(refName).map(_.value.get)
+          val f = refRepository.find(ns, refName).map(_.value.get)
           complete(f)
         }
     }
