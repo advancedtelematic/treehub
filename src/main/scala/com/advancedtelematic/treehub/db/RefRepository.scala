@@ -2,8 +2,8 @@ package com.advancedtelematic.treehub.db
 
 import com.advancedtelematic.treehub.http.Errors
 import org.genivi.sota.data.Namespace
-import slick.driver.MySQLDriver.api._
 import org.genivi.sota.http.Errors.MissingEntity
+import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

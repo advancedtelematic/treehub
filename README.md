@@ -62,3 +62,18 @@ To test the current implementation, the following steps can be followed:
 
         This is my file. There are many files like this, but this one is mine.
 
+
+## JNI
+
+```
+sbt compile
+
+cd target/path/to/classes
+
+javah com.advancedtelematic.libostree.LibOstree
+
+cp com_advancedtelematic_libostree_LibOstree.h path/to/libatsostree/com_advancedtelematic_libostree_LibOstree.h
+
+make clean all
+
+```

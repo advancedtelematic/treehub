@@ -29,6 +29,9 @@ object Boot extends App with Directives with Settings with VersionInfo with Boot
   implicit val _system = ActorSystem()
   implicit val _mat = ActorMaterializer()
 
+  // TODO: Load from LD_ path
+  System.load("/home/simao/ats/ota-treehub/libatsostree/libatsostree.so")
+
   // TODO: Use different dispatcher
   import _system.dispatcher
 
