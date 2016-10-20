@@ -12,8 +12,7 @@ class RefResourceSpec extends TreeHubSpec with ResourceSpec with ObjectRepositor
   test("POST creates a new ref, GET returns") {
     val ref = DigestCalculator.digest()(Random.nextString(10))
 
-    db.run(objectRepository.create(TObject(defaultNs, ObjectId(ref + ".commit"), Array.empty)))
-      .futureValue
+    objectRepository.create(TObject(defaultNs, ObjectId(ref + ".commit"), Array.empty)).futureValue
 
     Post(apiUri("refs/some/ref"), ref) ~> routes ~> check {
       status shouldBe StatusCodes.OK

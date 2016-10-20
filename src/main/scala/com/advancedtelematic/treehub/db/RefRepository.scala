@@ -4,13 +4,13 @@ import com.advancedtelematic.treehub.http.Errors
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.http.Errors.MissingEntity
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 trait RefRepositorySupport {
-  def refRepository(implicit ec: ExecutionContext) = new RefRepository()
+  def refRepository(implicit db: Database, ec: ExecutionContext) = new RefRepository()
 }
 
-protected class RefRepository()(implicit ec: ExecutionContext) {
+protected class RefRepository()(implicit db: Database, ec: ExecutionContext) {
   import org.genivi.sota.db.Operators._
   import SlickAnyVal._
   import com.advancedtelematic.data.DataType._
@@ -18,13 +18,15 @@ protected class RefRepository()(implicit ec: ExecutionContext) {
 
   val RefNotFound = MissingEntity(classOf[Ref])
 
-  def persist(ref: Ref): DBIO[Unit] = {
-      Schema.refs.insertOrUpdate(ref).map(_ => ()).handleIntegrityErrors(Errors.CommitMissing)
+  def persist(ref: Ref): Future[Unit] = {
+    val dbIO = Schema.refs.insertOrUpdate(ref).map(_ => ()).handleIntegrityErrors(Errors.CommitMissing)
+    db.run(dbIO)
   }
 
-  def find(name: RefName): DBIO[Ref] = {
-    Schema.refs
+  def find(name: RefName): Future[Ref] = {
+    val dbIO = Schema.refs
       .filter(_.name === name)
       .result.failIfNotSingle(RefNotFound)
+    db.run(dbIO)
   }
 }

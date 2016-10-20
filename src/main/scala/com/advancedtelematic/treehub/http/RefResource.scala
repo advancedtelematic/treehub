@@ -23,13 +23,13 @@ class RefResource(namespace: Directive1[Namespace])
     path("refs" / RefNameUri) { refName =>
       post {
         entity(as[Commit]) { commit =>
-          val dbIO = refRepository.persist(Ref(ns, refName, commit, ObjectId.from(commit)))
-          complete(db.run(dbIO).map(_ => commit.get))
+          val f = refRepository.persist(Ref(ns, refName, commit, ObjectId.from(commit)))
+          complete(f.map(_ => commit.get))
         }
       } ~
         get {
-          val dbIO = refRepository.find(refName).map(_.value.get)
-          complete(db.run(dbIO))
+          val f = refRepository.find(refName).map(_.value.get)
+          complete(f)
         }
     }
   }

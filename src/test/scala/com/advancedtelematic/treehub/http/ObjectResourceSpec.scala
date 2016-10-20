@@ -81,7 +81,7 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
       status shouldBe StatusCodes.OK
     }
 
-    db.run(objectRepository.find(ObjectId.from(obj.commit))).map(_.namespace).futureValue shouldBe Namespace("someuser")
+    objectRepository.find(ObjectId.from(obj.commit)).map(_.namespace).futureValue shouldBe Namespace("someuser")
   }
 
   test("saves object with explicit namespace if provided with basic auth") {
@@ -93,6 +93,6 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
       status shouldBe StatusCodes.OK
     }
 
-    db.run(objectRepository.find(ObjectId.from(obj.commit))).map(_.namespace).futureValue shouldBe Namespace("basicuser")
+    objectRepository.find(ObjectId.from(obj.commit)).map(_.namespace).futureValue shouldBe Namespace("basicuser")
   }
 }
