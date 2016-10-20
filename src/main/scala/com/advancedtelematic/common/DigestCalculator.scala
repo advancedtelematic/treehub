@@ -18,10 +18,14 @@ object DigestCalculator {
 
   private def toHex(bytes: Array[Byte]) = bytes.map("%02X".format(_)).mkString.toLowerCase
 
-  def digest(algorithm: String = DEFAULT_ALGORITHM)(str: String): String = {
+  def byteDigest(algorithm: String = DEFAULT_ALGORITHM)(bytes: Array[Byte]): String = {
     val digest = MessageDigest.getInstance(algorithm)
-    digest.update(str.getBytes)
+    digest.update(bytes)
     toHex(digest.digest())
+  }
+
+  def digest(algorithm: String = DEFAULT_ALGORITHM)(str: String): String = {
+    byteDigest(algorithm)(str.getBytes)
   }
 
   def apply(algorithm: String = DEFAULT_ALGORITHM)(implicit ec: ExecutionContext): Sink[ByteString, Future[DigestResult]] = {

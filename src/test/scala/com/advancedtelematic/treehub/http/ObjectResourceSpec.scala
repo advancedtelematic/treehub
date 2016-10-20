@@ -6,6 +6,7 @@ import akka.http.scaladsl.model.headers.{Authorization, BasicHttpCredentials, Ra
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.{Commit, ObjectId}
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
+import com.advancedtelematic.util.ResourceSpec.ClientTObject
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.data.Namespace
@@ -13,24 +14,6 @@ import org.genivi.sota.data.Namespace
 import scala.util.Random
 
 class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectRepositorySupport {
-
-  class ClientTObject(blobStr: String = Random.nextString(10)) {
-    lazy val blob = blobStr.getBytes
-
-    lazy val checkSum = DigestCalculator.digest()(blobStr)
-
-    private lazy val (prefix, rest) = checkSum.splitAt(2)
-
-    lazy val objectId = s"$prefix/$rest.commit"
-
-    lazy val commit: Commit = Refined.unsafeApply(checkSum)
-
-    lazy val formFile =
-      BodyPart("file", HttpEntity(MediaTypes.`application/octet-stream`, blobStr.getBytes),
-        Map("filename" -> s"$checkSum.commit"))
-
-    lazy val form = Multipart.FormData(formFile)
-  }
 
   test("POST creates a new blob") {
     val obj = new ClientTObject()

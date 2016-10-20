@@ -1,7 +1,10 @@
 package com.advancedtelematic.data
 
+import cats.data.Xor
+import com.advancedtelematic.common.DigestCalculator
 import eu.timepit.refined.api.{Refined, Validate}
 import org.genivi.sota.data.Namespace
+import eu.timepit.refined.refineV
 
 object DataType {
   case class ValidCommit()
@@ -14,6 +17,13 @@ object DataType {
       hash => s"$hash is not a sha-256 commit hash",
       ValidCommit()
     )
+
+  object Commit {
+    def from(bytes: Array[Byte]): Xor[String, Commit] = {
+      val commitE = refineV[ValidCommit](DigestCalculator.byteDigest()(bytes))
+      Xor.fromEither(commitE)
+    }
+  }
 
   case class Ref(namespace: Namespace, name: RefName, value: Commit, objectId: ObjectId)
 

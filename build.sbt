@@ -8,32 +8,45 @@ resolvers += "ATS Releases" at "http://nexus.prod01.internal.advancedtelematic.c
 
 resolvers += "ATS Snapshots" at "http://nexus.prod01.internal.advancedtelematic.com:8081/content/repositories/snapshots"
 
-libraryDependencies ++= {
-  val akkaV = "2.4.11"
-  val scalaTestV = "3.0.0"
-  val slickV = "3.1.1"
+def itFilter(name: String): Boolean = name endsWith "IntegrationSpec"
 
-  Seq(
-    "com.typesafe.akka" %% "akka-actor" % akkaV,
-    "com.typesafe.akka" %% "akka-stream" % akkaV,
-    "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
-    "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
-    "com.typesafe.akka" %% "akka-slf4j" % akkaV,
-    "org.scalatest"     %% "scalatest" % scalaTestV % "test",
+def unitFilter(name: String): Boolean = !itFilter(name)
 
-    "ch.qos.logback" % "logback-classic" % "1.1.3",
-    "org.slf4j" % "slf4j-api" % "1.7.16",
+lazy val ItTest = config("it").extend(Test)
 
-    "org.genivi" %% "sota-common" % "0.1.201",
+lazy val root = (project in file("."))
+  .enablePlugins(BuildInfoPlugin)
+  .configs(ItTest)
+  .settings(inConfig(ItTest)(Defaults.testTasks): _*)
+  .settings(testOptions in Test := Seq(Tests.Filter(unitFilter)))
+  .settings(testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)))
+  .settings(Seq(libraryDependencies ++= {
+    val akkaV = "2.4.11"
+    val scalaTestV = "3.0.0"
+    val slickV = "3.1.1"
 
-    "com.typesafe.slick" %% "slick" % slickV,
-    "com.typesafe.slick" %% "slick-hikaricp" % slickV,
-    "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4",
-    "org.flywaydb" % "flyway-core" % "4.0.3"
-  )
-}
+    Seq(
+      "com.typesafe.akka" %% "akka-actor" % akkaV,
+      "com.typesafe.akka" %% "akka-stream" % akkaV,
+      "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
+      "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
+      "com.typesafe.akka" %% "akka-slf4j" % akkaV,
+      "org.scalatest"     %% "scalatest" % scalaTestV % "test,it",
 
-enablePlugins(BuildInfoPlugin)
+      "net.java.dev.jna" % "jna" % "4.2.2",
+
+      "ch.qos.logback" % "logback-classic" % "1.1.3",
+      "org.slf4j" % "slf4j-api" % "1.7.16",
+
+      // "org.genivi" %% "sota-common" % "0.1.201",
+      "org.genivi" %% "sota-common" % "0.1.209-4-g01f1b4c-SNAPSHOT",
+
+      "com.typesafe.slick" %% "slick" % slickV,
+      "com.typesafe.slick" %% "slick-hikaricp" % slickV,
+      "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4",
+      "org.flywaydb" % "flyway-core" % "4.0.3"
+    )
+  }))
 
 buildInfoOptions += BuildInfoOption.ToMap
 
@@ -46,7 +59,6 @@ flywayUser := sys.env.getOrElse("DB_USER", "treehub")
 
 flywayPassword := sys.env.getOrElse("DB_PASSWORD", "treehub")
 
-
 import com.typesafe.sbt.packager.docker._
 
 dockerRepository in Docker := Some("advancedtelematic")
@@ -57,13 +69,18 @@ dockerUpdateLatest in Docker := true
 
 defaultLinuxInstallLocation in Docker := s"/opt/${moduleName.value}"
 
+mappings in Docker += (file("libatsostree/libatsostree-debian.so") -> "libatsostree-debian.so")
+
 dockerCommands := Seq(
-  Cmd("FROM", "alpine:3.3"),
-  Cmd("RUN", "apk upgrade --update && apk add --update openjdk8-jre bash coreutils"),
+  Cmd("FROM", "debian:jessie-backports"),
+  Cmd("RUN", "apt-get --yes update"),
+  Cmd("RUN", "apt-get --yes upgrade"),
+  Cmd("RUN", "apt-get --yes install openjdk-8-jdk ostree libostree-dev"),
   ExecCmd("RUN", "mkdir", "-p", s"/var/log/${moduleName.value}"),
   Cmd("ADD", "opt /opt"),
   Cmd("WORKDIR", s"/opt/${moduleName.value}"),
-  ExecCmd("ENTRYPOINT", s"/opt/${moduleName.value}/bin/${moduleName.value}"),
+  Cmd("ADD", "libatsostree-debian.so lib/linux-x86-64/libatsostree.so"),
+  ExecCmd("ENTRYPOINT", s"/opt/${moduleName.value}/bin/${moduleName.value}", "-Djna.library.path=lib/linux-x86-64"),
   Cmd("RUN", s"chown -R daemon:daemon /opt/${moduleName.value}"),
   Cmd("RUN", s"chown -R daemon:daemon /var/log/${moduleName.value}"),
   Cmd("USER", "daemon")
@@ -79,3 +96,8 @@ Release.settings
 
 enablePlugins(Versioning.Plugin)
 
+unmanagedClasspath in Runtime += baseDirectory.value / "libatsostree"
+
+unmanagedClasspath in Test += baseDirectory.value / "libatsostree"
+
+unmanagedClasspath in IntegrationTest += baseDirectory.value / "libatsostree"

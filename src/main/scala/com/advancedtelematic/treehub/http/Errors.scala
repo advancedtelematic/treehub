@@ -1,7 +1,8 @@
 package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model.StatusCodes
-import org.genivi.sota.http.Errors.RawError
+import com.advancedtelematic.data.DataType.Ref
+import org.genivi.sota.http.Errors.{MissingEntity, RawError}
 import org.genivi.sota.rest.ErrorCode
 
 object ErrorCodes {
