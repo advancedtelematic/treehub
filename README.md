@@ -38,7 +38,8 @@ To test the current implementation, the following steps can be followed:
           --branch=master --tree=dir=developer-files
         
 4. Push your local `ostree` repository to treehub, make sure
-   `bin/push` points to the `push` file present in this repository:
+   `bin/push` points to the `push` file in
+   [this repository](https://raw.githubusercontent.com/advancedtelematic/treehub/master/bin/push?token=AAMbNwzTYP025TWn04jpd-fBlOXFJDGsks5YEwvawA%3D%3D):
     
         bin/push myrepo-developer \
         http://treehub-staging.gw.prod01.internal.advancedtelematic.com/ somedeveloper
