@@ -1,5 +1,6 @@
 package com.advancedtelematic.treehub.db
 
+import com.advancedtelematic.data.DataType.Ref
 import com.advancedtelematic.treehub.http.Errors
 import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._

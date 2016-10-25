@@ -76,23 +76,24 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
 
   test("saves object with explicit namespace if provided with header") {
     val obj = new ClientTObject()
+    val ns = Namespace("someuser")
 
     Post(apiUri(s"objects/${obj.objectId}"), obj.form).addHeader(RawHeader("x-ats-namespace", "someuser")) ~> routes ~> check {
       status shouldBe StatusCodes.OK
     }
 
-    objectRepository.find(ObjectId.from(obj.commit)).map(_.namespace).futureValue shouldBe Namespace("someuser")
+    objectRepository.find(ns, ObjectId.from(obj.commit)).map(_.namespace).futureValue shouldBe ns
   }
 
   test("saves object with explicit namespace if provided with basic auth") {
     val obj = new ClientTObject()
-
+    val ns = Namespace("basicuser")
     val authHeaders = Authorization(BasicHttpCredentials("basicuser", "basicpass"))
 
     Post(apiUri(s"objects/${obj.objectId}"), obj.form).addHeader(authHeaders) ~> routes ~> check {
       status shouldBe StatusCodes.OK
     }
 
-    objectRepository.find(ObjectId.from(obj.commit)).map(_.namespace).futureValue shouldBe Namespace("basicuser")
+    objectRepository.find(ns, ObjectId.from(obj.commit)).map(_.namespace).futureValue shouldBe ns
   }
 }

@@ -22,7 +22,7 @@ class ObjectResource(namespace: Directive1[Namespace])
     path("objects" / PrefixedObjectId) { objectId =>
       get {
         // TODO: Access control to ns
-        val f = objectRepository.findBlob(objectId)
+        val f = objectRepository.findBlob(ns, objectId)
         complete(f)
       } ~
         post {
