@@ -8,32 +8,46 @@ resolvers += "ATS Releases" at "http://nexus.prod01.internal.advancedtelematic.c
 
 resolvers += "ATS Snapshots" at "http://nexus.prod01.internal.advancedtelematic.com:8081/content/repositories/snapshots"
 
-libraryDependencies ++= {
-  val akkaV = "2.4.11"
-  val scalaTestV = "3.0.0"
-  val slickV = "3.1.1"
+def itFilter(name: String): Boolean = name endsWith "IntegrationSpec"
 
-  Seq(
-    "com.typesafe.akka" %% "akka-actor" % akkaV,
-    "com.typesafe.akka" %% "akka-stream" % akkaV,
-    "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
-    "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
-    "com.typesafe.akka" %% "akka-slf4j" % akkaV,
-    "org.scalatest"     %% "scalatest" % scalaTestV % "test",
+def unitFilter(name: String): Boolean = !itFilter(name)
 
-    "ch.qos.logback" % "logback-classic" % "1.1.3",
-    "org.slf4j" % "slf4j-api" % "1.7.16",
+lazy val ItTest = config("it").extend(Test)
 
-    "org.genivi" %% "sota-common" % "0.1.201",
+lazy val UnitTest = config("ut").extend(Test)
 
-    "com.typesafe.slick" %% "slick" % slickV,
-    "com.typesafe.slick" %% "slick-hikaricp" % slickV,
-    "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4",
-    "org.flywaydb" % "flyway-core" % "4.0.3"
-  )
-}
+lazy val root = (project in file("."))
+  .enablePlugins(BuildInfoPlugin)
+  .configs(ItTest)
+  .settings(inConfig(ItTest)(Defaults.testTasks): _*)
+  .configs(UnitTest)
+  .settings(inConfig(UnitTest)(Defaults.testTasks): _*)
+  .settings(testOptions in UnitTest := Seq(Tests.Filter(unitFilter)))
+  .settings(testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)))
+  .settings(Seq(libraryDependencies ++= {
+    val akkaV = "2.4.11"
+    val scalaTestV = "3.0.0"
+    val slickV = "3.1.1"
 
-enablePlugins(BuildInfoPlugin)
+    Seq(
+      "com.typesafe.akka" %% "akka-actor" % akkaV,
+      "com.typesafe.akka" %% "akka-stream" % akkaV,
+      "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
+      "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
+      "com.typesafe.akka" %% "akka-slf4j" % akkaV,
+      "org.scalatest"     %% "scalatest" % scalaTestV % "test,it",
+
+      "ch.qos.logback" % "logback-classic" % "1.1.3",
+      "org.slf4j" % "slf4j-api" % "1.7.16",
+
+      "org.genivi" %% "sota-common" % "0.1.201",
+
+      "com.typesafe.slick" %% "slick" % slickV,
+      "com.typesafe.slick" %% "slick-hikaricp" % slickV,
+      "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4",
+      "org.flywaydb" % "flyway-core" % "4.0.3"
+    )
+  }))
 
 buildInfoOptions += BuildInfoOption.ToMap
 
@@ -45,7 +59,6 @@ flywayUrl := sys.env.getOrElse("DB_URL", "jdbc:mysql://localhost:3306/ota_treehu
 flywayUser := sys.env.getOrElse("DB_USER", "treehub")
 
 flywayPassword := sys.env.getOrElse("DB_PASSWORD", "treehub")
-
 
 import com.typesafe.sbt.packager.docker._
 

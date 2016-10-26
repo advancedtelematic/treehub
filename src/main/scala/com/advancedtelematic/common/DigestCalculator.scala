@@ -16,12 +16,16 @@ object DigestCalculator {
 
   private lazy val DEFAULT_ALGORITHM = "SHA-256"
 
-  private def toHex(bytes: Array[Byte]) = bytes.map("%02X".format(_)).mkString.toLowerCase
+  def toHex(bytes: Array[Byte]) = bytes.map("%02X".format(_)).mkString.toLowerCase
+
+  def byteDigest(algorithm: String = DEFAULT_ALGORITHM)(bytes: Array[Byte]): String = {
+    val digest = MessageDigest.getInstance(algorithm)
+    digest.update(bytes)
+    toHex(digest.digest())
+  }
 
   def digest(algorithm: String = DEFAULT_ALGORITHM)(str: String): String = {
-    val digest = MessageDigest.getInstance(algorithm)
-    digest.update(str.getBytes)
-    toHex(digest.digest())
+    byteDigest(algorithm)(str.getBytes)
   }
 
   def apply(algorithm: String = DEFAULT_ALGORITHM)(implicit ec: ExecutionContext): Sink[ByteString, Future[DigestResult]] = {

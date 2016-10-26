@@ -1,18 +1,32 @@
 package com.advancedtelematic.treehub.http
 
+import akka.http.scaladsl.marshalling.{Marshaller, ToEntityMarshaller}
 import akka.http.scaladsl.model.StatusCodes
 import com.advancedtelematic.common.DigestCalculator
-import com.advancedtelematic.data.DataType.{ObjectId, TObject}
-import com.advancedtelematic.treehub.db.ObjectRepositorySupport
+import com.advancedtelematic.treehub.db.RefRepositorySupport
+import com.advancedtelematic.util.ResourceSpec.ClientTObject
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
+import eu.timepit.refined.api.{Refined, Validate}
+import io.circe.generic.auto._
+import org.slf4j.LoggerFactory
 
 import scala.util.Random
 
-class RefResourceSpec extends TreeHubSpec with ResourceSpec with ObjectRepositorySupport {
-  test("POST creates a new ref, GET returns") {
-    val ref = DigestCalculator.digest()(Random.nextString(10))
+class RefResourceSpec extends TreeHubSpec with ResourceSpec with RefRepositorySupport {
 
-    objectRepository.create(TObject(defaultNs, ObjectId(ref + ".commit"), Array.empty)).futureValue
+  val log = LoggerFactory.getLogger(this.getClass)
+
+  implicit def refinedMarshaller[P](implicit p: Validate.Plain[String, P]): ToEntityMarshaller[Refined[String, P]] =
+    Marshaller.StringMarshaller.compose(_.get)
+
+  test("POST creates a new ref, GET returns") {
+    val obj = new ClientTObject()
+    val ref = obj.commit
+
+    Post(apiUri(s"objects/${obj.objectId}"), obj.form) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[String] shouldBe obj.checkSum
+    }
 
     Post(apiUri("refs/some/ref"), ref) ~> routes ~> check {
       status shouldBe StatusCodes.OK
@@ -20,7 +34,25 @@ class RefResourceSpec extends TreeHubSpec with ResourceSpec with ObjectRepositor
 
     Get(apiUri("refs/some/ref")) ~> routes ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[String] shouldBe ref
+      responseAs[String] shouldBe ref.get
+    }
+  }
+
+  test("POST operation is idempotent") {
+    val obj = new ClientTObject()
+    val ref = obj.commit
+
+    Post(apiUri(s"objects/${obj.objectId}"), obj.form) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[String] shouldBe obj.checkSum
+    }
+
+    Post(apiUri("refs/repeat"), ref) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
+    }
+
+    Post(apiUri("refs/repeat"), ref) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
     }
   }
 

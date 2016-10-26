@@ -3,8 +3,8 @@ package com.advancedtelematic.treehub.db
 import com.advancedtelematic.data.DataType.Ref
 import com.advancedtelematic.treehub.http.Errors
 import org.genivi.sota.data.Namespace
-import slick.driver.MySQLDriver.api._
 import org.genivi.sota.http.Errors.MissingEntity
+import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -12,13 +12,16 @@ trait RefRepositorySupport {
   def refRepository(implicit db: Database, ec: ExecutionContext) = new RefRepository()
 }
 
+object RefRepository {
+  val RefNotFound = MissingEntity(classOf[Ref])
+}
+
 protected class RefRepository()(implicit db: Database, ec: ExecutionContext) {
   import org.genivi.sota.db.Operators._
   import SlickAnyVal._
   import com.advancedtelematic.data.DataType._
   import org.genivi.sota.db.SlickExtensions._
-
-  val RefNotFound = MissingEntity(classOf[Ref])
+  import RefRepository._
 
   def persist(ref: Ref): Future[Unit] = {
     val dbIO = Schema.refs.insertOrUpdate(ref).map(_ => ()).handleIntegrityErrors(Errors.CommitMissing)

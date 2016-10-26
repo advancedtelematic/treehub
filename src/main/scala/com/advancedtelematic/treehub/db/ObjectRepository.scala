@@ -11,13 +11,17 @@ trait ObjectRepositorySupport {
   def objectRepository(implicit db: Database, ec: ExecutionContext) = new ObjectRepository()
 }
 
+object ObjectRepository {
+  val ObjectNotFound = MissingEntity(classOf[TObject])
+  val ObjectAlreadyExists = EntityAlreadyExists(classOf[TObject])
+}
+
 protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) {
   import org.genivi.sota.db.Operators._
   import org.genivi.sota.db.SlickExtensions._
   import SlickAnyVal._
+  import ObjectRepository._
 
-  val ObjectNotFound = MissingEntity(classOf[TObject])
-  val ObjectAlreadyExists = EntityAlreadyExists(classOf[TObject])
   def create(obj: TObject): Future[TObject] = {
     val io = (Schema.objects += obj).map(_ => obj).handleIntegrityErrors(ObjectAlreadyExists)
     db.run(io)
