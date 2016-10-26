@@ -4,7 +4,6 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.{ActorMaterializer, Materializer}
-import com.advancedtelematic.libostree.LibOstree
 import com.advancedtelematic.treehub.http.TreeHubRoutes
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.db.BootMigrations

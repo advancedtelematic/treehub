@@ -1,7 +1,7 @@
 package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directive1
+import akka.http.scaladsl.server.{Directive, Directive1, Route}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.{Commit, ObjectId, Ref, RefName}
 import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
@@ -19,11 +19,24 @@ class RefResource(namespace: Directive1[Namespace])
   import akka.http.scaladsl.server.Directives._
   import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
-  val RefNameUri = Segments.map(s => RefName(s.mkString("/")))
+  private val RefNameUri = Segments.map(s => RefName(s.mkString("/")))
 
-  def isValidUpdate(ns: Namespace, oldCommit: Commit, newCommit: Commit): Future[Boolean] = {
-    objectRepository.find(ns, ObjectId.from(newCommit)).map { obj =>
-      oldCommit == newCommit || RefUpdateValidation.validateParent(oldCommit, newCommit, obj)
+  private val forcePushHeader: Directive[Tuple1[Boolean]] =
+    optionalHeaderValueByName("x-ats-ostree-force").map(_.contains("true"))
+
+  protected def onValidUpdate(ns: Namespace, oldRef: Ref, newCommit: Commit): Route = {
+    val f = objectRepository.find(ns, ObjectId.from(newCommit)).map { obj =>
+      oldRef.value == newCommit || RefUpdateValidation.validateParent(oldRef.value, newCommit, obj)
+    }
+
+    val newRef = Ref(ns, oldRef.name, newCommit, ObjectId.from(newCommit))
+
+    (onSuccess(f) & forcePushHeader) { case (validParent, force) =>
+      if(force || validParent) {
+        complete(refRepository.persist(newRef).map(_ => newCommit.get))
+      } else {
+        complete(StatusCodes.PreconditionFailed -> "Cannot force push")
+      }
     }
   }
 
@@ -33,12 +46,7 @@ class RefResource(namespace: Directive1[Namespace])
         entity(as[Commit]) { commit =>
           onComplete(refRepository.find(ns, refName)) {
             case Success(oldRef) =>
-              val newRef = Ref(ns, refName, commit, ObjectId.from(commit))
-
-              onSuccess(isValidUpdate(ns, oldRef.value, commit)) {
-                case true => complete(refRepository.persist(newRef).map(_ => commit.get))
-                case false => complete(StatusCodes.PreconditionFailed -> "Cannot force push")
-              }
+              onValidUpdate(ns, oldRef, commit)
 
             case Failure(RefNotFound) =>
               val f = refRepository.persist(Ref(ns, refName, commit, ObjectId.from(commit)))
