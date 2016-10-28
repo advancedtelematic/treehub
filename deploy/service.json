@@ -20,7 +20,7 @@
   },
   "env": {
     "SERVICE_NAME": "${JOB_NAME}",
-    "SERVICE_SCOPE": "internal",
+    "SERVICE_SCOPE": "public",
     "SERVICE_TYPE": "http",
     "SERVICE_IMAGE": "${IMAGE_ARTIFACT}",
     "SERVICE_HEALTH_CHECK": "curl --show-error --silent %<host>s:%<port>s/health",
