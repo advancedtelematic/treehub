@@ -60,8 +60,9 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
   test("saves object with explicit namespace if provided with header") {
     val obj = new ClientTObject()
     val ns = Namespace("someuser")
+    val header = RawHeader("x-ats-namespace", s"someuser|${Http.PASSWORD}")
 
-    Post(apiUri(s"objects/${obj.objectId}"), obj.form).addHeader(RawHeader("x-ats-namespace", "someuser")) ~> routes ~> check {
+    Post(apiUri(s"objects/${obj.objectId}"), obj.form).addHeader(header) ~> routes ~> check {
       status shouldBe StatusCodes.OK
     }
 
@@ -71,7 +72,7 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
   test("saves object with explicit namespace if provided with basic auth") {
     val obj = new ClientTObject()
     val ns = Namespace("basicuser")
-    val authHeaders = Authorization(BasicHttpCredentials("basicuser", "basicpass"))
+    val authHeaders = Authorization(BasicHttpCredentials("basicuser", Http.PASSWORD))
 
     Post(apiUri(s"objects/${obj.objectId}"), obj.form).addHeader(authHeaders) ~> routes ~> check {
       status shouldBe StatusCodes.OK

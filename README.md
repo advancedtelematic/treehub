@@ -45,12 +45,14 @@ To test the current implementation, the following steps can be followed:
         http://treehub-staging.gw.prod01.internal.advancedtelematic.com/ somedeveloper
 
 5. You can now pull your changes in another machine, acting as the
-   client, or the same machine, to test the changes:
+   client, or the same machine, to test the changes.
+   
+   You can check the current PASSWORD [here](https://github.com/advancedtelematic/treehub/blob/master/src/main/scala/com/advancedtelematic/treehub/http/Http.scala#L10-L9)
    
         ostree --repo=myrepo-client init --mode=archive-z2
    
         ostree --repo=myrepo-client remote add --no-gpg-verify garage \
-          http://somedeveloper:somedeveloper@treehub-staging.gw.prod01.internal.advancedtelematic.com/api/v1 master
+          http://somedeveloper:PASSWORD@treehub-staging.gw.prod01.internal.advancedtelematic.com/api/v1 master
      
         ostree --repo=myrepo-client pull garage
 
