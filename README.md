@@ -42,7 +42,7 @@ To test the current implementation, the following steps can be followed:
    [this repository](https://raw.githubusercontent.com/advancedtelematic/treehub/master/bin/push?token=AAMbNwzTYP025TWn04jpd-fBlOXFJDGsks5YEwvawA%3D%3D):
     
         bin/push myrepo-developer \
-        http://treehub-staging.gw.prod01.advancedtelematic.com/ somedeveloper
+        https://treehub-staging.gw.prod01.advancedtelematic.com/ somedeveloper
 
 5. You can now pull your changes in another machine, acting as the
    client, or the same machine, to test the changes.
@@ -52,7 +52,7 @@ To test the current implementation, the following steps can be followed:
         ostree --repo=myrepo-client init --mode=archive-z2
    
         ostree --repo=myrepo-client remote add --no-gpg-verify garage \
-          http://somedeveloper:PASSWORD@treehub-staging.gw.prod01.advancedtelematic.com/api/v1 master
+          https://somedeveloper:PASSWORD@treehub-staging.gw.prod01.advancedtelematic.com/api/v1 master
      
         ostree --repo=myrepo-client pull garage
 
