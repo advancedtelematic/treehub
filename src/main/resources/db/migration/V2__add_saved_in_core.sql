@@ -1,0 +1,2 @@
+ALTER TABLE `ref`
+ADD COLUMN saved_in_core BOOLEAN NOT NULL DEFAULT false;

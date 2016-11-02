@@ -6,7 +6,8 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.Commit
-import com.advancedtelematic.treehub.http.{Http, TreeHubRoutes}
+import com.advancedtelematic.treehub.http.Http
+import com.advancedtelematic.treehub.http.{FakeCore, TreeHubRoutes}
 import eu.timepit.refined.api.Refined
 import org.scalatest.Suite
 
@@ -41,8 +42,9 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec {
   def apiUri(path: String): String = "/api/v1/" + path
 
   def namespaceExtractor(apiVersion: String) = Http.extractNamespace(apiVersion, allowEmpty = true)
+  val testCore = new FakeCore()
 
-  lazy val routes = new TreeHubRoutes(_ => Directives.pass, namespaceExtractor).routes
+  lazy val routes = new TreeHubRoutes(_ => Directives.pass, namespaceExtractor, testCore).routes
 }
 
 

@@ -40,7 +40,7 @@ class RefResourceIntegrationSpec extends util.TreeHubSpec with ResourceSpec with
     }
   }
 
-  test("accepts commit if object points to previous ref") {
+  test("accepts commit if object points to previous refName") {
     val newCommit = for {
       (commit, obj) <- createCommitObject("initial_commit.blob")
       _ <- refRepository.persist(Ref(defaultNs, RefName("master"), commit, obj.id))
@@ -61,7 +61,7 @@ class RefResourceIntegrationSpec extends util.TreeHubSpec with ResourceSpec with
     }
   }
 
-  test("rejects commit if object does not point to previous ref") {
+  test("rejects commit if object does not point to previous refName") {
     val commit = for {
       (commit, obj) <- createCommitObject("third_commit.blob")
       _ <- refRepository.persist(Ref(defaultNs, RefName("not-master"), commit, obj.id))

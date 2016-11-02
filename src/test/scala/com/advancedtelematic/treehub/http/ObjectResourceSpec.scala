@@ -1,3 +1,7 @@
+/**
+  * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
+  * License: MPL-2.0
+  */
 package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model._
