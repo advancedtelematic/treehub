@@ -37,12 +37,17 @@ To test the current implementation, the following steps can be followed:
         ostree --repo=myrepo-developer commit --subject 'created my new shiny file' \
           --branch=master --tree=dir=developer-files
         
-4. Push your local `ostree` repository to treehub, make sure
-   `bin/push` points to the `push` file in
-   [this repository](https://raw.githubusercontent.com/advancedtelematic/treehub/master/bin/push?token=AAMbNwzTYP025TWn04jpd-fBlOXFJDGsks5YEwvawA%3D%3D):
-    
-        bin/push myrepo-developer \
-        https://treehub-staging.gw.prod01.advancedtelematic.com/ somedeveloper
+
+4. Push your local `ostree` repository to treehub using the `garage-push` tool.
+
+        sudo apt-get install build-essential cmake g++ libboost-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev libcurl4-gnutls-dev
+        git clone https://github.com/advancedtelematic/sota-tools
+        cd sota-tools
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Debug ..
+        make garage-push
+        ./garage-push --repo myrepo-developer --ref master --user somedeveloper
 
 5. You can now pull your changes in another machine, acting as the
    client, or the same machine, to test the changes.
