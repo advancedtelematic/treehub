@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.{ActorMaterializer, Materializer}
-import com.advancedtelematic.treehub.http.TreeHubRoutes
+import com.advancedtelematic.treehub.http.{CoreClient, TreeHubRoutes}
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http.LogDirectives.logResponseMetrics
@@ -18,6 +18,9 @@ trait Settings {
 
   val host = config.getString("server.host")
   val port = config.getInt("server.port")
+  val coreUri = config.getString("core.baseUri")
+  val imageApi = config.getString("core.imageApi")
+  val treeHubUri = "https://" + config.getString("core.treeHubHost") + "/api/v1"
 }
 
 object Boot extends App with Directives with Settings with VersionInfo with BootMigrations {
@@ -34,9 +37,11 @@ object Boot extends App with Directives with Settings with VersionInfo with Boot
 
   _log.info(s"Starting $version on http://$host:$port")
 
+  val coreClient = new CoreClient(coreUri, imageApi, treeHubUri)
+
   val routes: Route =
     (versionHeaders(version) & logResponseMetrics(projectName)) {
-      new TreeHubRoutes().routes(allowEmptyAuth = false)
+      new TreeHubRoutes().routes(allowEmptyAuth = false, coreClient)
     }
 
   Http().bindAndHandle(routes, host, port)
