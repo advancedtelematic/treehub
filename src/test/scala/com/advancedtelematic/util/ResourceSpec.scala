@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.{HttpEntity, MediaTypes, Multipart}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.Commit
-import com.advancedtelematic.treehub.http.TreeHubRoutes
+import com.advancedtelematic.treehub.http.{FakeCore, TreeHubRoutes}
 import eu.timepit.refined.api.Refined
 import org.scalatest.Suite
 
@@ -39,7 +39,9 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec {
 
   def apiUri(path: String): String = "/api/v1/" + path
 
-  lazy val routes = new TreeHubRoutes().routes(allowEmptyAuth = true)
+  val testCore = new FakeCore()
+
+  lazy val routes = new TreeHubRoutes().routes(allowEmptyAuth = true, testCore)
 }
 
 

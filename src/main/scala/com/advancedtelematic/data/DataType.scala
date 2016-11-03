@@ -25,7 +25,7 @@ object DataType {
     }
   }
 
-  case class Ref(namespace: Namespace, name: RefName, value: Commit, objectId: ObjectId)
+  case class Ref(namespace: Namespace, name: RefName, value: Commit, objectId: ObjectId, savedInCore: Boolean = false)
 
   case class RefName(get: String) extends AnyVal
 

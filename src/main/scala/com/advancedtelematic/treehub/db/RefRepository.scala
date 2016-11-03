@@ -1,7 +1,7 @@
 package com.advancedtelematic.treehub.db
 
 import com.advancedtelematic.data.DataType.Ref
-import com.advancedtelematic.treehub.http.Errors
+import com.advancedtelematic.treehub.http.{CoreClient, Errors}
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.Errors.MissingEntity
 import slick.driver.MySQLDriver.api._
@@ -28,10 +28,23 @@ protected class RefRepository()(implicit db: Database, ec: ExecutionContext) {
     db.run(dbIO)
   }
 
-  def find(namespace: Namespace, name: RefName): Future[Ref] = {
-    val dbIO = Schema.refs
+  protected[db] def findQuery(namespace: Namespace, name: RefName): DBIO[Ref] =
+    Schema.refs
       .filter(_.name === name).filter(_.namespace === namespace)
       .result.failIfNotSingle(RefNotFound)
-    db.run(dbIO)
+
+  def find(namespace: Namespace, name: RefName): Future[Ref] = {
+    db.run(findQuery(namespace, name))
   }
+
+  def setSavedInCore(namespace: Namespace, name: RefName, savedInCore: Boolean): Future[Unit] = {
+    db.run(Schema.refs
+      .filter(_.name === name).filter(_.namespace === namespace)
+      .map(_.savedInCore)
+      .update(savedInCore)
+      .handleSingleUpdateError(RefNotFound))
+  }
+
+  def isSavedInCore(namespace: Namespace, name: RefName): Future[Boolean] =
+    db.run(findQuery(namespace, name).map(_.savedInCore))
 }

@@ -21,20 +21,18 @@ class ObjectResource(namespace: Directive1[Namespace])
   val route = namespace { ns =>
     path("objects" / PrefixedObjectId) { objectId =>
       get {
-        // TODO: Access control to ns
-        val f = objectRepository.findBlob(ns, objectId)
-        complete(f)
+        complete(objectRepository.findBlob(ns, objectId))
       } ~
-        post {
-          fileUpload("file") { case (_, content) =>
-            val f = for {
-              (digest, content) <- ObjectUpload.readFile(content)
-              _ <- objectRepository.create(TObject(ns, objectId, content.toArray))
-            } yield digest
+      post {
+        fileUpload("file") { case (_, content) =>
+          val f = for {
+            (digest, content) <- ObjectUpload.readFile(content)
+            _ <- objectRepository.create(TObject(ns, objectId, content.toArray))
+          } yield digest
 
-            complete(f)
-          }
+          complete(f)
         }
+      }
     }
   }
 }
