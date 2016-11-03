@@ -40,7 +40,7 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % "1.1.3",
       "org.slf4j" % "slf4j-api" % "1.7.16",
 
-      "org.genivi" %% "sota-common" % "0.1.201",
+      "org.genivi" %% "sota-common" % "0.2.7",
 
       "com.typesafe.slick" %% "slick" % slickV,
       "com.typesafe.slick" %% "slick-hikaricp" % slickV,

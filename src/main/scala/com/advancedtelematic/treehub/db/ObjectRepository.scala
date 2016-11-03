@@ -19,7 +19,7 @@ object ObjectRepository {
 protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) {
   import org.genivi.sota.db.Operators._
   import org.genivi.sota.db.SlickExtensions._
-  import SlickAnyVal._
+  import org.genivi.sota.db.SlickAnyVal._
   import ObjectRepository._
 
   def create(obj: TObject): Future[TObject] = {

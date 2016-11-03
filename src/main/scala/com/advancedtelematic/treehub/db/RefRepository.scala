@@ -18,7 +18,7 @@ object RefRepository {
 
 protected class RefRepository()(implicit db: Database, ec: ExecutionContext) {
   import org.genivi.sota.db.Operators._
-  import SlickAnyVal._
+  import org.genivi.sota.db.SlickAnyVal._
   import com.advancedtelematic.data.DataType._
   import org.genivi.sota.db.SlickExtensions._
   import RefRepository._
