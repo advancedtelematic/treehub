@@ -25,7 +25,9 @@
     "SERVICE_IMAGE": "${IMAGE_ARTIFACT}",
     "SERVICE_HEALTH_CHECK": "curl --show-error --silent %<host>s:%<port>s/health",
     "HOST": "${HOST}",
-    "PORT": "${PORT}"
+    "PORT": "${PORT}",
+    "AUTH_PROTOCOL": "${AUTH_PROTOCOL}",
+    "AUTH_VERIFICATION": "${AUTH_VERIFICATION}"
   },
   "healthChecks": [{
     "protocol": "HTTP",
