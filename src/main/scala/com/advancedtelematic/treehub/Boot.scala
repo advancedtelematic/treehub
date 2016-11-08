@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.{ActorMaterializer, Materializer}
-import com.advancedtelematic.treehub.http.TreeHubRoutes
+import com.advancedtelematic.treehub.http.{Http => TreeHubHttp, TreeHubRoutes}
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http.LogDirectives.logResponseMetrics
@@ -34,9 +34,12 @@ object Boot extends App with Directives with Settings with VersionInfo with Boot
 
   _log.info(s"Starting $version on http://$host:$port")
 
+  val tokenValidator = TreeHubHttp.tokenValidator
+  val namespaceExtractor = (api: String) => TreeHubHttp.extractNamespace(api, allowEmpty = false)
+
   val routes: Route =
     (versionHeaders(version) & logResponseMetrics(projectName)) {
-      new TreeHubRoutes().routes(allowEmptyAuth = false)
+      new TreeHubRoutes(tokenValidator, namespaceExtractor).routes
     }
 
   Http().bindAndHandle(routes, host, port)
