@@ -14,7 +14,7 @@ FLUSH PRIVILEGES;
 
 docker run -d \
   --name treehub-mariadb \
-  -p 3306:3306 \
+  -p 3307:3306 \
   -v $(pwd)/entrypoint.d:/docker-entrypoint-initdb.d \
   -e MYSQL_ROOT_PASSWORD=root \
   -e MYSQL_USER=treehub \
@@ -26,6 +26,7 @@ docker run -d \
 
 function mysqladmin_alive {
     docker run \
+           --rm \
            --link treehub-mariadb \
            mariadb:10.1 \
            mysqladmin ping --protocol=TCP -h treehub-mariadb -P 3306 -u root -proot
