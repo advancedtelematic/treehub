@@ -54,7 +54,7 @@ buildInfoOptions += BuildInfoOption.ToMap
 buildInfoOptions += BuildInfoOption.BuildTime
 
 
-flywayUrl := sys.env.getOrElse("DB_URL", "jdbc:mysql://localhost:3306/ota_treehub")
+flywayUrl := sys.env.getOrElse("DB_URL", "jdbc:mysql://localhost:3307/ota_treehub")
 
 flywayUser := sys.env.getOrElse("DB_USER", "treehub")
 
