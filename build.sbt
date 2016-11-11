@@ -8,6 +8,8 @@ resolvers += "ATS Releases" at "http://nexus.prod01.internal.advancedtelematic.c
 
 resolvers += "ATS Snapshots" at "http://nexus.prod01.internal.advancedtelematic.com:8081/content/repositories/snapshots"
 
+resolvers += "commons-logging-empty" at "http://version99.qos.ch"
+
 def itFilter(name: String): Boolean = name endsWith "IntegrationSpec"
 
 def unitFilter(name: String): Boolean = !itFilter(name)
