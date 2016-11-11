@@ -3,8 +3,9 @@ package com.advancedtelematic.treehub
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directives, Route}
-import akka.stream.{ActorMaterializer, Materializer}
-import com.advancedtelematic.treehub.http.{Http => TreeHubHttp, TreeHubRoutes}
+import akka.stream.ActorMaterializer
+import com.advancedtelematic.treehub.http.{Http => TreeHubHttp}
+import com.advancedtelematic.treehub.http.{CoreClient, TreeHubRoutes}
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http.LogDirectives.logResponseMetrics
@@ -18,6 +19,9 @@ trait Settings {
 
   val host = config.getString("server.host")
   val port = config.getInt("server.port")
+  val coreUri = config.getString("core.baseUri")
+  val packagesApi = config.getString("core.packagesApi")
+  val treeHubUri = "https://" + config.getString("server.treeHubHost") + "/api/v1"
 }
 
 object Boot extends App with Directives with Settings with VersionInfo with BootMigrations {
@@ -37,9 +41,11 @@ object Boot extends App with Directives with Settings with VersionInfo with Boot
   val tokenValidator = TreeHubHttp.tokenValidator
   val namespaceExtractor = (api: String) => TreeHubHttp.extractNamespace(api, allowEmpty = false)
 
+  val coreClient = new CoreClient(coreUri, packagesApi, treeHubUri)
+
   val routes: Route =
     (versionHeaders(version) & logResponseMetrics(projectName)) {
-      new TreeHubRoutes(tokenValidator, namespaceExtractor).routes
+      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreClient).routes
     }
 
   Http().bindAndHandle(routes, host, port)
