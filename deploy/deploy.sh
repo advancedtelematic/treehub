@@ -16,6 +16,7 @@ export HOST="0.0.0.0"
 export PORT="8084"
 export AUTH_PROTOCOL="oauth.accesstoken"
 export AUTH_VERIFICATION="auth-plus"
+export DB_MIGRATE="true"
 
 # Merge service environment variables with secrets from this vault endpoint.
 export CATALOG_ADDR="http://catalog.gw.prod01.internal.advancedtelematic.com"

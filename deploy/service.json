@@ -27,7 +27,8 @@
     "HOST": "${HOST}",
     "PORT": "${PORT}",
     "AUTH_PROTOCOL": "${AUTH_PROTOCOL}",
-    "AUTH_VERIFICATION": "${AUTH_VERIFICATION}"
+    "AUTH_VERIFICATION": "${AUTH_VERIFICATION}",
+    "DB_MIGRATE": "${DB_MIGRATE}"
   },
   "healthChecks": [{
     "protocol": "HTTP",
