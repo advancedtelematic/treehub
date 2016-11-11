@@ -44,7 +44,10 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec {
   def namespaceExtractor(apiVersion: String) = Http.extractNamespace(apiVersion, allowEmpty = true)
   val testCore = new FakeCore()
 
-  lazy val routes = new TreeHubRoutes(_ => Directives.pass, namespaceExtractor, testCore).routes
+  lazy val routes = new TreeHubRoutes(_ => Directives.pass,
+                                      namespaceExtractor,
+                                      testCore,
+                                      Http.namespaceDirective).routes
 }
 
 

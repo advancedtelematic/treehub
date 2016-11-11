@@ -4,8 +4,11 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.server.directives.Credentials.{Missing, Provided}
 import akka.http.scaladsl.server.{Directives, _}
 import akka.stream.ActorMaterializer
+import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.{NamespaceDirectives, TokenValidator}
+
+import scala.concurrent.ExecutionContext
 
 object Http {
   import Directives._
@@ -13,6 +16,13 @@ object Http {
   protected[http] val PASSWORD = "quochai1ech5oot5gaeJaifooqu6Saew"
 
   lazy val namespaceDirective = NamespaceDirectives.fromConfig()
+
+  def deviceNamespace(deviceRegistry: DeviceRegistry)
+                     (implicit ec: ExecutionContext): Directive1[Namespace] = {
+    DeviceIdDirectives.extractFromToken.flatMap { deviceId =>
+      onSuccess(deviceRegistry.fetchMyDevice(deviceId).map(_.namespace))
+    }
+  }
 
   def extractNamespace(apiVersion: String, allowEmpty: Boolean = false): Directive1[Namespace] = {
     apiVersion match {

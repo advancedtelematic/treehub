@@ -30,6 +30,7 @@ lazy val root = (project in file("."))
     val akkaV = "2.4.11"
     val scalaTestV = "3.0.0"
     val slickV = "3.1.1"
+    val sotaV = "0.2.9"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
@@ -42,7 +43,8 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % "1.1.3",
       "org.slf4j" % "slf4j-api" % "1.7.16",
 
-      "org.genivi" %% "sota-common" % "0.2.9",
+      "org.genivi" %% "sota-common" % sotaV,
+      "org.genivi" %% "sota-common-client" % sotaV,
 
       "com.typesafe.slick" %% "slick" % slickV,
       "com.typesafe.slick" %% "slick-hikaricp" % slickV,
