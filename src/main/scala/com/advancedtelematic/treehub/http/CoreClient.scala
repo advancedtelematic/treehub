@@ -32,12 +32,13 @@ class CoreClient(baseUri: Uri, packagesUri: Uri, treeHubUri: String)
 
   sealed case class ImageRequest(commit: Commit, refName: RefName, description: String, pullUri: String)
 
-  def storeCommitInCore(ns: Namespace, commit: Commit, ref: RefName, description: String)
+  def storeCommitInCore(ns: Namespace, commit: Commit, refName: RefName, description: String)
                        (implicit ec: ExecutionContext): Future[Unit] = {
-    val fileContents = ImageRequest(commit, ref, description, treeHubUri).asJson.noSpaces
-    val bodyPart = BodyPart.Strict("file", HttpEntity(fileContents), Map("fileName" -> ref.get))
+    val fileContents = ImageRequest(commit, refName, description, treeHubUri).asJson.noSpaces
+    val bodyPart = BodyPart.Strict("file", HttpEntity(fileContents), Map("fileName" -> refName.get))
+    val formattedRefName = refName.get.replaceFirst("^heads/", "").replace("/", "-")
     //TODO: PRO-1883 Add major/minor version for package
-    val uri = baseUri.withPath(packagesUri.path + s"/treehub-${ref.get}/${commit.get}")
+    val uri = baseUri.withPath(packagesUri.path + s"/treehub-$formattedRefName/${commit.get}")
     val req = HttpRequest(method = PUT, uri = uri, entity = Multipart.FormData(bodyPart).toEntity())
     execHttp[Unit](req.addHeader(nsHeader(ns)))
   }
