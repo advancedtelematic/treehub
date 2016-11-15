@@ -4,12 +4,10 @@
   */
 package com.advancedtelematic.treehub.http
 
-import com.advancedtelematic.data.DataType.{Commit, RefName}
-import org.genivi.sota.data.Namespace
+import com.advancedtelematic.data.DataType.Ref
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait Core {
-  def storeCommitInCore(ns: Namespace, commit: Commit, ref: RefName, description: String)
-                       (implicit ec: ExecutionContext): Future[Unit]
+  def storeCommitInCore(ref: Ref, description: String)(implicit ec: ExecutionContext): Future[Unit]
 }

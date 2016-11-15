@@ -28,12 +28,13 @@ object Schema {
     def value = column[Commit]("value")
     def objectId = column[ObjectId]("object_id")
     def savedInCore = column[Boolean]("saved_in_core")
+    def version = column[Int]("version")
 
     def pk = primaryKey("pk_ref", (namespace, name))
 
     def fk = foreignKey("fk_ref_object", objectId, objects)(_.id)
 
-    override def * = (namespace, name, value, objectId, savedInCore) <> ((Ref.apply _).tupled, Ref.unapply)
+    override def * = (namespace, name, value, objectId, savedInCore, version) <> ((Ref.apply _).tupled, Ref.unapply)
   }
 
   protected[db] val refs = TableQuery[RefTable]

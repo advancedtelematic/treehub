@@ -11,7 +11,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import com.advancedtelematic.data.DataType.{Commit, RefName}
+import com.advancedtelematic.data.DataType.{Commit, RefName, Ref}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import org.genivi.sota.data.Namespace
@@ -32,15 +32,14 @@ class CoreClient(baseUri: Uri, packagesUri: Uri, treeHubUri: String)
 
   sealed case class ImageRequest(commit: Commit, refName: RefName, description: String, pullUri: String)
 
-  def storeCommitInCore(ns: Namespace, commit: Commit, refName: RefName, description: String)
+  def storeCommitInCore(ref: Ref, description: String)
                        (implicit ec: ExecutionContext): Future[Unit] = {
-    val fileContents = ImageRequest(commit, refName, description, treeHubUri).asJson.noSpaces
-    val bodyPart = BodyPart.Strict("file", HttpEntity(fileContents), Map("fileName" -> refName.get))
-    val formattedRefName = refName.get.replaceFirst("^heads/", "").replace("/", "-")
-    //TODO: PRO-1883 Add major/minor version for package
-    val uri = baseUri.withPath(packagesUri.path + s"/treehub-$formattedRefName/${commit.get}")
+    val fileContents = ImageRequest(ref.value, ref.name, description, treeHubUri).asJson.noSpaces
+    val bodyPart = BodyPart.Strict("file", HttpEntity(fileContents), Map("fileName" -> ref.name.get))
+    val formattedRefName = ref.name.get.replaceFirst("^heads/", "").replace("/", "-")
+    val uri = baseUri.withPath(packagesUri.path + s"/treehub-$formattedRefName/1.0.${ref.version}")
     val req = HttpRequest(method = PUT, uri = uri, entity = Multipart.FormData(bodyPart).toEntity())
-    execHttp[Unit](req.addHeader(nsHeader(ns)))
+    execHttp[Unit](req.addHeader(nsHeader(ref.namespace)))
   }
 
   private def execHttp[T](httpRequest: HttpRequest)
