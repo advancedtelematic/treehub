@@ -21,7 +21,7 @@ docker run -d \
   -e MYSQL_PASSWORD=treehub \
   mariadb:10.1 \
   --character-set-server=utf8 --collation-server=utf8_unicode_ci \
-  --max_connections=1000 --innodb_log_file_size=268435456 \
+  --max_connections=1000 --innodb_log_file_size=2097152 \
   --max_allowed_packet=1073741824
 
 function mysqladmin_alive {
