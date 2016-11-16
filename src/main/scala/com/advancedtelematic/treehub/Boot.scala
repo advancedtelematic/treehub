@@ -23,7 +23,7 @@ trait Settings {
   val port = config.getInt("server.port")
   val coreUri = config.getString("core.baseUri")
   val packagesApi = config.getString("core.packagesApi")
-  val treeHubUri = "https://" + config.getString("server.treeHubHost") + "/api/v1/mydevice"
+  val treeHubUri = "https://" + config.getString("server.treeHubHost") + "/api/v2/mydevice"
 
   val deviceRegistryUri = Uri(config.getString("device_registry.baseUri"))
   val deviceRegistryApi = Uri(config.getString("device_registry.devicesUri"))
