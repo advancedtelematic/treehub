@@ -26,7 +26,7 @@ class RefResource(namespace: Directive1[Namespace], coreClient: Core)
 
   private def storeCommitInCore(ref: Ref): Future[Unit] = {
     //TODO: PRO-1802 pass the refname as the description until we can parse the real description out of the commit
-    coreClient.storeCommitInCore(ref.namespace, ref.value, ref.name, ref.name.get)
+    coreClient.storeCommitInCore(ref, ref.name.get)
       .flatMap(_ => refRepository.setSavedInCore(ref.namespace, ref.name, savedInCore = true))
   }
 
@@ -37,7 +37,7 @@ class RefResource(namespace: Directive1[Namespace], coreClient: Core)
 
     (onSuccess(f) & forcePushHeader) { case (validParent, force) =>
       if(force || validParent) {
-        val newRef = Ref(ns, oldRef.name, newCommit, ObjectId.from(newCommit))
+        val newRef = Ref(ns, oldRef.name, newCommit, ObjectId.from(newCommit), version = oldRef.version+1)
         val f = refRepository.persist(newRef).map(_ => newCommit.get)
         if(oldRef.value != newCommit || !oldRef.savedInCore) {
           f.flatMap(_ => storeCommitInCore(newRef))
