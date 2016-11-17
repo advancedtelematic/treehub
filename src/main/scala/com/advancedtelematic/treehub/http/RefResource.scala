@@ -1,7 +1,7 @@
 package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.{Directive, Directive1, Route}
+import akka.http.scaladsl.server.{Directive, Directive1, MalformedQueryParamRejection, Route}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.{Commit, ObjectId, Ref, RefName}
 import com.advancedtelematic.treehub.db.RefRepository.RefNotFound
@@ -26,23 +26,28 @@ class RefResource(namespace: Directive1[Namespace], coreClient: Core)
 
   private def storeCommitInCore(ref: Ref): Future[Unit] = {
     //TODO: PRO-1802 pass the refname as the description until we can parse the real description out of the commit
-    coreClient.storeCommitInCore(ref, ref.name.get)
+    coreClient.storeCommitInCore(ref, ref.value.get)
       .flatMap(_ => refRepository.setSavedInCore(ref.namespace, ref.name, savedInCore = true))
   }
 
-  protected def onValidUpdate(ns: Namespace, oldRef: Ref, newCommit: Commit): Route = {
+  protected def onValidUpdate(ns: Namespace, oldRef: Ref, newCommit: Commit, version: Option[String]): Route = {
     val f = objectRepository.find(ns, ObjectId.from(newCommit)).map { obj =>
       oldRef.value == newCommit || RefUpdateValidation.validateParent(oldRef.value, newCommit, obj)
     }
 
     (onSuccess(f) & forcePushHeader) { case (validParent, force) =>
       if(force || validParent) {
-        val newRef = Ref(ns, oldRef.name, newCommit, ObjectId.from(newCommit), version = oldRef.version+1)
-        val f = refRepository.persist(newRef).map(_ => newCommit.get)
-        if(oldRef.value != newCommit || !oldRef.savedInCore) {
-          f.flatMap(_ => storeCommitInCore(newRef))
+        Version.get(oldRef.version, version) match {
+          case Some(v) =>
+            val newRef = Ref(ns, oldRef.name, newCommit, ObjectId.from(newCommit), version = v)
+            val f = refRepository.persist(newRef).map(_ => newCommit.get)
+            if(oldRef.value != newCommit || !oldRef.savedInCore) {
+              f.flatMap(_ => storeCommitInCore(newRef))
+            }
+            complete(f)
+          case None => reject(MalformedQueryParamRejection("version", s"Version given ($version) is older than " +
+            s"current version (${oldRef.version})"))
         }
-        complete(f)
       } else {
         complete(StatusCodes.PreconditionFailed -> "Cannot force push")
       }
@@ -50,15 +55,15 @@ class RefResource(namespace: Directive1[Namespace], coreClient: Core)
   }
 
   val route = namespace { ns =>
-    path("refs" / RefNameUri) { refName =>
+    (path("refs" / RefNameUri) & parameter('version.?)) { (refName, version) =>
       post {
         entity(as[Commit]) { commit =>
           onComplete(refRepository.find(ns, refName)) {
             case Success(oldRef) =>
-              onValidUpdate(ns, oldRef, commit)
+              onValidUpdate(ns, oldRef, commit, version)
 
             case Failure(RefNotFound) =>
-              val newRef = Ref(ns, refName, commit, ObjectId.from(commit))
+              val newRef = Ref(ns, refName, commit, ObjectId.from(commit), version = version.getOrElse("0.0.0"))
               val f = refRepository.persist(newRef)
               f.flatMap(_ => storeCommitInCore(newRef))
               complete(f.map(_ => commit.get))

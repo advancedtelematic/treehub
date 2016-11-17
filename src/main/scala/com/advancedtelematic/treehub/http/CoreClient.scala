@@ -7,14 +7,14 @@ package com.advancedtelematic.treehub.http
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
+import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import com.advancedtelematic.data.DataType.{Commit, RefName, Ref}
+import com.advancedtelematic.data.DataType.{Commit, Ref, RefName}
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.NamespaceDirectives.nsHeader
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 
@@ -38,6 +38,7 @@ class CoreClient(baseUri: Uri, packagesUri: Uri, treeHubUri: String)
     val bodyPart = BodyPart.Strict("file", HttpEntity(fileContents), Map("fileName" -> ref.name.get))
     val formattedRefName = ref.name.get.replaceFirst("^heads/", "").replace("/", "-")
     val uri = baseUri.withPath(packagesUri.path + s"/treehub-$formattedRefName/1.0.${ref.version}")
+                      .withQuery(Query("description" -> description))
     val req = HttpRequest(method = PUT, uri = uri, entity = Multipart.FormData(bodyPart).toEntity())
     execHttp[Unit](req.addHeader(nsHeader(ref.namespace)))
   }

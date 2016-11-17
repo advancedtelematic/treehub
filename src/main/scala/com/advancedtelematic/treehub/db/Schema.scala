@@ -28,7 +28,7 @@ object Schema {
     def value = column[Commit]("value")
     def objectId = column[ObjectId]("object_id")
     def savedInCore = column[Boolean]("saved_in_core")
-    def version = column[Int]("version")
+    def version = column[String]("version")
 
     def pk = primaryKey("pk_ref", (namespace, name))
 
