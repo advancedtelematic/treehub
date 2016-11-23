@@ -30,24 +30,19 @@ class RefResource(namespace: Directive1[Namespace], coreClient: Core)
       .flatMap(_ => refRepository.setSavedInCore(ref.namespace, ref.name, savedInCore = true))
   }
 
-  protected def onValidUpdate(ns: Namespace, oldRef: Ref, newCommit: Commit, version: Option[String]): Route = {
+  protected def onValidUpdate(ns: Namespace, oldRef: Ref, newCommit: Commit): Route = {
     val f = objectRepository.find(ns, ObjectId.from(newCommit)).map { obj =>
       oldRef.value == newCommit || RefUpdateValidation.validateParent(oldRef.value, newCommit, obj)
     }
 
     (onSuccess(f) & forcePushHeader) { case (validParent, force) =>
       if(force || validParent) {
-        Version.get(oldRef.version, version) match {
-          case Some(v) =>
-            val newRef = Ref(ns, oldRef.name, newCommit, ObjectId.from(newCommit), version = v)
-            val f = refRepository.persist(newRef).map(_ => newCommit.get)
-            if(oldRef.value != newCommit || !oldRef.savedInCore) {
-              f.flatMap(_ => storeCommitInCore(newRef))
-            }
-            complete(f)
-          case None => reject(MalformedQueryParamRejection("version", s"Version given ($version) is older than " +
-            s"current version (${oldRef.version})"))
+        val newRef = Ref(ns, oldRef.name, newCommit, ObjectId.from(newCommit))
+        val f = refRepository.persist(newRef).map(_ => newCommit.get)
+        if(oldRef.value != newCommit || !oldRef.savedInCore) {
+          f.flatMap(_ => storeCommitInCore(newRef))
         }
+        complete(f)
       } else {
         complete(StatusCodes.PreconditionFailed -> "Cannot force push")
       }
@@ -55,15 +50,15 @@ class RefResource(namespace: Directive1[Namespace], coreClient: Core)
   }
 
   val route = namespace { ns =>
-    (path("refs" / RefNameUri) & parameter('version.?)) { (refName, version) =>
+    path("refs" / RefNameUri) { refName =>
       post {
         entity(as[Commit]) { commit =>
           onComplete(refRepository.find(ns, refName)) {
             case Success(oldRef) =>
-              onValidUpdate(ns, oldRef, commit, version)
+              onValidUpdate(ns, oldRef, commit)
 
             case Failure(RefNotFound) =>
-              val newRef = Ref(ns, refName, commit, ObjectId.from(commit), version = version.getOrElse("0.0.0"))
+              val newRef = Ref(ns, refName, commit, ObjectId.from(commit))
               val f = refRepository.persist(newRef)
               f.flatMap(_ => storeCommitInCore(newRef))
               complete(f.map(_ => commit.get))
