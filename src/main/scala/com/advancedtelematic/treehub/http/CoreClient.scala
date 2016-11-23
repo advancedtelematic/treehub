@@ -37,8 +37,8 @@ class CoreClient(baseUri: Uri, packagesUri: Uri, treeHubUri: String)
     val fileContents = ImageRequest(ref.value, ref.name, description, treeHubUri).asJson.noSpaces
     val bodyPart = BodyPart.Strict("file", HttpEntity(fileContents), Map("fileName" -> ref.name.get))
     val formattedRefName = ref.name.get.replaceFirst("^heads/", "").replace("/", "-")
-    val uri = baseUri.withPath(packagesUri.path + s"/treehub-$formattedRefName/${ref.version}")
-                      .withQuery(Query("description" -> description))
+    val uri = baseUri.withPath(packagesUri.path + s"/treehub-$formattedRefName/${ref.value.get}")
+                     .withQuery(Query("description" -> description))
     val req = HttpRequest(method = PUT, uri = uri, entity = Multipart.FormData(bodyPart).toEntity())
     execHttp[Unit](req.addHeader(nsHeader(ref.namespace)))
   }
