@@ -21,6 +21,7 @@ class RefRepository()(implicit db: Database, ec: ExecutionContext) {
   import SlickAnyVal._
   import com.advancedtelematic.data.DataType._
   import org.genivi.sota.db.SlickExtensions._
+  import org.genivi.sota.refined.SlickRefined._
 
   def persist(ref: Ref): Future[Unit] =
     db.run(Schema.refs
@@ -48,4 +49,12 @@ class RefRepository()(implicit db: Database, ec: ExecutionContext) {
 
   def isSavedInCore(namespace: Namespace, name: RefName): Future[Boolean] =
     db.run(findQuery(namespace, name).map(_.savedInCore))
+
+  def getVersionForCommit(namespace: Namespace, commit: Commit): Future[String] =
+    db.run(Schema.refs
+        .filter(_.namespace === namespace)
+        .filter(_.value === commit)
+        .map(_.version)
+        .result
+        .failIfNotSingle(Errors.CommitMissing))
 }

@@ -26,7 +26,8 @@ class TreeHubRoutes(tokenValidator: String => Directive0,
   def allRoutes(nsExtract: Directive1[Namespace]): Route = {
     new ConfResource().route ~
     new ObjectResource(nsExtract).route ~
-    new RefResource(nsExtract, coreClient).route
+    new RefResource(nsExtract, coreClient).route ~
+    new AtsResource(nsExtract).route
   }
 
   val routes: Route =
