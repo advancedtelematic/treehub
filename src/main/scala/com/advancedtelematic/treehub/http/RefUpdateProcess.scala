@@ -48,17 +48,19 @@ class RefUpdateProcess(coreClient: Core)(implicit db: Database, ec: ExecutionCon
   }
 
   private def publishIfPending(ref: Ref, newRef: Ref): Future[Unit] = {
-    if(ref.value != newRef.value || !ref.savedInCore) {
-      publishRef(newRef)
-    } else
-      Future.successful(())
+    refRepository.isPublished(ref.namespace, ref.name).flatMap { published =>
+      if (ref.value != newRef.value || !published) {
+        publishRef(newRef)
+      } else
+        Future.successful(())
+    }
   }
 
   private def publishRef(ref: Ref): Future[Unit] = {
     //TODO: PRO-1802 pass the refname as the description until we can parse the real description out of the commit
     coreClient
       .publishRef(ref, ref.value.get)
-      .flatMap(_ => refRepository.setSavedInCore(ref.namespace, ref.name, savedInCore = true))
+      .flatMap(_ => refRepository.setPublished(ref.namespace, ref.name, published = true))
       .recover { case err =>
         _log.error("Could not publish ref to core", err)
       }

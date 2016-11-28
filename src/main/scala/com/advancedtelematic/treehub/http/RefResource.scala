@@ -28,8 +28,7 @@ class RefResource(namespace: Directive1[Namespace], coreClient: Core)
 
   protected def updateRef(ns: Namespace, oldRef: Ref, newCommit: Commit): Route = {
     forcePushHeader { forcePush =>
-      val f = refUpdateProcess.update(ns, oldRef, newCommit, forcePush)
-      complete(f)
+      complete(refUpdateProcess.update(ns, oldRef, newCommit, forcePush))
     }
   }
 

@@ -28,24 +28,26 @@ protected class RefRepository()(implicit db: Database, ec: ExecutionContext) {
       .map(_ => ())
       .handleIntegrityErrors(Errors.CommitMissing))
 
-  protected[db] def findQuery(namespace: Namespace, name: RefName): DBIO[Ref] =
+  private def findQuery(namespace: Namespace, name: RefName) =
     Schema.refs
       .filter(_.name === name)
       .filter(_.namespace === namespace)
-      .result
-      .failIfNotSingle(RefNotFound)
 
   def find(namespace: Namespace, name: RefName): Future[Ref] =
-    db.run(findQuery(namespace, name))
+    db.run {
+      findQuery(namespace, name)
+        .result
+        .failIfNotSingle(RefNotFound)
+    }
 
-  def setSavedInCore(namespace: Namespace, name: RefName, savedInCore: Boolean): Future[Unit] =
-    db.run(Schema.refs
-      .filter(_.name === name)
-      .filter(_.namespace === namespace)
-      .map(_.savedInCore)
-      .update(savedInCore)
-      .handleSingleUpdateError(RefNotFound))
+  def setPublished(namespace: Namespace, name: RefName, published: Boolean): Future[Unit] =
+    db.run {
+      findQuery(namespace, name)
+        .map(_.published)
+        .update(published)
+        .handleSingleUpdateError(RefNotFound)
+    }
 
-  def isSavedInCore(namespace: Namespace, name: RefName): Future[Boolean] =
-    db.run(findQuery(namespace, name).map(_.savedInCore))
+  def isPublished(namespace: Namespace, name: RefName): Future[Boolean] =
+    db.run(findQuery(namespace, name).map(_.published).result.failIfNotSingle(RefNotFound))
 }
