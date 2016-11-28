@@ -10,6 +10,6 @@ import org.genivi.sota.data.Namespace
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeCore() extends Core {
-  override def storeCommitInCore(ref: Ref, description: String)
-                                (implicit ec: ExecutionContext): Future[Unit] = Future.successful()
+  override def publishRef(ref: Ref, description: String)
+                         (implicit ec: ExecutionContext): Future[Unit] = Future.successful(())
 }

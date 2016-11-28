@@ -26,14 +26,12 @@ class CoreClient(baseUri: Uri, packagesUri: Uri, treeHubUri: String)
   import CirceMarshallingSupport._
   import HttpMethods._
 
-  private val log = Logging(system, "org.genivi.sota.coreClient")
-
   private val http = akka.http.scaladsl.Http()
 
   sealed case class ImageRequest(commit: Commit, refName: RefName, description: String, pullUri: String)
 
-  def storeCommitInCore(ref: Ref, description: String)
-                       (implicit ec: ExecutionContext): Future[Unit] = {
+  def publishRef(ref: Ref, description: String)
+                (implicit ec: ExecutionContext): Future[Unit] = {
     val fileContents = ImageRequest(ref.value, ref.name, description, treeHubUri).asJson.noSpaces
     val bodyPart = BodyPart.Strict("file", HttpEntity(fileContents), Map("fileName" -> ref.name.get))
     val formattedRefName = ref.name.get.replaceFirst("^heads/", "").replace("/", "-")

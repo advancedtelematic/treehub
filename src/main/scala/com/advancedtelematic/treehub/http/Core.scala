@@ -9,5 +9,5 @@ import com.advancedtelematic.data.DataType.Ref
 import scala.concurrent.{ExecutionContext, Future}
 
 trait Core {
-  def storeCommitInCore(ref: Ref, description: String)(implicit ec: ExecutionContext): Future[Unit]
+  def publishRef(ref: Ref, description: String)(implicit ec: ExecutionContext): Future[Unit]
 }

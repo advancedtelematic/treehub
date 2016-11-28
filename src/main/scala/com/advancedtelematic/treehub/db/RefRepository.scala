@@ -16,7 +16,7 @@ object RefRepository {
   val RefNotFound = MissingEntity(classOf[Ref])
 }
 
-class RefRepository()(implicit db: Database, ec: ExecutionContext) {
+protected class RefRepository()(implicit db: Database, ec: ExecutionContext) {
   import RefRepository._
   import SlickAnyVal._
   import com.advancedtelematic.data.DataType._
