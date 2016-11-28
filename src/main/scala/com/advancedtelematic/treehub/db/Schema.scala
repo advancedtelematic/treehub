@@ -4,7 +4,7 @@ import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._
 
 object Schema {
-  import SlickAnyVal._
+  import org.genivi.sota.db.SlickAnyVal._
   import org.genivi.sota.refined.SlickRefined._
   import com.advancedtelematic.data.DataType._
 
