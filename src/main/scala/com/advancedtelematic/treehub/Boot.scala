@@ -5,8 +5,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
+import com.advancedtelematic.treehub.client.CoreClient
 import com.advancedtelematic.treehub.http.{Http => TreeHubHttp}
-import com.advancedtelematic.treehub.http.{CoreClient, TreeHubRoutes}
+import com.advancedtelematic.treehub.http.TreeHubRoutes
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.client.DeviceRegistryClient

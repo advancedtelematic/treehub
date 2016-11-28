@@ -5,6 +5,7 @@
 package com.advancedtelematic.treehub.http
 
 import com.advancedtelematic.data.DataType.{Commit, Ref}
+import com.advancedtelematic.treehub.client.Core
 import org.genivi.sota.data.Namespace
 
 import scala.concurrent.{ExecutionContext, Future}
