@@ -28,16 +28,16 @@ object Release {
   lazy val setReleaseVersion: ReleaseStep = setVersionOnly(_._1)
 
   lazy val settings = {
-    releaseVersion <<= (releaseVersionBump) (bumper => {
-      ver => Version(ver)
-        .map(_.withoutQualifier)
-        .map(_.bump(bumper).string).getOrElse(versionFormatError)
-    })
-
     val showNextVersion = settingKey[String]("the future version once releaseNextVersion has been applied to it")
     val showReleaseVersion = settingKey[String]("the future version once releaseNextVersion has been applied to it")
 
     Seq(
+      releaseVersion <<= (releaseVersionBump) (bumper => {
+        ver => Version(ver)
+          .map(_.withoutQualifier)
+          .map(_.bump(bumper).string).getOrElse(versionFormatError)
+      }),
+
       showReleaseVersion <<= (version, releaseVersion) ((v, f) => f(v)),
       showNextVersion <<= (version, releaseNextVersion) ((v, f) => f(v)),
 
