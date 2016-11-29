@@ -4,7 +4,7 @@ import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._
 
 object Schema {
-  import SlickAnyVal._
+  import org.genivi.sota.db.SlickAnyVal._
   import org.genivi.sota.refined.SlickRefined._
   import com.advancedtelematic.data.DataType._
 
@@ -27,13 +27,13 @@ object Schema {
     def name = column[RefName]("name")
     def value = column[Commit]("value")
     def objectId = column[ObjectId]("object_id")
-    def savedInCore = column[Boolean]("saved_in_core")
+    def published = column[Boolean]("published")
 
     def pk = primaryKey("pk_ref", (namespace, name))
 
     def fk = foreignKey("fk_ref_object", objectId, objects)(_.id)
 
-    override def * = (namespace, name, value, objectId, savedInCore) <> ((Ref.apply _).tupled, Ref.unapply)
+    override def * = (namespace, name, value, objectId) <> ((Ref.apply _).tupled, Ref.unapply)
   }
 
   protected[db] val refs = TableQuery[RefTable]

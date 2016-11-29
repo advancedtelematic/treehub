@@ -4,6 +4,7 @@ import akka.http.scaladsl.server.{Directives, _}
 import akka.stream.Materializer
 import org.genivi.sota.data.Namespace
 import com.advancedtelematic.treehub.VersionInfo
+import com.advancedtelematic.treehub.client.Core
 import org.genivi.sota.http.{ErrorHandler, HealthResource}
 import org.genivi.sota.rest.SotaRejectionHandler._
 
