@@ -70,3 +70,37 @@ To test the current implementation, the following steps can be followed:
         This is my file. There are many files like this, but this one is mine.
 
 
+## Release
+
+A treehub release consists of two steps:
+
+1. Create git tags and push them to github
+
+2. Create a docker image and publish it to docker hub
+
+These steps are automated in teamcity. To trigger a new release, you
+can merge master to release and push:
+
+    git checkout release
+    git merge master --ff-only
+    git push origin
+    
+## Deploy to stable
+
+Deploying a commit to stable is independent of the release
+process. This means you can deploy a commit that was not previously
+released as a git tag. In this case, the deployed image version will
+have the format `0.0.0-g<commit>` instead of a released version format
+(`0.0.0`).
+
+To deploy to stable, you should first release the commit (see above)
+and then merge to stable:
+
+    git fetch
+    git checkout stable
+    git reset --hard origin/stable
+    git merge origin/release --ff-only
+    git push
+    
+This will build a docker image and deploy it to mesos.
+
