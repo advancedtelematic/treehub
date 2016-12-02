@@ -16,15 +16,15 @@ class RefUpdateProcess(coreClient: Core)(implicit db: Database, ec: ExecutionCon
 
   private val _log = LoggerFactory.getLogger(this.getClass)
 
-  def update(ns: Namespace, ref: Ref, newCommit: Commit, forcePush: Boolean): Future[ToResponseMarshallable] = {
-    validParentFn(ns, ref, newCommit).flatMap { validParent =>
+  def update(ns: Namespace, ref: Ref, commit: Commit, forcePush: Boolean): Future[ToResponseMarshallable] = {
+    commitIsValidParent(ns, ref, commit).flatMap { validParent =>
       if(forcePush || validParent) {
-        val newRef = ref.copy(value = newCommit, objectId = ObjectId.from(newCommit))
+        val newRef = ref.copy(value = commit, objectId = ObjectId.from(commit))
 
         for {
           _ <- refRepository.persist(newRef)
           _ <- publishIfPending(ref, newRef)
-        } yield StatusCodes.OK -> newCommit.get
+        } yield StatusCodes.OK -> commit.get
 
       } else {
         Future.successful(StatusCodes.PreconditionFailed -> "Cannot force push")
@@ -41,7 +41,7 @@ class RefUpdateProcess(coreClient: Core)(implicit db: Database, ec: ExecutionCon
     } yield commit.get
   }
 
-  private def validParentFn(ns: Namespace, ref: Ref, newCommit: Commit): Future[Boolean] = {
+  private def commitIsValidParent(ns: Namespace, ref: Ref, newCommit: Commit): Future[Boolean] = {
     objectRepository.find(ns, ObjectId.from(newCommit)).map { obj =>
       ref.value == newCommit || RefUpdateValidation.validateParent(ref.value, newCommit, obj)
     }
