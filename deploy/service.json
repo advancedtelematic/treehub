@@ -1,6 +1,7 @@
 {
   "id": "${JOB_NAME}",
   "uris": ["/root/docker.tar.gz"],
+  "constraints": [["rack_id", "CLUSTER", "ostree"]],
   "cpus": 0.2,
   "mem": ${CONTAINER_MEM},
   "instances": 1,
@@ -16,7 +17,12 @@
         "hostPort": 0,
         "protocol": "tcp"
       }]
-    }
+    },
+    "volumes": [{
+      "containerPath": "/data",
+      "hostPath": "/data/${JOB_NAME}",
+      "mode": "RW"
+    }]
   },
   "env": {
     "SERVICE_NAME": "${JOB_NAME}",
@@ -24,11 +30,12 @@
     "SERVICE_TYPE": "http",
     "SERVICE_IMAGE": "${IMAGE_ARTIFACT}",
     "SERVICE_HEALTH_CHECK": "curl --show-error --silent %<host>s:%<port>s/health",
-    "HOST": "${HOST}",
-    "PORT": "${PORT}",
-    "AUTH_PROTOCOL": "${AUTH_PROTOCOL}",
-    "AUTH_VERIFICATION": "${AUTH_VERIFICATION}",
-    "DB_MIGRATE": "${DB_MIGRATE}",
+    "HOST": "0.0.0.0",
+    "PORT": "8084",
+    "AUTH_PROTOCOL": "oauth.accesstoken",
+    "AUTH_VERIFICATION": "auth-plus",
+    "DB_MIGRATE": "true",
+    "TREEHUB_LOCAL_STORE_PATH": "/data/treehub-repos",
     "JAVA_OPTS": "${JAVA_OPTS}"
   },
   "healthChecks": [{

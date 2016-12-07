@@ -12,11 +12,6 @@ export VAULT_ENDPOINT=${VAULT_ENDPOINT-$(echo $JOB_NAME | tr "-" "_")}
 export IMAGE_NAME="treehub"
 export REGISTRY="advancedtelematic"
 export IMAGE_ARTIFACT=${REGISTRY}/${IMAGE_NAME}:${DOCKER_TAG}
-export HOST="0.0.0.0"
-export PORT="8084"
-export AUTH_PROTOCOL="oauth.accesstoken"
-export AUTH_VERIFICATION="auth-plus"
-export DB_MIGRATE="true"
 
 if [[ "$JOB_NAME" == "treehub" ]]; then # production uses 4G
     export JAVA_OPTS="-Xmx1536m"
