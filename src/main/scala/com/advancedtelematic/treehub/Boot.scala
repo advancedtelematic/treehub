@@ -24,7 +24,7 @@ trait Settings {
   val port = config.getInt("server.port")
   val coreUri = config.getString("core.baseUri")
   val packagesApi = config.getString("core.packagesApi")
-  val treeHubUri = config.getString("server.treeHubHost")
+  val treeHubUri = Uri(config.getString("server.treeHubHost"))
 
   val deviceRegistryUri = Uri(config.getString("device_registry.baseUri"))
   val deviceRegistryApi = Uri(config.getString("device_registry.devicesUri"))
@@ -55,7 +55,8 @@ object Boot extends App with Directives with Settings with VersionInfo with Boot
   val namespaceExtractor = (api: String) => TreeHubHttp.extractNamespace(api, allowEmpty = false)
   val deviceNamespace = TreeHubHttp.deviceNamespace(deviceRegistry)
 
-  val coreClient = new CoreClient(coreUri, packagesApi, treeHubUri)
+  if(!treeHubUri.isAbsolute) throw new IllegalArgumentException("Treehub host is not an absolute uri")
+  val coreClient = new CoreClient(coreUri, packagesApi, treeHubUri.toString())
 
   val routes: Route =
     (versionHeaders(version) & logResponseMetrics(projectName)) {
