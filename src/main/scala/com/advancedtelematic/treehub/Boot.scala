@@ -52,7 +52,7 @@ object Boot extends App with Directives with Settings with VersionInfo with Boot
   )
 
   val tokenValidator = TreeHubHttp.tokenValidator
-  val namespaceExtractor = (api: String) => TreeHubHttp.extractNamespace(api, allowEmpty = false)
+  val namespaceExtractor = TreeHubHttp.extractNamespace
   val deviceNamespace = TreeHubHttp.deviceNamespace(deviceRegistry)
 
   val coreClient = new CoreClient(coreUri, packagesApi, treeHubUri)

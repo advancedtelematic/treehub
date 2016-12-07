@@ -12,17 +12,13 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 
-class TreeHubRoutes(tokenValidator: String => Directive0,
-                    namespaceExtractor : String => Directive1[Namespace],
+class TreeHubRoutes(tokenValidator: Directive0,
+                    namespaceExtractor: Directive1[Namespace],
                     coreClient: Core,
                     deviceNamespace: Directive1[Namespace])
                    (implicit val db: Database, ec: ExecutionContext, mat: Materializer) extends VersionInfo {
 
   import Directives._
-
-  def matchVersion(path: String): PathMatcher1[String] = path.tmap{ _ => Tuple1(path)}
-
-  def versionExtractor: PathMatcher1[String] = matchVersion("v1") | matchVersion("v2")
 
   def allRoutes(nsExtract: Directive1[Namespace]): Route = {
     new ConfResource().route ~
@@ -33,13 +29,11 @@ class TreeHubRoutes(tokenValidator: String => Directive0,
   val routes: Route =
     handleRejections(rejectionHandler) {
       ErrorHandler.handleErrors {
-        pathPrefix("api" / versionExtractor) { apiVersion =>
-          tokenValidator(apiVersion) {
-            allRoutes(namespaceExtractor(apiVersion)) ~
+        (pathPrefix("api" / "v2") & tokenValidator) {
+            allRoutes(namespaceExtractor) ~
             pathPrefix("mydevice") {
               allRoutes(deviceNamespace)
             }
-          }
         } ~ new HealthResource(db, versionMap).route
       }
     }

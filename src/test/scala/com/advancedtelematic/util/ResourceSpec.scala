@@ -9,6 +9,7 @@ import com.advancedtelematic.data.DataType.Commit
 import com.advancedtelematic.treehub.http.Http
 import com.advancedtelematic.treehub.http.{FakeCore, TreeHubRoutes}
 import eu.timepit.refined.api.Refined
+import org.genivi.sota.http.NamespaceDirectives
 import org.scalatest.Suite
 
 import scala.util.Random
@@ -39,15 +40,16 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec {
 
   implicit val _db = db
 
-  def apiUri(path: String): String = "/api/v1/" + path
+  def apiUri(path: String): String = "/api/v2/" + path
 
-  def namespaceExtractor(apiVersion: String) = Http.extractNamespace(apiVersion, allowEmpty = true)
   val testCore = new FakeCore()
 
-  lazy val routes = new TreeHubRoutes(_ => Directives.pass,
-                                      namespaceExtractor,
-                                      testCore,
-                                      Http.namespaceDirective).routes
+  lazy val namespaceExtractor = NamespaceDirectives.defaultNamespaceExtractor
+
+  lazy val routes = new TreeHubRoutes(Directives.pass,
+    namespaceExtractor,
+    testCore,
+    namespaceExtractor).routes
 }
 
 

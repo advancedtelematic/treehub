@@ -52,14 +52,14 @@ To test the current implementation, the following steps can be followed:
 5. You can now pull your changes in another machine, acting as the
    client, or the same machine, to test the changes.
    
-   You can check the current PASSWORD [here](https://github.com/advancedtelematic/treehub/blob/master/src/main/scala/com/advancedtelematic/treehub/http/Http.scala#L10)
-   
         ostree --repo=myrepo-client init --mode=archive-z2
    
-        ostree --repo=myrepo-client remote add --no-gpg-verify garage \
-          https://somedeveloper:PASSWORD@treehub-staging.gw.prod01.advancedtelematic.com/api/v1 master
+        ostree --repo=myrepo-client remote add \
+          --no-gpg-verify garage \
+          https://treehub-staging.gw.prod01.advancedtelematic.com/api/v2/mydevice master
      
-        ostree --repo=myrepo-client pull garage
+        ostree --repo=myrepo-client pull \
+        --http-header="Authorization=Bearer $DEVICE_TOKEN" garage
 
 6. You now have your changes locally and you can checkout the files:
 
