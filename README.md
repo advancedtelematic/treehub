@@ -2,16 +2,7 @@
 
 `ostree` repository storage for ATS Garage.
 
-Currently a very simple version of this service is implemented. Only
-POST of refs and objects is supported and no verification on the
-objects is done by client or server.
-
-- No authentication mechanism is implemented.
-
 - No storage of static deltas.
-
-- Object binary blobs are stored in a mysql database, which limits the
-  number of objects that can be accepted and the size of the blobs.
 
 - The client implementation is a very hacky bash script.
 

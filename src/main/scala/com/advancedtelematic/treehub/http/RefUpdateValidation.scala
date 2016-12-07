@@ -1,5 +1,6 @@
 package com.advancedtelematic.treehub.http
 
+import akka.util.ByteString
 import cats.data.Xor
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.{TObject, _}
@@ -11,15 +12,15 @@ object RefUpdateValidation {
 
   // TODO: This returns the first 32 bytes of the blob, which might be the msg if
   // it's an initial commit
-  private def objectCommit(tObject: TObject): Xor[String, Commit] = {
+  private def objectCommit(blob: ByteString): Xor[String, Commit] = {
     for {
-      newCommitParent <- Xor.catchNonFatal(DigestCalculator.toHex(tObject.blob.slice(0, 32))).leftMap(_.getMessage)
+      newCommitParent <- Xor.catchNonFatal(DigestCalculator.toHex(blob.slice(0, 32).toArray)).leftMap(_.getMessage)
       commit <- Xor.fromEither(refineV[ValidCommit](newCommitParent))
     } yield commit
   }
 
-  def validateParent(oldCommit: Commit, newCommit: Commit, newCommitObject: TObject): Boolean = {
-    objectCommit(newCommitObject) match {
+  def validateParent(oldCommit: Commit, newCommit: Commit, newCommitBlob: ByteString): Boolean = {
+    objectCommit(newCommitBlob) match {
       case Xor.Right(newCommitParent) =>
         _log.info(s"new commit object parent is: $newCommitParent old ref is $oldCommit")
 

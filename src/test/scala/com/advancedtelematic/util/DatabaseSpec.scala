@@ -14,7 +14,7 @@ import scala.collection.JavaConverters._
 trait DatabaseSpec extends BeforeAndAfterAll {
   self: Suite =>
 
-  lazy val db = Database.forConfig("", slickDbConfig)
+  implicit lazy val db = Database.forConfig("", slickDbConfig)
 
   protected lazy val schemaName = {
     val catalog = testDbConfig.getString("catalog")

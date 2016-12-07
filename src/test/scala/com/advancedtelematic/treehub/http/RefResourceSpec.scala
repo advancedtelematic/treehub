@@ -24,7 +24,6 @@ class RefResourceSpec extends TreeHubSpec with ResourceSpec with RefRepositorySu
 
     Post(apiUri(s"objects/${obj.objectId}"), obj.form) ~> routes ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[String] shouldBe obj.checkSum
     }
 
     Post(apiUri("refs/some/ref"), ref) ~> routes ~> check {
@@ -43,7 +42,6 @@ class RefResourceSpec extends TreeHubSpec with ResourceSpec with RefRepositorySu
 
     Post(apiUri(s"objects/${obj.objectId}"), obj.form) ~> routes ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[String] shouldBe obj.checkSum
     }
 
     Post(apiUri("refs/repeat"), ref) ~> routes ~> check {

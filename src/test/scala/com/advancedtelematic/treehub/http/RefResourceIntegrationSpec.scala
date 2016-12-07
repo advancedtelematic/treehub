@@ -1,10 +1,10 @@
 package com.advancedtelematic.treehub.http
 
 import java.io.File
-import java.nio.file.Files
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.RawHeader
+import akka.stream.scaladsl.FileIO
 import com.advancedtelematic.data.DataType.{Commit, ObjectId, Ref, RefName, TObject}
 import com.advancedtelematic.treehub.db.ObjectRepository._
 import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
@@ -23,21 +23,19 @@ class RefResourceIntegrationSpec extends util.TreeHubSpec with ResourceSpec with
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
   def createCommitObject(fileName: String): Future[(Commit, TObject)] = {
-    val blob = Files.readAllBytes(new File(this.getClass.getResource(s"/blobs/$fileName").getFile).toPath)
-    val commit = Commit.from(blob).toOption.get
-    val id = ObjectId.from(commit)
+    val blob = FileIO.fromPath(new File(this.getClass.getResource(s"/blobs/$fileName").getFile).toPath)
+    val blobBytes = blob.runReduce(_ ++ _).map(_.toArray)
 
-    val obj = TObject(defaultNs, id, blob)
-
-    val f = for {
-      obj <- objectRepository.create(obj)
-    } yield (commit, obj)
-
-    f.recover {
-      case ObjectAlreadyExists =>
-        log.info("TOBject already exists")
-        (commit, obj)
-    }
+    for {
+      commit <- blobBytes.map(Commit.from).map(_.toOption.get)
+      id = ObjectId.from(commit)
+      tobj <- objectStore.store(defaultNs, id, blob)
+        .recover {
+          case ObjectAlreadyExists =>
+            log.info("TOBject already exists")
+            TObject(defaultNs, id)
+        }
+    } yield (commit, tobj)
   }
 
   test("accepts commit if object points to previous refName") {
