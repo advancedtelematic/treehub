@@ -59,4 +59,25 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
       status shouldBe StatusCodes.NotFound
     }
   }
+
+  test("HEAD returns 404 if commit does not exist") {
+    val obj = new ClientTObject()
+
+    Head(apiUri(s"objects/${obj.objectId}")) ~> routes ~> check {
+      status shouldBe StatusCodes.NotFound
+    }
+  }
+
+  test("HEAD returns 200 if commit exists") {
+    val obj = new ClientTObject()
+
+    Post(apiUri(s"objects/${obj.objectId}"), obj.form) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[String] shouldBe obj.checkSum
+    }
+
+    Head(apiUri(s"objects/${obj.objectId}")) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
+    }
+  }
 }

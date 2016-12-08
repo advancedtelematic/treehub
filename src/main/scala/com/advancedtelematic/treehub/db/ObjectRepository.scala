@@ -1,11 +1,13 @@
 package com.advancedtelematic.treehub.db
 
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
+import com.advancedtelematic.treehub.db.Schema.TObjectTable
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.Errors.{EntityAlreadyExists, MissingEntity}
 
 import scala.concurrent.{ExecutionContext, Future}
 import slick.driver.MySQLDriver.api._
+import slick.lifted.QueryBase
 
 trait ObjectRepositorySupport {
   def objectRepository(implicit db: Database, ec: ExecutionContext) = new ObjectRepository()
@@ -27,6 +29,9 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
     db.run(io)
   }
 
+  def exists(namespace: Namespace, id: ObjectId): Future[Boolean] =
+    db.run(findQuery(namespace, id).exists.result)
+
   def findBlob(namespace: Namespace, id: ObjectId): Future[Array[Byte]] =
     db.run(findAction(namespace, id).map(_.blob))
 
@@ -34,9 +39,12 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
     db.run(findAction(namespace, id))
   }
 
-  protected def findAction(namespace: Namespace, id: ObjectId): DBIO[TObject] =
+  private def findQuery(namespace: Namespace, id: ObjectId): Query[TObjectTable, TObject, Seq] =
     Schema.objects
       .filter(_.id === id).filter(_.namespace === namespace)
+
+  private def findAction(namespace: Namespace, id: ObjectId): DBIO[TObject] =
+    findQuery(namespace, id)
       .result.failIfNotSingle(ObjectNotFound)
 }
 
