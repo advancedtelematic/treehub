@@ -9,13 +9,12 @@ import com.advancedtelematic.treehub.client.CoreClient
 import com.advancedtelematic.treehub.http.{Http => TreeHubHttp}
 import com.advancedtelematic.treehub.http.TreeHubRoutes
 import com.typesafe.config.ConfigFactory
-import org.genivi.sota.db.BootMigrations
+import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.client.DeviceRegistryClient
 import org.genivi.sota.http.LogDirectives.logResponseMetrics
 import org.genivi.sota.http.VersionDirectives.versionHeaders
+import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
 import org.slf4j.LoggerFactory
-import slick.driver.MySQLDriver.api._
-
 
 trait Settings {
   lazy val config = ConfigFactory.load()
@@ -33,11 +32,15 @@ trait Settings {
 
 }
 
-object Boot extends App with Directives with Settings with VersionInfo with BootMigrations {
+object Boot extends App with Directives with Settings with VersionInfo
+  with BootMigrations
+  with DatabaseConfig
+  with MetricsSupport
+  with DatabaseMetrics {
 
   val _log = LoggerFactory.getLogger(this.getClass)
 
-  implicit val _db = Database.forConfig("database")
+  implicit val _db = db
 
   implicit val _system = ActorSystem()
   implicit val _mat = ActorMaterializer()
