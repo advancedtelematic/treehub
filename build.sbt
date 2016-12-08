@@ -86,8 +86,6 @@ dockerCommands := Seq(
   Cmd("USER", "daemon")
 )
 
-bashScriptExtraDefines ++= Seq("""addJava "-Xmx4G"""")
-
 enablePlugins(JavaAppPackaging)
 
 Revolver.settings

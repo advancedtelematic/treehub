@@ -2,7 +2,7 @@
   "id": "${JOB_NAME}",
   "uris": ["/root/docker.tar.gz"],
   "cpus": 0.2,
-  "mem": 4096.0,
+  "mem": ${CONTAINER_MEM},
   "instances": 1,
   "container": {
     "type": "DOCKER",
@@ -28,7 +28,8 @@
     "PORT": "${PORT}",
     "AUTH_PROTOCOL": "${AUTH_PROTOCOL}",
     "AUTH_VERIFICATION": "${AUTH_VERIFICATION}",
-    "DB_MIGRATE": "${DB_MIGRATE}"
+    "DB_MIGRATE": "${DB_MIGRATE}",
+    "JAVA_OPTS": "${JAVA_OPTS}"
   },
   "healthChecks": [{
     "protocol": "HTTP",

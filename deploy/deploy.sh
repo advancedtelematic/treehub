@@ -18,6 +18,14 @@ export AUTH_PROTOCOL="oauth.accesstoken"
 export AUTH_VERIFICATION="auth-plus"
 export DB_MIGRATE="true"
 
+if [[ "$JOB_NAME" == "treehub" ]]; then # production uses 4G
+    export JAVA_OPTS = "-Xmx4G"
+    export CONTAINER_MEM = "4096.0"
+else
+    export JAVA_OPTS = "-Xmx1024m"
+    export CONTAINER_MEM = "1024.0"
+fi
+
 # Merge service environment variables with secrets from this vault endpoint.
 export CATALOG_ADDR="http://catalog.gw.prod01.internal.advancedtelematic.com"
 
