@@ -52,7 +52,7 @@ object Boot extends App with Directives with Settings with VersionInfo with Boot
   )
 
   val tokenValidator = TreeHubHttp.tokenValidator
-  val namespaceExtractor = TreeHubHttp.extractNamespace
+  val namespaceExtractor = TreeHubHttp.extractNamespace.map(_.namespace)
   val deviceNamespace = TreeHubHttp.deviceNamespace(deviceRegistry)
 
   if(!treeHubUri.isAbsolute) throw new IllegalArgumentException("Treehub host is not an absolute uri")
