@@ -28,7 +28,6 @@ trait BlobStore {
 
 case class BlobStoreError(msg: String, cause: Throwable = null) extends Throwable(msg, cause) with NoStackTrace
 
-
 object LocalFsBlobStore {
   private val _log = LoggerFactory.getLogger(this.getClass)
 
@@ -76,7 +75,7 @@ class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materiali
   }
 
   private def objectPath(ns: Namespace, id: ObjectId): Try[Path] = {
-    val (prefix, rest) = id.get.splitAt(3)
+    val (prefix, rest) = id.get.splitAt(2)
     val path = Paths.get(root.getAbsolutePath, ns.get, prefix, rest)
 
     Try {

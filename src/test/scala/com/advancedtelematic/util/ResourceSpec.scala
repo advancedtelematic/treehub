@@ -40,14 +40,11 @@ object ResourceSpec {
 trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec {
   self: Suite =>
 
-  implicit val _db = db
-
   def apiUri(path: String): String = "/api/v2/" + path
 
   val testCore = new FakeCore()
 
   lazy val namespaceExtractor = NamespaceDirectives.defaultNamespaceExtractor.map(_.namespace)
-
   val objectStore = new ObjectStore(new LocalFsBlobStore(Files.createTempDirectory("treehub").toFile))
 
   lazy val routes = new TreeHubRoutes(Directives.pass,

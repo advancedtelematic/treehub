@@ -14,7 +14,7 @@ FLUSH PRIVILEGES;
 
 docker run -d \
   --name treehub-mariadb \
-  -p 3307:3306 \
+  -p 3306:3306 \
   -v $(pwd)/entrypoint.d:/docker-entrypoint-initdb.d \
   -e MYSQL_ROOT_PASSWORD=root \
   -e MYSQL_USER=treehub \

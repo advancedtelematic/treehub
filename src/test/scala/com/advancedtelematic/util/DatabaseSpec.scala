@@ -4,7 +4,7 @@
 */
 package com.advancedtelematic.util
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory, ConfigValue}
 import org.flywaydb.core.Flyway
 import org.scalatest.{BeforeAndAfterAll, Suite}
 import slick.driver.MySQLDriver.api._

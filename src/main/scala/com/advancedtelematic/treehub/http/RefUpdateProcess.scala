@@ -13,7 +13,7 @@ import slick.driver.MySQLDriver.api._
 import scala.concurrent.{ExecutionContext, Future}
 
 class RefUpdateProcess(coreClient: Core, objectStore: ObjectStore)(implicit db: Database, ec: ExecutionContext)
-  extends ObjectRepositorySupport with RefRepositorySupport {
+  extends RefRepositorySupport {
 
   private val _log = LoggerFactory.getLogger(this.getClass)
 
