@@ -4,14 +4,13 @@ set -u
 set -e
 
 if [[ $# -lt 2 ]]; then
-    echo "usage: $0 <repo> <url> [user]"
+    echo "usage: $0 <repo> <url> <token>"
     exit -1
 fi
 
 REPO=$1
-URL=$2/api/v1
-PASSWORD="quochai1ech5oot5gaeJaifooqu6Saew"
-USER="${3-console-user}:$PASSWORD"
+URL=$2/api/v2
+TOKEN=$3
 
 echo "pushing $REPO to $URL for user $USER"
 
@@ -20,7 +19,8 @@ function push_refs {
         while read -d '' file; do
             refId=${file/$REPO\//}
             echo -en "pushing \033[0;32m$refId\033[0m: "
-            curl -XPOST --user $USER $URL/$refId --data @$file
+            curl -XPOST --header "Authorization: Bearer $TOKEN" \
+                 $URL/$refId --data @$file
             echo
         done
 }
@@ -30,7 +30,8 @@ function push_objects {
         while read -d '' file; do
             objectId=${file/$REPO\//}
             echo -e "\tPushing object \033[0;94m$objectId\033[0m"
-            curl --user $USER -XPOST $URL/$objectId -F file=@$file
+            curl --header "Authorization: Bearer $TOKEN" \
+                 -XPOST $URL/$objectId -F file=@$file
             echo
         done
 }
