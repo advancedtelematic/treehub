@@ -1,5 +1,6 @@
 package com.advancedtelematic.treehub.http
 
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive1, PathMatcher1}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
@@ -20,6 +21,13 @@ class ObjectResource(namespace: Directive1[Namespace])
 
   val route = namespace { ns =>
     path("objects" / PrefixedObjectId) { objectId =>
+      head {
+        val f = objectRepository.exists(ns, objectId).map {
+          case true => StatusCodes.OK
+          case false => StatusCodes.NotFound
+        }
+        complete(f)
+      } ~
       get {
         complete(objectRepository.findBlob(ns, objectId))
       } ~
