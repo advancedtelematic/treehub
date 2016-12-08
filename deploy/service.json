@@ -2,7 +2,7 @@
   "id": "${JOB_NAME}",
   "uris": ["/root/docker.tar.gz"],
   "cpus": 0.2,
-  "mem": 1024.0,
+  "mem": 4096.0,
   "instances": 1,
   "container": {
     "type": "DOCKER",
