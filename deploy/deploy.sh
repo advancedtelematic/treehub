@@ -17,8 +17,8 @@ if [[ "$JOB_NAME" == "treehub" ]]; then # production uses 4G
     export JAVA_OPTS="-Xmx1536m"
     export CONTAINER_MEM="1536.0"
 else
-    export JAVA_OPTS="-Xmx1024m"
-    export CONTAINER_MEM="1024.0"
+    export JAVA_OPTS="-Xmx512m"
+    export CONTAINER_MEM="700.0"
 fi
 
 # Merge service environment variables with secrets from this vault endpoint.
