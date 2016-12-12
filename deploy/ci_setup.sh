@@ -12,9 +12,11 @@ GRANT ALL PRIVILEGES ON \`ota\_treehub%\`.* TO 'treehub'@'%';
 FLUSH PRIVILEGES;
 " > entrypoint.d/db_user.sql
 
+MYSQL_PORT=${MYSQL_PORT-3306}
+
 docker run -d \
   --name treehub-mariadb \
-  -p 3306:3306 \
+  -p $MYSQL_PORT:3306 \
   -v $(pwd)/entrypoint.d:/docker-entrypoint-initdb.d \
   -e MYSQL_ROOT_PASSWORD=root \
   -e MYSQL_USER=treehub \
