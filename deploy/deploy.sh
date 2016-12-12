@@ -16,9 +16,11 @@ export IMAGE_ARTIFACT=${REGISTRY}/${IMAGE_NAME}:${DOCKER_TAG}
 if [[ "$JOB_NAME" == "treehub" ]]; then # production uses 4G
     export JAVA_OPTS="-Xmx1536m"
     export CONTAINER_MEM="1536.0"
+    export CLUSTER_CONSTRAINT="ostreeprod"
 else
     export JAVA_OPTS="-Xmx512m"
     export CONTAINER_MEM="700.0"
+    export CLUSTER_CONSTRAINT="ostree"
 fi
 
 # Merge service environment variables with secrets from this vault endpoint.

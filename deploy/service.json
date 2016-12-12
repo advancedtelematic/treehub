@@ -1,7 +1,7 @@
 {
   "id": "${JOB_NAME}",
   "uris": ["/root/docker.tar.gz"],
-  "constraints": [["rack_id", "CLUSTER", "ostree"]],
+  "constraints": [["rack_id", "CLUSTER", "${CLUSTER_CONSTRAINT}"]],
   "cpus": 0.2,
   "mem": ${CONTAINER_MEM},
   "instances": 1,

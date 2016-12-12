@@ -11,6 +11,7 @@ import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.client.DeviceRegistryClient
+import org.genivi.sota.http.BootApp
 import org.genivi.sota.http.LogDirectives.logResponseMetrics
 import org.genivi.sota.http.VersionDirectives.versionHeaders
 import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
@@ -39,23 +40,16 @@ trait Settings {
 
 }
 
-object Boot extends App with Directives with Settings with VersionInfo
+object Boot extends BootApp with Directives with Settings with VersionInfo
   with BootMigrations
   with DatabaseConfig
   with MetricsSupport
   with DatabaseMetrics {
 
-  val _log = LoggerFactory.getLogger(this.getClass)
 
   implicit val _db = db
 
-  implicit val _system = ActorSystem()
-  implicit val _mat = ActorMaterializer()
-
-  // TODO: Use different dispatcher
-  import _system.dispatcher
-
-  _log.info(s"Starting $version on http://$host:$port")
+  log.info(s"Starting $version on http://$host:$port")
 
   val deviceRegistry = new DeviceRegistryClient(
     deviceRegistryUri, deviceRegistryApi, deviceRegistryGroupApi, deviceRegistryMyApi
