@@ -15,8 +15,8 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
     val tobj = TObject(namespace, id)
 
     for {
-      _ <- objectRepository.create(tobj)
       _ <- blobStore.store(namespace, id, blob)
+      _ <- objectRepository.create(tobj)
     } yield tobj
   }
 
@@ -27,7 +27,7 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
     } yield fsExists && dbExists
 
   def findBlob(namespace: Namespace, id: ObjectId): Future[Source[ByteString, _]] = {
-    blobStore.find(namespace, id)
+    objectRepository.find(namespace, id).flatMap(_ => blobStore.find(namespace, id))
   }
 
   def readFull(namespace: Namespace, id: ObjectId): Future[ByteString] = {
