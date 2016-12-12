@@ -24,7 +24,6 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
 
     Post(apiUri(s"objects/${obj.objectId}"), obj.form) ~> routes ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[String] shouldBe obj.checkSum
     }
 
     Get(apiUri(s"objects/${obj.objectId}")) ~> routes ~> check {
@@ -73,7 +72,6 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
 
     Post(apiUri(s"objects/${obj.objectId}"), obj.form) ~> routes ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[String] shouldBe obj.checkSum
     }
 
     Head(apiUri(s"objects/${obj.objectId}")) ~> routes ~> check {

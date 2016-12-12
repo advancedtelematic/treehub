@@ -5,14 +5,15 @@ import akka.http.scaladsl.model.StatusCodes
 import com.advancedtelematic.data.DataType.{ObjectId, Ref, RefName, _}
 import com.advancedtelematic.treehub.client.Core
 import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
+import com.advancedtelematic.treehub.object_store.ObjectStore
 import org.genivi.sota.data.Namespace
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class RefUpdateProcess(coreClient: Core)(implicit db: Database, ec: ExecutionContext)
-  extends ObjectRepositorySupport with RefRepositorySupport {
+class RefUpdateProcess(coreClient: Core, objectStore: ObjectStore)(implicit db: Database, ec: ExecutionContext)
+  extends RefRepositorySupport {
 
   private val _log = LoggerFactory.getLogger(this.getClass)
 
@@ -42,8 +43,8 @@ class RefUpdateProcess(coreClient: Core)(implicit db: Database, ec: ExecutionCon
   }
 
   private def commitIsValidParent(ns: Namespace, ref: Ref, newCommit: Commit): Future[Boolean] = {
-    objectRepository.find(ns, ObjectId.from(newCommit)).map { obj =>
-      ref.value == newCommit || RefUpdateValidation.validateParent(ref.value, newCommit, obj)
+    objectStore.readFull(ns, ObjectId.from(newCommit)).map { blob =>
+      ref.value == newCommit || RefUpdateValidation.validateParent(ref.value, newCommit, blob)
     }
   }
 

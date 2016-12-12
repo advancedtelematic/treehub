@@ -35,5 +35,5 @@ object DataType {
     def from(commit: Commit): ObjectId = ObjectId(commit.get + ".commit")
   }
 
-  case class TObject(namespace: Namespace, id: ObjectId, blob: Array[Byte])
+  case class TObject(namespace: Namespace, id: ObjectId)
 }

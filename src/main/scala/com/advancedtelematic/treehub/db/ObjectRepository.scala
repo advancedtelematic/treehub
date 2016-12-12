@@ -7,7 +7,6 @@ import org.genivi.sota.http.Errors.{EntityAlreadyExists, MissingEntity}
 
 import scala.concurrent.{ExecutionContext, Future}
 import slick.driver.MySQLDriver.api._
-import slick.lifted.QueryBase
 
 trait ObjectRepositorySupport {
   def objectRepository(implicit db: Database, ec: ExecutionContext) = new ObjectRepository()
@@ -31,9 +30,6 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
 
   def exists(namespace: Namespace, id: ObjectId): Future[Boolean] =
     db.run(findQuery(namespace, id).exists.result)
-
-  def findBlob(namespace: Namespace, id: ObjectId): Future[Array[Byte]] =
-    db.run(findAction(namespace, id).map(_.blob))
 
   def find(namespace: Namespace, id: ObjectId): Future[TObject] = {
     db.run(findAction(namespace, id))

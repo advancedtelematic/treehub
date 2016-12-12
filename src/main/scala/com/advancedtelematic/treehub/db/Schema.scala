@@ -11,13 +11,12 @@ object Schema {
   class TObjectTable(tag: Tag) extends Table[TObject](tag, "object") {
     def namespace = column[Namespace]("namespace")
     def id = column[ObjectId]("object_id")
-    def blob = column[Array[Byte]]("blob")
 
     def pk = primaryKey("pk_object", (namespace, id))
 
     def uniqueNsId = index("object_unique_namespace", (namespace, id), unique = true)
 
-    override def * = (namespace, id, blob) <> ((TObject.apply _).tupled, TObject.unapply)
+    override def * = (namespace, id) <> ((TObject.apply _).tupled, TObject.unapply)
   }
 
   val objects = TableQuery[TObjectTable]

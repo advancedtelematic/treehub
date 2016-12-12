@@ -6,8 +6,8 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
 import com.advancedtelematic.treehub.client.CoreClient
-import com.advancedtelematic.treehub.http.{Http => TreeHubHttp}
-import com.advancedtelematic.treehub.http.TreeHubRoutes
+import com.advancedtelematic.treehub.http.{TreeHubRoutes, Http => TreeHubHttp}
+import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore}
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.client.DeviceRegistryClient
@@ -23,7 +23,14 @@ trait Settings {
   val port = config.getInt("server.port")
   val coreUri = config.getString("core.baseUri")
   val packagesApi = config.getString("core.packagesApi")
-  val treeHubUri = Uri(config.getString("server.treeHubHost"))
+
+  val treeHubUri = {
+    val uri = Uri(config.getString("server.treeHubHost"))
+    if(!uri.isAbsolute) throw new IllegalArgumentException("Treehub host is not an absolute uri")
+    uri
+  }
+
+  val localStorePath = config.getString("treehub.localStorePath")
 
   val deviceRegistryUri = Uri(config.getString("device_registry.baseUri"))
   val deviceRegistryApi = Uri(config.getString("device_registry.devicesUri"))
@@ -57,13 +64,12 @@ object Boot extends App with Directives with Settings with VersionInfo
   val tokenValidator = TreeHubHttp.tokenValidator
   val namespaceExtractor = TreeHubHttp.extractNamespace.map(_.namespace)
   val deviceNamespace = TreeHubHttp.deviceNamespace(deviceRegistry)
-
-  if(!treeHubUri.isAbsolute) throw new IllegalArgumentException("Treehub host is not an absolute uri")
+  val objectStore = new ObjectStore(LocalFsBlobStore(localStorePath))
   val coreClient = new CoreClient(coreUri, packagesApi, treeHubUri.toString())
 
   val routes: Route =
     (versionHeaders(version) & logResponseMetrics(projectName)) {
-      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreClient, deviceNamespace).routes
+      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreClient, deviceNamespace, objectStore).routes
     }
 
   Http().bindAndHandle(routes, host, port)

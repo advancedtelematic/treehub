@@ -1,13 +1,15 @@
 package com.advancedtelematic.util
 
+import java.nio.file.Files
+
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.model.{HttpEntity, MediaTypes, Multipart}
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.Commit
-import com.advancedtelematic.treehub.http.Http
-import com.advancedtelematic.treehub.http.{FakeCore, TreeHubRoutes}
+import com.advancedtelematic.treehub.http._
+import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore}
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.http.NamespaceDirectives
 import org.scalatest.Suite
@@ -38,18 +40,17 @@ object ResourceSpec {
 trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec {
   self: Suite =>
 
-  implicit val _db = db
-
   def apiUri(path: String): String = "/api/v2/" + path
 
   val testCore = new FakeCore()
 
   lazy val namespaceExtractor = NamespaceDirectives.defaultNamespaceExtractor.map(_.namespace)
+  val objectStore = new ObjectStore(new LocalFsBlobStore(Files.createTempDirectory("treehub").toFile))
 
   lazy val routes = new TreeHubRoutes(Directives.pass,
     namespaceExtractor,
     testCore,
-    namespaceExtractor).routes
+    namespaceExtractor, objectStore).routes
 }
 
 

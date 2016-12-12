@@ -6,20 +6,21 @@ import com.advancedtelematic.data.DataType.{Commit, Ref, RefName}
 import com.advancedtelematic.treehub.client.Core
 import com.advancedtelematic.treehub.db.RefRepository.RefNotFound
 import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
+import com.advancedtelematic.treehub.object_store.ObjectStore
 import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class RefResource(namespace: Directive1[Namespace], coreClient: Core)
+class RefResource(namespace: Directive1[Namespace], coreClient: Core, objectStore: ObjectStore)
                  (implicit db: Database, ec: ExecutionContext, mat: Materializer)
-  extends RefRepositorySupport with ObjectRepositorySupport {
+  extends RefRepositorySupport {
 
   import akka.http.scaladsl.server.Directives._
   import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
-  private val refUpdateProcess = new RefUpdateProcess(coreClient)
+  private val refUpdateProcess = new RefUpdateProcess(coreClient, objectStore)
 
   private val RefNameUri = Segments.map(s => RefName(s.mkString("/")))
 

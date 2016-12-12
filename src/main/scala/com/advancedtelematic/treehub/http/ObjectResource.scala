@@ -1,18 +1,17 @@
 package com.advancedtelematic.treehub.http
 
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.{HttpEntity, MediaTypes, StatusCodes}
 import akka.http.scaladsl.server.{Directive1, PathMatcher1}
 import akka.stream.Materializer
-import com.advancedtelematic.data.DataType.{ObjectId, TObject}
-import com.advancedtelematic.treehub.db.ObjectRepositorySupport
+import com.advancedtelematic.data.DataType.ObjectId
+import com.advancedtelematic.treehub.object_store.ObjectStore
 import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
-
-class ObjectResource(namespace: Directive1[Namespace])
-                    (implicit db: Database, ec: ExecutionContext, mat: Materializer) extends ObjectRepositorySupport {
+class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore)
+                    (implicit db: Database, ec: ExecutionContext, mat: Materializer) {
   import akka.http.scaladsl.server.Directives._
 
   val PrefixedObjectId: PathMatcher1[ObjectId] = (Segment / Segment).tmap { case (oprefix, osuffix) =>
@@ -22,22 +21,19 @@ class ObjectResource(namespace: Directive1[Namespace])
   val route = namespace { ns =>
     path("objects" / PrefixedObjectId) { objectId =>
       head {
-        val f = objectRepository.exists(ns, objectId).map {
+        val f = objectStore.exists(ns, objectId).map {
           case true => StatusCodes.OK
           case false => StatusCodes.NotFound
         }
         complete(f)
       } ~
       get {
-        complete(objectRepository.findBlob(ns, objectId))
+        val f = objectStore.findBlob(ns, objectId).map(HttpEntity(MediaTypes.`application/octet-stream`, _))
+        complete(f)
       } ~
       post {
         fileUpload("file") { case (_, content) =>
-          val f = for {
-            (digest, content) <- ObjectUpload.readFile(content)
-            _ <- objectRepository.create(TObject(ns, objectId, content.toArray))
-          } yield digest
-
+          val f = objectStore.store(ns, objectId, content).map(_ => StatusCodes.OK)
           complete(f)
         }
       }

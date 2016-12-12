@@ -12,17 +12,18 @@ GRANT ALL PRIVILEGES ON \`ota\_treehub%\`.* TO 'treehub'@'%';
 FLUSH PRIVILEGES;
 " > entrypoint.d/db_user.sql
 
+MYSQL_PORT=${MYSQL_PORT-3306}
+
 docker run -d \
   --name treehub-mariadb \
-  -p 3307:3306 \
+  -p $MYSQL_PORT:3306 \
   -v $(pwd)/entrypoint.d:/docker-entrypoint-initdb.d \
   -e MYSQL_ROOT_PASSWORD=root \
   -e MYSQL_USER=treehub \
   -e MYSQL_PASSWORD=treehub \
   mariadb:10.1 \
   --character-set-server=utf8 --collation-server=utf8_unicode_ci \
-  --max_connections=1000 --innodb_log_file_size=67108864 \
-  --max_allowed_packet=1073741824
+  --max_connections=1000
 
 function mysqladmin_alive {
     docker run \
