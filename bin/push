@@ -14,6 +14,11 @@ TOKEN=$3
 
 echo "pushing $REPO to $URL for user $USER"
 
+function object_exists {
+    curl --fail --silent --head -X HEAD \
+         --header "Authorization: Bearer $TOKEN" $URL/$1 > /dev/null
+}
+
 function push_refs {
     find $REPO/refs/heads -type f -print0 |
         while read -d '' file; do
@@ -29,10 +34,15 @@ function push_objects {
     find $REPO/objects -type f -print0 |
         while read -d '' file; do
             objectId=${file/$REPO\//}
-            echo -e "\tPushing object \033[0;94m$objectId\033[0m"
-            curl --header "Authorization: Bearer $TOKEN" \
-                 -XPOST $URL/$objectId -F file=@$file
-            echo
+
+            if object_exists $objectId; then
+                echo -e "\033[0;33mSkipping\033[0m $objectId, object exists"
+            else
+                echo -e "\tPushing object \033[0;94m$objectId\033[0m"
+                curl --header "Authorization: Bearer $TOKEN" \
+                     -XPOST $URL/$objectId -F file=@$file
+                echo
+            fi
         done
 }
 
