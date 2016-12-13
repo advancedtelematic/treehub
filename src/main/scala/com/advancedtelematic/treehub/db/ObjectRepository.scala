@@ -2,6 +2,7 @@ package com.advancedtelematic.treehub.db
 
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
 import com.advancedtelematic.treehub.db.Schema.TObjectTable
+import com.advancedtelematic.treehub.http.Errors
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.Errors.{EntityAlreadyExists, MissingEntity}
 
@@ -12,19 +13,13 @@ trait ObjectRepositorySupport {
   def objectRepository(implicit db: Database, ec: ExecutionContext) = new ObjectRepository()
 }
 
-object ObjectRepository {
-  val ObjectNotFound = MissingEntity(classOf[TObject])
-  val ObjectAlreadyExists = EntityAlreadyExists(classOf[TObject])
-}
-
 protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) {
   import org.genivi.sota.db.Operators._
   import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.db.SlickAnyVal._
-  import ObjectRepository._
 
   def create(obj: TObject): Future[TObject] = {
-    val io = (Schema.objects += obj).map(_ => obj).handleIntegrityErrors(ObjectAlreadyExists)
+    val io = (Schema.objects += obj).map(_ => obj).handleIntegrityErrors(Errors.ObjectExists)
     db.run(io)
   }
 
@@ -41,6 +36,6 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
 
   private def findAction(namespace: Namespace, id: ObjectId): DBIO[TObject] =
     findQuery(namespace, id)
-      .result.failIfNotSingle(ObjectNotFound)
+      .result.failIfNotSingle(Errors.ObjectNotFound)
 }
 

@@ -15,6 +15,7 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
     val tobj = TObject(namespace, id)
 
     for {
+      _ <- ensureNotExists(namespace, id)
       _ <- blobStore.store(namespace, id, blob)
       _ <- objectRepository.create(tobj)
     } yield tobj
@@ -38,6 +39,13 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
     exists(namespace, id).flatMap {
       case true => Future.successful(id)
       case false => Future.failed(Errors.ObjectNotFound)
+    }
+  }
+
+  private def ensureNotExists(namespace: Namespace, id: ObjectId): Future[ObjectId] = {
+    exists(namespace: Namespace, id).flatMap {
+      case true => Future.failed(Errors.ObjectExists)
+      case false => Future.successful(id)
     }
   }
 }
