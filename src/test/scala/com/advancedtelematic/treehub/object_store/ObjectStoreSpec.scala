@@ -13,6 +13,7 @@ import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.ExecutionContext
+import com.advancedtelematic.treehub.http.Errors
 
 class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositorySupport with PatienceConfiguration {
 
@@ -34,5 +35,13 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
     res shouldBe tobj
     objectRepository.exists(tobj.namespace, tobj.id).futureValue shouldBe true
     localStorage.exists(tobj.namespace, tobj.id).futureValue shouldBe true
+  }
+
+  test("findBlob fails if object is not found") {
+    val tobj = TObject(defaultNs, ObjectId("otherid"))
+
+    whenReady(objectRepository.create(tobj)) { _ =>
+      objectStore.findBlob(tobj.namespace, tobj.id).failed.futureValue shouldBe Errors.ObjectNotFound
+    }
   }
 }

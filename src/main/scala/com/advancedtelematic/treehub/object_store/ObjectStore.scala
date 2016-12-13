@@ -4,8 +4,8 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
+import com.advancedtelematic.treehub.http.Errors
 import org.genivi.sota.data.Namespace
-import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -27,10 +27,17 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
     } yield fsExists && dbExists
 
   def findBlob(namespace: Namespace, id: ObjectId): Future[Source[ByteString, _]] = {
-    objectRepository.find(namespace, id).flatMap(_ => blobStore.find(namespace, id))
+    ensureExists(namespace, id).flatMap(_ => blobStore.find(namespace, id))
   }
 
   def readFull(namespace: Namespace, id: ObjectId): Future[ByteString] = {
     blobStore.readFull(namespace, id)
+  }
+
+  private def ensureExists(namespace: Namespace, id: ObjectId): Future[ObjectId] = {
+    exists(namespace, id).flatMap {
+      case true => Future.successful(id)
+      case false => Future.failed(Errors.ObjectNotFound)
+    }
   }
 }
