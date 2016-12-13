@@ -18,12 +18,12 @@ import org.genivi.sota.http.NamespaceDirectives.nsHeader
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.reflect.ClassTag
 
 class CoreClient(baseUri: Uri, packagesUri: Uri, treeHubUri: String)
                 (implicit system: ActorSystem, mat: ActorMaterializer) extends Core {
-
-  import CirceMarshallingSupport._
   import HttpMethods._
+  import CirceMarshallingSupport._
 
   private val http = akka.http.scaladsl.Http()
 
@@ -41,9 +41,12 @@ class CoreClient(baseUri: Uri, packagesUri: Uri, treeHubUri: String)
   }
 
   private def execHttp[T](httpRequest: HttpRequest)
-                         (implicit unmarshaller: Unmarshaller[ResponseEntity, T], ec: ExecutionContext): Future[T] =
+                         (implicit unmarshaller: Unmarshaller[ResponseEntity, T], ec: ExecutionContext,
+                          ct: ClassTag[T]): Future[T] =
     http.singleRequest(httpRequest).flatMap { response =>
       response.status match {
+        case status if status.isSuccess() && ct.runtimeClass == classOf[Unit] =>
+          Future.successful(()).asInstanceOf[Future[T]]
         case status if status.isSuccess() => unmarshaller(response.entity)
         case err => FastFuture.failed(new Exception(err.toString))
       }
