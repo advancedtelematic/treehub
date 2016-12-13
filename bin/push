@@ -12,7 +12,7 @@ REPO=$1
 URL=$2/api/v2
 TOKEN=$3
 
-echo "pushing $REPO to $URL for user $USER"
+echo "pushing $REPO to $URL"
 
 function object_exists {
     curl --fail --silent --head -X HEAD \
