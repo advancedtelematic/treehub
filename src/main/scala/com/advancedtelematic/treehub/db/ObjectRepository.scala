@@ -4,7 +4,6 @@ import com.advancedtelematic.data.DataType.{ObjectId, TObject}
 import com.advancedtelematic.treehub.db.Schema.TObjectTable
 import com.advancedtelematic.treehub.http.Errors
 import org.genivi.sota.data.Namespace
-import org.genivi.sota.http.Errors.{EntityAlreadyExists, MissingEntity}
 
 import scala.concurrent.{ExecutionContext, Future}
 import slick.driver.MySQLDriver.api._
