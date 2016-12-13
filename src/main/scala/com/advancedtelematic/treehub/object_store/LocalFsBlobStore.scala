@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NoStackTrace
+import java.nio.file.StandardOpenOption.{WRITE, READ, CREATE}
 
 trait BlobStore {
   def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Done]
@@ -49,7 +50,7 @@ class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materiali
   override def store(ns: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Done] = {
     for {
       path <- Future.fromTry(objectPath(ns, id))
-      ioResult <- blob.runWith(FileIO.toPath(path))
+      ioResult <- blob.runWith(FileIO.toPath(path, options = Set(READ, WRITE, CREATE)))
       res <- if(ioResult.wasSuccessful) {
         Future.successful(Done)
       } else {
