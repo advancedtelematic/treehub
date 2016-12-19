@@ -35,6 +35,8 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
     blobStore.readFull(namespace, id)
   }
 
+  def usage(namespace: Namespace): Future[Long] = blobStore.usage(namespace)
+
   private def ensureExists(namespace: Namespace, id: ObjectId): Future[ObjectId] = {
     exists(namespace, id).flatMap {
       case true => Future.successful(id)

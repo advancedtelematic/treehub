@@ -5,17 +5,13 @@
 package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.Multipart.FormData.BodyPart
-import akka.http.scaladsl.model.headers.{Authorization, BasicHttpCredentials, RawHeader}
-import com.advancedtelematic.common.DigestCalculator
-import com.advancedtelematic.data.DataType.{Commit, ObjectId}
+import akka.pattern.ask
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
+import com.advancedtelematic.util.FakeStorageUpdate.CurrentUsage
 import com.advancedtelematic.util.ResourceSpec.ClientTObject
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
-import eu.timepit.refined.api.Refined
-import org.genivi.sota.data.Namespace
 
-import scala.util.Random
+import scala.concurrent.duration._
 
 class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectRepositorySupport {
 
@@ -31,6 +27,18 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
 
       responseAs[Array[Byte]] shouldBe obj.blob
     }
+  }
+
+  test("POST hints updater to update current storage") {
+    val obj = new ClientTObject()
+
+    Post(apiUri(s"objects/${obj.objectId}"), obj.form) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
+    }
+
+    val usage = fakeStorageUpdate.ask(CurrentUsage(defaultNs))(1.second).mapTo[Long].futureValue
+
+    usage should be >= 1l
   }
 
   test("409 for already existing objects") {

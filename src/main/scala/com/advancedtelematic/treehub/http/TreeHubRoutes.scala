@@ -1,5 +1,6 @@
 package com.advancedtelematic.treehub.http
 
+import akka.actor.ActorRef
 import akka.http.scaladsl.server.{Directives, _}
 import akka.stream.Materializer
 import org.genivi.sota.data.Namespace
@@ -17,14 +18,16 @@ class TreeHubRoutes(tokenValidator: Directive0,
                     namespaceExtractor: Directive1[Namespace],
                     coreClient: Core,
                     deviceNamespace: Directive1[Namespace],
-                    objectStore: ObjectStore)
+                    objectStore: ObjectStore,
+                    storageHandler: ActorRef
+                   )
                    (implicit val db: Database, ec: ExecutionContext, mat: Materializer) extends VersionInfo {
 
   import Directives._
 
   def allRoutes(nsExtract: Directive1[Namespace]): Route = {
     new ConfResource().route ~
-    new ObjectResource(nsExtract, objectStore).route ~
+    new ObjectResource(nsExtract, objectStore, storageHandler).route ~
     new RefResource(nsExtract, coreClient, objectStore).route
   }
 
