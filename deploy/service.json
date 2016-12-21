@@ -36,7 +36,8 @@
     "AUTH_VERIFICATION": "auth-plus",
     "DB_MIGRATE": "true",
     "TREEHUB_LOCAL_STORE_PATH": "/data/treehub-repos",
-    "JAVA_OPTS": "${JAVA_OPTS}"
+    "JAVA_OPTS": "${JAVA_OPTS}",
+    "KAFKA_TOPIC_SUFFIX": "${KAFKA_TOPIC_SUFFIX}"
   },
   "healthChecks": [{
     "protocol": "HTTP",
