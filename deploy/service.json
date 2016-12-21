@@ -37,7 +37,8 @@
     "DB_MIGRATE": "true",
     "TREEHUB_LOCAL_STORE_PATH": "/data/treehub-repos",
     "JAVA_OPTS": "${JAVA_OPTS}",
-    "KAFKA_TOPIC_SUFFIX": "${KAFKA_TOPIC_SUFFIX}"
+    "KAFKA_TOPIC_SUFFIX": "${KAFKA_TOPIC_SUFFIX}",
+    "MESSAGING_MODE": "kafka"
   },
   "healthChecks": [{
     "protocol": "HTTP",
