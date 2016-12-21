@@ -1,19 +1,22 @@
 package com.advancedtelematic.treehub
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
+import cats.data.Xor
 import com.advancedtelematic.treehub.client.CoreClient
 import com.advancedtelematic.treehub.http.{TreeHubRoutes, Http => TreeHubHttp}
 import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore}
+import com.advancedtelematic.treehub.repo_metrics.StorageUpdate
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.client.DeviceRegistryClient
 import org.genivi.sota.http.BootApp
 import org.genivi.sota.http.LogDirectives.logResponseMetrics
 import org.genivi.sota.http.VersionDirectives.versionHeaders
+import org.genivi.sota.messaging.MessageBus
 import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
 import org.slf4j.LoggerFactory
 
@@ -61,9 +64,16 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   val objectStore = new ObjectStore(LocalFsBlobStore(localStorePath))
   val coreClient = new CoreClient(coreUri, packagesApi, treeHubUri.toString())
 
+  val msgPublisher = MessageBus.publisher(system, config) match {
+    case Xor.Right(mbp) => mbp
+    case Xor.Left(err) => throw err
+  }
+
+  val storageUpdate = system.actorOf(StorageUpdate(msgPublisher, objectStore), "storage-update")
+
   val routes: Route =
     (versionHeaders(version) & logResponseMetrics(projectName)) {
-      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreClient, deviceNamespace, objectStore).routes
+      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreClient, deviceNamespace, objectStore, storageUpdate).routes
     }
 
   Http().bindAndHandle(routes, host, port)

@@ -27,16 +27,17 @@ lazy val root = (project in file("."))
   .settings(testOptions in UnitTest := Seq(Tests.Filter(unitFilter)))
   .settings(testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)))
   .settings(Seq(libraryDependencies ++= {
-    val akkaV = "2.4.11"
+    val akkaV = "2.4.14"
+    val akkaHttpV = "10.0.0"
     val scalaTestV = "3.0.0"
     val slickV = "3.1.1"
-    val sotaV = "0.2.32"
+    val sotaV = "0.2.37"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
       "com.typesafe.akka" %% "akka-stream" % akkaV,
-      "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
-      "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
+      "com.typesafe.akka" %% "akka-http" % akkaHttpV,
+      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV,
       "com.typesafe.akka" %% "akka-slf4j" % akkaV,
       "org.scalatest"     %% "scalatest" % scalaTestV % "test,it",
 
@@ -44,6 +45,7 @@ lazy val root = (project in file("."))
       "org.slf4j" % "slf4j-api" % "1.7.16",
 
       "org.genivi" %% "sota-common" % sotaV,
+      "org.genivi" %% "sota-common-messaging" % sotaV,
       "org.genivi" %% "sota-common-client" % sotaV,
 
       "com.typesafe.slick" %% "slick" % slickV,

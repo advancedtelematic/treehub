@@ -25,6 +25,8 @@ trait BlobStore {
   def readFull(namespace: Namespace, id: ObjectId): Future[ByteString]
 
   def exists(namespace: Namespace, id: ObjectId): Future[Boolean]
+
+  def usage(namespace: Namespace): Future[Long]
 }
 
 case class BlobStoreError(msg: String, cause: Throwable = null) extends Throwable(msg, cause) with NoStackTrace
@@ -75,9 +77,17 @@ class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materiali
     Future.fromTry(path)
   }
 
+  override def usage(ns: Namespace): Future[Long] = {
+    Future.fromTry(FilesystemUsage.usage(namespacePath(ns)))
+  }
+
+  private def namespacePath(ns: Namespace): Path = {
+    Paths.get(root.getAbsolutePath, ns.get)
+  }
+
   private def objectPath(ns: Namespace, id: ObjectId): Try[Path] = {
     val (prefix, rest) = id.get.splitAt(2)
-    val path = Paths.get(root.getAbsolutePath, ns.get, prefix, rest)
+    val path = Paths.get(namespacePath(ns).toUri.toString, prefix, rest)
 
     Try {
       if (Files.notExists(path.getParent))
