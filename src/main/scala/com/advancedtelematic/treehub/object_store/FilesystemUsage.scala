@@ -28,12 +28,12 @@ object FilesystemUsage {
             val idXor = ObjectId.parse(s"$dirName${file.getFileName.toString}")
 
             idXor match {
-              case Xor.Right(id) ⇒
+              case Xor.Right(id) =>
                 usage.compute(id, new BiFunction[ObjectId, Long, Long]() {
                   override def apply(t: ObjectId, u: Long): Long =
                     Option(u).map(_ + size).getOrElse(size)
                 })
-              case Xor.Left(err) ⇒
+              case Xor.Left(err) =>
                 _log.warn(s"Could not parse file name into commit: $err")
             }
 

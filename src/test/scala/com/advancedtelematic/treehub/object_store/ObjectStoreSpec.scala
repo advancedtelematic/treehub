@@ -53,8 +53,8 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
 
     val f = for {
        _ <- objectRepository.create(TObject(ns, ObjectId.parse("28417941a93c09bd13e220c0b0517fc1464428be16c0bc342187742d11285ca1.dirtree").toOption.get, 200L))
-       _ ← objectRepository.create(TObject(ns, ObjectId.parse("902030f091a1e6a790517d62055127cb61c553fb6fe8682d7c2d0d6ef1941891.dirtree").toOption.get, 100L))
-       usage ← objectStore.usage(ns)
+       _ <- objectRepository.create(TObject(ns, ObjectId.parse("902030f091a1e6a790517d62055127cb61c553fb6fe8682d7c2d0d6ef1941891.dirtree").toOption.get, 100L))
+       usage <- objectStore.usage(ns)
     } yield usage
 
     f.futureValue shouldBe 300L
@@ -73,8 +73,8 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
 
     val f = for {
        _ <- objectRepository.create(obj1)
-       _ ← objectRepository.create(obj2)
-       usage ← objectStore.usage(ns)
+       _ <- objectRepository.create(obj2)
+       usage <- objectStore.usage(ns)
     } yield usage
 
     f.futureValue shouldBe (200L + text.length)

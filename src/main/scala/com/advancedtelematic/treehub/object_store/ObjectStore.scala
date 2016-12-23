@@ -31,8 +31,8 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
   def findBlob(namespace: Namespace, id: ObjectId): Future[(Long, Source[ByteString, _])] = {
     for {
       _ <- ensureExists(namespace, id)
-      tobj ← objectRepository.find(namespace, id)
-      bytes ← blobStore.find(namespace, id)
+      tobj <- objectRepository.find(namespace, id)
+      bytes <- blobStore.find(namespace, id)
     } yield (tobj.byteSize, bytes)
   }
 
@@ -41,11 +41,11 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
   }
 
   def usage(namespace: Namespace): Future[Long] = {
-    storageUsageState.isOutdated(namespace).flatMap { isOutdated ⇒
+    storageUsageState.isOutdated(namespace).flatMap { isOutdated =>
       if (isOutdated)
         blobStore.usage(namespace)
-          .flatMap(usage ⇒ storageUsageState.update(namespace, usage))
-          .flatMap(_ ⇒ objectRepository.usage(namespace))
+          .flatMap(usage => storageUsageState.update(namespace, usage))
+          .flatMap(_ => objectRepository.usage(namespace))
       else
         objectRepository.usage(namespace)
     }

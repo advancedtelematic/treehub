@@ -57,13 +57,13 @@ protected[db] class StorageUsageStateUpdate()(implicit db: Database, ec: Executi
     db.run(Schema.objects.filter(_.namespace === namespace).filter(_.size === 0L).map(_.size).exists.result)
 
   def update(namespace: Namespace, usages: Map[ObjectId, Long]): Future[Long] = {
-    val actions = usages.foldLeft(List.empty[DBIO[Long]]) { case (acc, (oid, usage)) ⇒
+    val actions = usages.foldLeft(List.empty[DBIO[Long]]) { case (acc, (oid, usage)) =>
       Schema.objects
         .filter(_.namespace === namespace)
         .filter(_.id === oid)
         .map(_.size)
         .update(usage)
-        .map(_ ⇒ usage) :: acc
+        .map(_ => usage) :: acc
     }
 
     db.run(DBIO.sequence(actions).map(_.sum))

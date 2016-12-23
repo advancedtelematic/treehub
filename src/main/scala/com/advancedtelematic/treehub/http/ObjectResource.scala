@@ -36,7 +36,7 @@ class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore,
         complete(f)
       } ~
       get {
-        val f = objectStore.findBlob(ns, objectId).map { b ⇒ HttpEntity(MediaTypes.`application/octet-stream`, b._2) }
+        val f = objectStore.findBlob(ns, objectId).map { b => HttpEntity(MediaTypes.`application/octet-stream`, b._2) }
         complete(f)
       } ~
       (post & hintNamespaceStorage(ns)) {
