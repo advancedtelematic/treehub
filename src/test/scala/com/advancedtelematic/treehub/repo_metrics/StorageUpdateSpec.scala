@@ -40,7 +40,8 @@ class StorageUpdateSpec extends TreeHubSpec with DatabaseSpec with TestKitBase  
 
   test("sends update message to bus") {
     val text = "some text, more text"
-    objectRepository.create(TObject(defaultNs, ObjectId("some.commit"), text.length))
+    val objId =  ObjectId.parse("bc27b27e4dff813880183a339d903d2f45529ee81d543c755e8ccdae5a907311.commit").toOption.get
+    objectRepository.create(TObject(defaultNs, objId, text.length))
 
     subject ! Update(defaultNs)
 

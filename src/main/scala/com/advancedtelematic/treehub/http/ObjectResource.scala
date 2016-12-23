@@ -16,8 +16,8 @@ class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore,
                     (implicit db: Database, ec: ExecutionContext, mat: Materializer) {
   import akka.http.scaladsl.server.Directives._
 
-  val PrefixedObjectId: PathMatcher1[ObjectId] = (Segment / Segment).tmap { case (oprefix, osuffix) =>
-    Tuple1(ObjectId(oprefix + osuffix))
+  val PrefixedObjectId: PathMatcher1[ObjectId] = (Segment / Segment).tflatMap { case (oprefix, osuffix) =>
+    ObjectId.parse(oprefix + osuffix).toOption.map(Tuple1(_))
   }
 
   private def hintNamespaceStorage(namespace: Namespace): Directive0 = mapResponse { resp =>

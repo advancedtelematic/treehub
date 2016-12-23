@@ -16,6 +16,7 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
   import org.genivi.sota.db.Operators._
   import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.db.SlickAnyVal._
+  import org.genivi.sota.refined.SlickRefined._
 
   def create(obj: TObject): Future[TObject] = {
     val io = (Schema.objects += obj).map(_ => obj).handleIntegrityErrors(Errors.ObjectExists)
@@ -50,6 +51,7 @@ protected[db] class StorageUsageStateUpdate()(implicit db: Database, ec: Executi
   import org.genivi.sota.db.Operators._
   import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.db.SlickAnyVal._
+  import org.genivi.sota.refined.SlickRefined._
 
   def isOutdated(namespace: Namespace): Future[Boolean] =
     db.run(Schema.objects.filter(_.namespace === namespace).filter(_.size === 0L).map(_.size).exists.result)
