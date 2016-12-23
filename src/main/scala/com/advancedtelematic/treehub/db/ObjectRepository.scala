@@ -61,6 +61,7 @@ protected[db] class StorageUsageStateUpdate()(implicit db: Database, ec: Executi
       Schema.objects
         .filter(_.namespace === namespace)
         .filter(_.id === oid)
+        .filter(_.size === 0L)
         .map(_.size)
         .update(usage)
         .map(_ => usage) :: acc

@@ -9,7 +9,7 @@ import cats.data.Xor
 import com.advancedtelematic.treehub.client.CoreClient
 import com.advancedtelematic.treehub.http.{TreeHubRoutes, Http => TreeHubHttp}
 import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore}
-import com.advancedtelematic.treehub.repo_metrics.StorageUpdate
+import com.advancedtelematic.treehub.repo_metrics.{StorageUpdate, UsageMetricsRouter}
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.client.DeviceRegistryClient
@@ -69,11 +69,11 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
     case Xor.Left(err) => throw err
   }
 
-  val storageUpdate = system.actorOf(StorageUpdate(msgPublisher, objectStore), "storage-update")
+  val usageHandler = system.actorOf(UsageMetricsRouter(msgPublisher, objectStore), "usage-router")
 
   val routes: Route =
     (versionHeaders(version) & logResponseMetrics(projectName)) {
-      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreClient, deviceNamespace, objectStore, storageUpdate).routes
+      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreClient, deviceNamespace, objectStore, usageHandler).routes
     }
 
   Http().bindAndHandle(routes, host, port)

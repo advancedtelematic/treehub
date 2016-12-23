@@ -22,7 +22,7 @@ class RefResourceSpec extends TreeHubSpec with ResourceSpec with RefRepositorySu
     val obj = new ClientTObject()
     val ref = obj.commit
 
-    Post(apiUri(s"objects/${obj.objectId}"), obj.form) ~> routes ~> check {
+    Post(apiUri(s"objects/${obj.prefixedObjectId}"), obj.form) ~> routes ~> check {
       status shouldBe StatusCodes.OK
     }
 
@@ -40,7 +40,7 @@ class RefResourceSpec extends TreeHubSpec with ResourceSpec with RefRepositorySu
     val obj = new ClientTObject()
     val ref = obj.commit
 
-    Post(apiUri(s"objects/${obj.objectId}"), obj.form) ~> routes ~> check {
+    Post(apiUri(s"objects/${obj.prefixedObjectId}"), obj.form) ~> routes ~> check {
       status shouldBe StatusCodes.OK
     }
 
