@@ -3,7 +3,6 @@ package com.advancedtelematic.treehub.object_store
 import java.io.File
 import java.nio.file.{Files, Path, Paths}
 
-import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.{FileIO, Sink, Source}
 import akka.util.ByteString
@@ -15,10 +14,10 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NoStackTrace
-import java.nio.file.StandardOpenOption.{WRITE, READ, CREATE}
+import java.nio.file.StandardOpenOption.{CREATE, READ, WRITE}
 
 trait BlobStore {
-  def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Done]
+  def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long]
 
   def find(namespace: Namespace, id: ObjectId): Future[Source[ByteString, _]]
 
@@ -26,7 +25,7 @@ trait BlobStore {
 
   def exists(namespace: Namespace, id: ObjectId): Future[Boolean]
 
-  def usage(namespace: Namespace): Future[Long]
+  def usage(namespace: Namespace): Future[Map[ObjectId, Long]]
 }
 
 case class BlobStoreError(msg: String, cause: Throwable = null) extends Throwable(msg, cause) with NoStackTrace
@@ -49,12 +48,12 @@ object LocalFsBlobStore {
 }
 
 class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
-  override def store(ns: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Done] = {
+  override def store(ns: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long] = {
     for {
       path <- Future.fromTry(objectPath(ns, id))
       ioResult <- blob.runWith(FileIO.toPath(path, options = Set(READ, WRITE, CREATE)))
       res <- if(ioResult.wasSuccessful) {
-        Future.successful(Done)
+        Future.successful(ioResult.count)
       } else {
         Future.failed(BlobStoreError(s"Error storing local blob ${ioResult.getError.getLocalizedMessage}", ioResult.getError))
       }
@@ -77,8 +76,8 @@ class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materiali
     Future.fromTry(path)
   }
 
-  override def usage(ns: Namespace): Future[Long] = {
-    Future.fromTry(FilesystemUsage.usage(namespacePath(ns)))
+  override def usage(ns: Namespace): Future[Map[ObjectId, Long]] = {
+    Future.fromTry(FilesystemUsage.usageByObject(namespacePath(ns)))
   }
 
   private def namespacePath(ns: Namespace): Path = {

@@ -6,6 +6,8 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.testkit.{TestActorRef, TestKitBase}
 import cats.data.Xor
+import com.advancedtelematic.data.DataType.{ObjectId, TObject}
+import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore}
 import com.advancedtelematic.treehub.repo_metrics.StorageUpdate.Update
 import com.advancedtelematic.util.{DatabaseSpec, TreeHubSpec}
@@ -14,7 +16,7 @@ import org.genivi.sota.messaging.Messages.ImageStorageUsage
 
 import scala.concurrent.duration._
 
-class StorageUpdateSpec extends TreeHubSpec with DatabaseSpec with TestKitBase  {
+class StorageUpdateSpec extends TreeHubSpec with DatabaseSpec with TestKitBase  with ObjectRepositorySupport {
   override implicit lazy val system: ActorSystem = ActorSystem("StorageUpdateSpec")
 
   import system.dispatcher
@@ -38,23 +40,12 @@ class StorageUpdateSpec extends TreeHubSpec with DatabaseSpec with TestKitBase  
 
   test("sends update message to bus") {
     val text = "some text, more text"
-
-    Files.write(Paths.get(namespaceDir.toString, "somefile.txt"), text.toCharArray.map(_.toByte))
+    objectRepository.create(TObject(defaultNs, ObjectId("some.commit"), text.length))
 
     subject ! Update(defaultNs)
 
     expectMsgPF(10.seconds, "message with len == text.length") {
       case p @ ImageStorageUsage(ns, _, len) if (ns == defaultNs) && (len == text.length) => p
     }
-  }
-
-  test("recovers from errors") {
-    subject ! Update(defaultNs.copy(get = "notexistent"))
-
-    expectNoMsg(1.seconds)
-
-    subject ! Update(defaultNs)
-
-    expectMsgType[ImageStorageUsage](5.seconds)
   }
 }

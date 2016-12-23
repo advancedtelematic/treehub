@@ -32,7 +32,7 @@ class RefResourceIntegrationSpec extends util.TreeHubSpec with ResourceSpec with
         .recover {
           case Errors.ObjectExists =>
             log.info("TOBject already exists")
-            TObject(defaultNs, id)
+            TObject(defaultNs, id, 0L)
         }
     } yield (commit, tobj)
   }

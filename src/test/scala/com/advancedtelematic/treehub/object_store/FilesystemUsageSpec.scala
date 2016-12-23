@@ -1,20 +1,24 @@
 package com.advancedtelematic.treehub.object_store
 
-import java.nio.file.Files
+import java.nio.file.{Files, Paths}
 
+import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.util.TreeHubSpec
-
-import scala.collection.JavaConverters._
 
 
 class FilesystemUsageSpec extends TreeHubSpec {
 
-  test("can calculate a directory usage") {
+  test("calculates usage by file") {
+    val objId = ObjectId("943ed021ecf10bfe2f62c0e18e075dc6398f5968d05b10b021f3c51f6d583f8c.commit")
     val tempDir = Files.createTempDirectory("FilesystemUsageSpec")
-    val tempFile = Files.createTempFile(tempDir, "FilesystemUsageSpecFile", ".txt")
+    val objDir = Files.createDirectory(Paths.get(tempDir.toString, "94"))
+    val tempFile = Files.createFile(Paths.get(objDir.toString, "3ed021ecf10bfe2f62c0e18e075dc6398f5968d05b10b021f3c51f6d583f8c.commit"))
+    val text = "hello this is test"
 
-    Files.write(tempFile, List("some text").asJava)
+    Files.write(tempFile, text.getBytes)
 
-    FilesystemUsage.usage(tempDir).get should be > 0l
+    val res = FilesystemUsage.usageByObject(tempDir).get
+
+    res.get(objId) should contain(text.length)
   }
 }
