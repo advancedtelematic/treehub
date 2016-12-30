@@ -1,5 +1,7 @@
 package com.advancedtelematic.data
 
+import java.nio.file.{Path, Paths}
+
 import cats.data.Xor
 import com.advancedtelematic.common.DigestCalculator
 import eu.timepit.refined.api.{Refined, Validate}
@@ -49,6 +51,11 @@ object DataType {
     def from(commit: Commit): ObjectId = ObjectId.parse(commit.get + ".commit").toEither.right.get
 
     def parse(string: String): Xor[String, ObjectId] = Xor.fromEither(refineV[ValidObjectId](string))
+
+    def path(parent: Path, id: ObjectId): Path = {
+      val (prefix, rest) = id.get.splitAt(2)
+      Paths.get(parent.toString, prefix, rest)
+    }
   }
 
   case class TObject(namespace: Namespace, id: ObjectId, byteSize: Long)

@@ -85,8 +85,7 @@ class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materiali
   }
 
   private def objectPath(ns: Namespace, id: ObjectId): Try[Path] = {
-    val (prefix, rest) = id.get.splitAt(2)
-    val path = Paths.get(namespacePath(ns).toUri.toString, prefix, rest)
+    val path = ObjectId.path(namespacePath(ns), id)
 
     Try {
       if (Files.notExists(path.getParent))

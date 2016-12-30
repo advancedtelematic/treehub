@@ -4,6 +4,7 @@ import akka.testkit.{TestActorRef, TestKitBase}
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.UpdateBandwidth
 import com.advancedtelematic.util.TreeHubSpec
+import org.genivi.sota.data.UpdateType
 import org.genivi.sota.messaging.Messages.BandwidthUsage
 
 import scala.concurrent.duration._
@@ -21,7 +22,8 @@ class BandwidthUpdateSpec extends TreeHubSpec with UsageUpdateSpec with TestKitB
     subject ! UpdateBandwidth(defaultNs, text.length, objectId)
 
     expectMsgPF(10.seconds, "message with len == text.length") {
-      case p @ BandwidthUsage(_, ns, _, len, objId) if (ns == defaultNs) && (len == text.length) && (objId == objectId.get) => p
+      case p @ BandwidthUsage(_, ns, _, len, updateType, objId)
+        if (updateType == UpdateType.Image) && (ns == defaultNs) && (len == text.length) && (objId == objectId.get) => p
     }
   }
 }

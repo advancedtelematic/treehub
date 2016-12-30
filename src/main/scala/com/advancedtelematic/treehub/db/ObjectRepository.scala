@@ -31,7 +31,7 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
   }
 
   def usage(namespace: Namespace): Future[Long] =
-    db.run(Schema.objects.filter(_.namespace === namespace).map(_.size).sum.result.map(_.getOrElse(0L)))
+    db.run(Schema.objects.filter(_.namespace === namespace).map(_.size).sum.getOrElse(0L).result)
 
   private def findQuery(namespace: Namespace, id: ObjectId): Query[TObjectTable, TObject, Seq] =
     Schema.objects

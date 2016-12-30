@@ -7,7 +7,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props, Status}
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{Done, UpdateBandwidth, UpdateStorage}
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{Namespace, UpdateType}
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.{BandwidthUsage, ImageStorageUsage}
 
@@ -18,7 +18,7 @@ object UsageMetricsRouter {
   type HandlerRef = ActorRef
 
   case class UpdateStorage(namespace: Namespace)
-  case class UpdateBandwidth(namespace: Namespace, usaedBandwidthBytes: Long, objectId: ObjectId)
+  case class UpdateBandwidth(namespace: Namespace, usedBandwidthBytes: Long, objectId: ObjectId)
   case class Done(namespace: Namespace)
 
   def apply(messageBusPublisher: MessageBusPublisher, objectStore: ObjectStore): Props =
@@ -80,14 +80,15 @@ protected class BandwidthUpdate(publisher: MessageBusPublisher, objectStore: Obj
 
   private def update(namespace: Namespace, usedBandwidthBytes: Long, objectId: ObjectId): Future[Done] = {
     val uuid = UUID.nameUUIDFromBytes(Instant.now.toString.getBytes ++ objectId.get.getBytes)
-    publisher.publish(BandwidthUsage(uuid, namespace, Instant.now, usedBandwidthBytes, objectId.get)).map(_ => Done(namespace))
+    publisher.publish(BandwidthUsage(uuid, namespace, Instant.now, usedBandwidthBytes,
+      UpdateType.Image, objectId.get)).map(_ => Done(namespace))
   }
 
   override def receive: Receive = {
     case UpdateBandwidth(ns, usedBytes, objectId) =>
       update(ns, usedBytes, objectId).pipeTo(self)
     case Done(ns) =>
-      log.info(s"published storage message for $ns")
+      log.info(s"published bandwidth usage for $ns")
     case Status.Failure(ex) =>
       log.error(ex, "Could not publish bandwidth usage message")
   }
