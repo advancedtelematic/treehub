@@ -43,7 +43,7 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
   test("findBlob fails if object is not found") {
     val tobj = TObject(defaultNs, ObjectId.parse("ce720e82a727efa4b30a6ab73cefe31a8d4ec6c0d197d721f07605913d2a279a.commit").toOption.get, 0L)
 
-    whenReady(objectRepository.create(tobj)) { _ =>
+    whenReady(objectRepository.createOrUpdate(tobj)) { _ =>
       objectStore.findBlob(tobj.namespace, tobj.id).failed.futureValue shouldBe Errors.ObjectNotFound
     }
   }
@@ -52,8 +52,8 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
     val ns = Namespace("usage-ns")
 
     val f = for {
-       _ <- objectRepository.create(TObject(ns, ObjectId.parse("28417941a93c09bd13e220c0b0517fc1464428be16c0bc342187742d11285ca1.dirtree").toOption.get, 200L))
-       _ <- objectRepository.create(TObject(ns, ObjectId.parse("902030f091a1e6a790517d62055127cb61c553fb6fe8682d7c2d0d6ef1941891.dirtree").toOption.get, 100L))
+       _ <- objectRepository.createOrUpdate(TObject(ns, ObjectId.parse("28417941a93c09bd13e220c0b0517fc1464428be16c0bc342187742d11285ca1.dirtree").toOption.get, 200L))
+       _ <- objectRepository.createOrUpdate(TObject(ns, ObjectId.parse("902030f091a1e6a790517d62055127cb61c553fb6fe8682d7c2d0d6ef1941891.dirtree").toOption.get, 100L))
        usage <- objectStore.usage(ns)
     } yield usage
 
@@ -74,8 +74,8 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
     Files.write(objPath, text.toCharArray.map(_.toByte))
 
     val f = for {
-       _ <- objectRepository.create(obj1)
-       _ <- objectRepository.create(obj2)
+       _ <- objectRepository.createOrUpdate(obj1)
+       _ <- objectRepository.createOrUpdate(obj2)
        usage <- objectStore.usage(ns)
     } yield usage
 
@@ -101,8 +101,8 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
     Files.write(objPath2, text.toCharArray.map(_.toByte))
 
     val f = for {
-      _ <- objectRepository.create(obj1)
-      _ <- objectRepository.create(obj2)
+      _ <- objectRepository.createOrUpdate(obj1)
+      _ <- objectRepository.createOrUpdate(obj2)
       usage <- objectStore.usage(ns)
     } yield usage
 
