@@ -1,29 +1,33 @@
 package com.advancedtelematic.treehub.http
 
-import akka.actor.ActorRef
 import akka.http.scaladsl.model.{HttpEntity, MediaTypes, StatusCodes}
 import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.treehub.object_store.ObjectStore
-import com.advancedtelematic.treehub.repo_metrics.StorageUpdate.Update
+import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
+import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
-class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore, storageHandler: ActorRef)
+class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore, usageHandler: UsageMetricsRouter.HandlerRef)
                     (implicit db: Database, ec: ExecutionContext, mat: Materializer) {
   import akka.http.scaladsl.server.Directives._
 
-  val PrefixedObjectId: PathMatcher1[ObjectId] = (Segment / Segment).tmap { case (oprefix, osuffix) =>
-    Tuple1(ObjectId(oprefix + osuffix))
+  val PrefixedObjectId: PathMatcher1[ObjectId] = (Segment / Segment).tflatMap { case (oprefix, osuffix) =>
+    ObjectId.parse(oprefix + osuffix).toOption.map(Tuple1(_))
   }
 
   private def hintNamespaceStorage(namespace: Namespace): Directive0 = mapResponse { resp =>
     if(resp.status.isSuccess())
-      storageHandler ! Update(namespace)
+      usageHandler ! UpdateStorage(namespace)
     resp
+  }
+
+  private def publishBandwidthUsage(namespace: Namespace, usageBytes: Long, objectId: ObjectId): Unit = {
+    usageHandler ! UpdateBandwidth(namespace, usageBytes, objectId)
   }
 
   val route = namespace { ns =>
@@ -36,7 +40,11 @@ class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore,
         complete(f)
       } ~
       get {
-        val f = objectStore.findBlob(ns, objectId).map(HttpEntity(MediaTypes.`application/octet-stream`, _))
+        val f = objectStore.findBlob(ns, objectId).map { case (size, source) =>
+          publishBandwidthUsage(ns, size, objectId)
+          HttpEntity(MediaTypes.`application/octet-stream`, source)
+        }
+
         complete(f)
       } ~
       (post & hintNamespaceStorage(ns)) {

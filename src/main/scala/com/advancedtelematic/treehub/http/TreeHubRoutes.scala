@@ -1,12 +1,12 @@
 package com.advancedtelematic.treehub.http
 
-import akka.actor.ActorRef
 import akka.http.scaladsl.server.{Directives, _}
 import akka.stream.Materializer
 import org.genivi.sota.data.Namespace
 import com.advancedtelematic.treehub.VersionInfo
 import com.advancedtelematic.treehub.client.Core
 import com.advancedtelematic.treehub.object_store.ObjectStore
+import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 import org.genivi.sota.http.{ErrorHandler, HealthResource}
 import org.genivi.sota.rest.SotaRejectionHandler._
 
@@ -19,7 +19,7 @@ class TreeHubRoutes(tokenValidator: Directive0,
                     coreClient: Core,
                     deviceNamespace: Directive1[Namespace],
                     objectStore: ObjectStore,
-                    storageHandler: ActorRef
+                    usageHandler: UsageMetricsRouter.HandlerRef
                    )
                    (implicit val db: Database, ec: ExecutionContext, mat: Materializer) extends VersionInfo {
 
@@ -27,7 +27,7 @@ class TreeHubRoutes(tokenValidator: Directive0,
 
   def allRoutes(nsExtract: Directive1[Namespace]): Route = {
     new ConfResource().route ~
-    new ObjectResource(nsExtract, objectStore, storageHandler).route ~
+    new ObjectResource(nsExtract, objectStore, usageHandler).route ~
     new RefResource(nsExtract, coreClient, objectStore).route
   }
 

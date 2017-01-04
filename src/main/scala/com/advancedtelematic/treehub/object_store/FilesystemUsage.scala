@@ -2,24 +2,48 @@ package com.advancedtelematic.treehub.object_store
 
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.{FileVisitResult, Files, Path, SimpleFileVisitor}
-import java.util.concurrent.atomic.AtomicLong
+import java.util.function.BiFunction
+
+import cats.data.Xor
+import com.advancedtelematic.data.DataType.ObjectId
+import org.slf4j.LoggerFactory
 
 import scala.util.Try
 
 object FilesystemUsage {
 
-  def usage(path: Path): Try[Long] = {
-    val usage = new AtomicLong(0)
+  private val _log = LoggerFactory.getLogger(this.getClass)
+
+  def usageByObject(path: Path): Try[Map[ObjectId, Long]] = {
+    import scala.collection.JavaConverters._
+    val usage = new java.util.concurrent.ConcurrentHashMap[ObjectId, Long]()
 
     Try {
       Files.walkFileTree(path, new SimpleFileVisitor[Path]() {
         override def visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult = {
-          usage.addAndGet(attrs.size())
+          val size = attrs.size()
+
+          if(size > 0) {
+            val dirName = file.getParent.getFileName.toString
+            val idXor = ObjectId.parse(s"$dirName${file.getFileName.toString}")
+
+            idXor match {
+              case Xor.Right(id) =>
+                usage.compute(id, new BiFunction[ObjectId, Long, Long]() {
+                  override def apply(t: ObjectId, u: Long): Long =
+                    Option(u).map(_ + size).getOrElse(size)
+                })
+              case Xor.Left(err) =>
+                _log.warn(s"Could not parse file name into commit: $err")
+            }
+
+          }
+
           FileVisitResult.CONTINUE
         }
       })
 
-      usage.get()
+      usage.asScala.toMap
     }
   }
 }

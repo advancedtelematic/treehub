@@ -16,6 +16,7 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
   import org.genivi.sota.db.Operators._
   import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.db.SlickAnyVal._
+  import org.genivi.sota.refined.SlickRefined._
 
   def create(obj: TObject): Future[TObject] = {
     val io = (Schema.objects += obj).map(_ => obj).handleIntegrityErrors(Errors.ObjectExists)
@@ -29,6 +30,9 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
     db.run(findAction(namespace, id))
   }
 
+  def usage(namespace: Namespace): Future[Long] =
+    db.run(Schema.objects.filter(_.namespace === namespace).map(_.size).sum.getOrElse(0L).result)
+
   private def findQuery(namespace: Namespace, id: ObjectId): Query[TObjectTable, TObject, Seq] =
     Schema.objects
       .filter(_.id === id).filter(_.namespace === namespace)
@@ -38,3 +42,31 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
       .result.failIfNotSingle(Errors.ObjectNotFound)
 }
 
+trait StorageUsageStateUpdateSupport {
+  def storageUsageState(implicit db: Database, ec: ExecutionContext) = new StorageUsageStateUpdate()
+}
+
+protected[db] class StorageUsageStateUpdate()(implicit db: Database, ec: ExecutionContext) {
+  import Schema._
+  import org.genivi.sota.db.Operators._
+  import org.genivi.sota.db.SlickExtensions._
+  import org.genivi.sota.db.SlickAnyVal._
+  import org.genivi.sota.refined.SlickRefined._
+
+  def isOutdated(namespace: Namespace): Future[Boolean] =
+    db.run(Schema.objects.filter(_.namespace === namespace).filter(_.size === 0L).map(_.size).exists.result)
+
+  def update(namespace: Namespace, usages: Map[ObjectId, Long]): Future[Long] = {
+    val actions = usages.foldLeft(List.empty[DBIO[Long]]) { case (acc, (oid, usage)) =>
+      Schema.objects
+        .filter(_.namespace === namespace)
+        .filter(_.id === oid)
+        .filter(_.size === 0L)
+        .map(_.size)
+        .update(usage)
+        .map(_ => usage) :: acc
+    }
+
+    db.run(DBIO.sequence(actions).map(_.sum))
+  }
+}
