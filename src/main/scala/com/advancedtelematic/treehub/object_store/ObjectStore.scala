@@ -18,7 +18,7 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
       _ <- ensureNotExists(namespace, id)
       size <- blobStore.store(namespace, id, blob)
       tobj = TObject(namespace, id, size)
-      _ <- objectRepository.create(tobj)
+      _ <- objectRepository.createOrUpdate(tobj)
     } yield tobj
   }
 
