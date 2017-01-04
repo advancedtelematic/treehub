@@ -20,8 +20,8 @@ if [[ "$JOB_NAME" == "treehub" ]]; then # production
     export CONTAINER_MEM="1536.0"
     export CLUSTER_CONSTRAINT="ostreeprod"
 else
-    export JAVA_OPTS="-Xmx512m"
-    export CONTAINER_MEM="700.0"
+    export JAVA_OPTS="-Xmx1024m"
+    export CONTAINER_MEM="1536.0"
     export CLUSTER_CONSTRAINT="ostree"
 fi
 
