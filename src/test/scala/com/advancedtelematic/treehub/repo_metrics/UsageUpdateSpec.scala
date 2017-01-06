@@ -8,7 +8,8 @@ import akka.testkit.TestKitBase
 import cats.data.Xor
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore}
-import com.advancedtelematic.util.{DatabaseSpec, TreeHubSpec}
+import com.advancedtelematic.util.TreeHubSpec
+import org.genivi.sota.core.DatabaseSpec
 import org.genivi.sota.messaging.MessageBus
 
 trait UsageUpdateSpec extends DatabaseSpec with ObjectRepositorySupport with TestKitBase {

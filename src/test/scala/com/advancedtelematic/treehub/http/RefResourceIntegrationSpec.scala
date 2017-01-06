@@ -7,15 +7,14 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.scaladsl.FileIO
 import com.advancedtelematic.data.DataType.{Commit, ObjectId, Ref, RefName, TObject}
 import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
-import com.advancedtelematic.util
-import com.advancedtelematic.util.ResourceSpec
+import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
 import io.circe.generic.auto._
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
 
-class RefResourceIntegrationSpec extends util.TreeHubSpec with ResourceSpec with ObjectRepositorySupport with RefRepositorySupport {
+class RefResourceIntegrationSpec extends TreeHubSpec with ResourceSpec with ObjectRepositorySupport with RefRepositorySupport {
 
   val log = LoggerFactory.getLogger(this.getClass)
 

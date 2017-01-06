@@ -1,7 +1,8 @@
 package com.advancedtelematic.treehub.db
 
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
-import com.advancedtelematic.util.{DatabaseSpec, DefaultPatience, TreeHubSpec}
+import com.advancedtelematic.util.{DefaultPatience, TreeHubSpec}
+import org.genivi.sota.core.DatabaseSpec
 
 import scala.concurrent.ExecutionContext
 

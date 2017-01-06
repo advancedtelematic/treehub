@@ -8,12 +8,13 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
-import com.advancedtelematic.util.{DatabaseSpec, TreeHubSpec}
+import com.advancedtelematic.util.TreeHubSpec
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.ExecutionContext
 import com.advancedtelematic.treehub.http.Errors
+import org.genivi.sota.core.DatabaseSpec
 import org.genivi.sota.data.Namespace
 
 class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositorySupport with PatienceConfiguration {

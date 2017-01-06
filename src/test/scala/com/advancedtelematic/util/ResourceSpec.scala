@@ -14,6 +14,7 @@ import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
 import com.advancedtelematic.util.FakeUsageUpdate.{CurrentBandwith, CurrentStorage}
 import eu.timepit.refined.api.Refined
+import org.genivi.sota.core.DatabaseSpec
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.NamespaceDirectives
 import org.scalatest.Suite
