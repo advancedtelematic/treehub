@@ -18,10 +18,12 @@ export KAFKA_TOPIC_SUFFIX="${DEPLOY_ENV-production}"
 if [[ "$JOB_NAME" == "treehub" ]]; then # production
     export JAVA_OPTS="-Xmx1536m"
     export CONTAINER_MEM="1536.0"
+    export CONTAINER_CPU="1.0"
     export CLUSTER_CONSTRAINT="ostreeprod"
 else
-    export JAVA_OPTS="-Xmx1024m"
-    export CONTAINER_MEM="1536.0"
+    export JAVA_OPTS="-Xmx900m"
+    export CONTAINER_MEM="1024.0"
+    export CONTAINER_CPU="0.8"
     export CLUSTER_CONSTRAINT="ostree"
 fi
 
