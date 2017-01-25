@@ -54,12 +54,13 @@ object LocalFsBlobStore {
 class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
   private val _log = LoggerFactory.getLogger(this.getClass)
 
-  private val diskWrites = MetricsSupport.metricRegistry.timer("treehub.timers.async_blob_write")
+  private val diskWrites = MetricsSupport.metricRegistry.timer("app.treehub.timers.async_blob_write")
 
   override def store(ns: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long] = {
+    val timer = diskWrites.time()
+
     for {
       path <- Future.fromTry(objectPath(ns, id))
-      timer = diskWrites.time()
       ioResult <- blob.runWith(FileIO.toPath(path, options = Set(READ, WRITE, CREATE)))
       res <- {
         _log.info("async disk write took {}ms", TimeUnit.MILLISECONDS.convert(timer.stop(), TimeUnit.NANOSECONDS))

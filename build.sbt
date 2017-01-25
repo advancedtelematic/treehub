@@ -49,6 +49,8 @@ lazy val root = (project in file("."))
       "org.genivi" %% "sota-common-client" % sotaV,
       "org.genivi" %% "sota-common-db-test" % sotaV % "test",
 
+      "org.scala-lang.modules" %% "scala-async" % "0.9.6",
+
       "com.typesafe.slick" %% "slick" % slickV,
       "com.typesafe.slick" %% "slick-hikaricp" % slickV,
       "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4",

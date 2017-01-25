@@ -47,8 +47,8 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   with BootMigrations
   with DatabaseConfig
   with MetricsSupport
+  with AppMetricsSupport
   with DatabaseMetrics {
-
 
   implicit val _db = db
 
