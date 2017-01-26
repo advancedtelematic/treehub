@@ -1,6 +1,5 @@
 package com.advancedtelematic.treehub.object_store
 
-import java.util.concurrent.TimeUnit
 
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
@@ -8,41 +7,20 @@ import com.advancedtelematic.data.DataType.{ObjectId, TObject}
 import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, StorageUsageStateUpdateSupport}
 import com.advancedtelematic.treehub.http.Errors
 import org.genivi.sota.data.Namespace
-import org.genivi.sota.monitoring.MetricsSupport
-import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Database) extends ObjectRepositorySupport
   with StorageUsageStateUpdateSupport {
-  import MetricsSupport._
-
-  private val storeFullTimer = metricRegistry.timer("app.treehub.timers.blob-full-store")
-  private val storeTimer = metricRegistry.timer("app.treehub.timers.blob-store")
-  private val createOrUpdateTimer = metricRegistry.timer("app.treehub.timers.blob-db-createOrUpdate")
-
-  private val _log = LoggerFactory.getLogger(this.getClass)
 
   import scala.async.Async._
 
   def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[TObject] = {
     async {
-      val storeFullTime = storeFullTimer.time()
-
       await(ensureNotExists(namespace, id))
-
-      val storeTime = storeTimer.time()
       val size = await(blobStore.store(namespace, id, blob))
-      _log.info("store took {}ms", TimeUnit.MILLISECONDS.convert(storeTime.stop(), TimeUnit.NANOSECONDS))
-
-      val createOrUpdateTime = createOrUpdateTimer.time()
-      val tobj = await(objectRepository.create(TObject(namespace, id, size)))
-      _log.info("createOrUpdate took {}ms", TimeUnit.MILLISECONDS.convert(createOrUpdateTime.stop(), TimeUnit.NANOSECONDS))
-
-      _log.info("storeFull took {}ms", TimeUnit.MILLISECONDS.convert(storeFullTime.stop(), TimeUnit.NANOSECONDS))
-
-      tobj
+      await(objectRepository.create(TObject(namespace, id, size)))
     }
   }
 

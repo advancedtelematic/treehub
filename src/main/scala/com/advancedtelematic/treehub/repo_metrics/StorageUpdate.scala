@@ -3,7 +3,10 @@ package com.advancedtelematic.treehub.repo_metrics
 import java.time.Instant
 import java.util.UUID
 
+import scala.concurrent.duration._
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Status}
+import akka.stream.{ActorMaterializer, OverflowStrategy}
+import akka.stream.scaladsl.{Sink, Source}
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{Done, UpdateBandwidth, UpdateStorage}
@@ -12,6 +15,7 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.{BandwidthUsage, ImageStorageUsage}
 
 import scala.concurrent.Future
+import scala.concurrent.duration.FiniteDuration
 
 
 object UsageMetricsRouter {
@@ -39,40 +43,59 @@ class UsageMetricsRouter(messageBusPublisher: MessageBusPublisher, objectStore: 
 }
 
 protected object StorageUpdate {
-  def apply(messageBusPublisher: MessageBusPublisher, objectStore: ObjectStore): Props = {
-    Props(new StorageUpdate(messageBusPublisher, objectStore))
+  def apply(messageBusPublisher: MessageBusPublisher, objectStore: ObjectStore, groupWithin: FiniteDuration = 1.seconds): Props = {
+    Props(new StorageUpdate(messageBusPublisher, objectStore, groupWithin))
   }
 }
 
-protected class StorageUpdate(publisher: MessageBusPublisher, objectStore: ObjectStore) extends Actor with ActorLogging {
+protected class StorageUpdate(publisher: MessageBusPublisher, objectStore: ObjectStore, groupWithin: FiniteDuration) extends Actor
+  with ActorLogging {
 
-  import akka.pattern.pipe
   import context.dispatcher
+  import scala.async.Async._
 
-  private def update(namespace: Namespace): Future[Done] = {
-    for {
-      usage <- objectStore.usage(namespace)
-      _ <- publisher.publish(ImageStorageUsage(namespace, Instant.now, usage))
-    } yield Done(namespace)
+  implicit val mat = ActorMaterializer()
+
+  val BUFFER_SIZE = 1024 * 100
+  val PARALLELISM = 10
+
+  var namespaceUsageStream: ActorRef = null
+
+  override def preStart(): Unit = {
+    namespaceUsageStream =
+      Source.actorRef(BUFFER_SIZE, OverflowStrategy.dropHead)
+        .groupedWithin(1024, groupWithin)
+        .mapConcat(_.distinct)
+        .mapAsyncUnordered(PARALLELISM)(update)
+        .to(Sink.ignore)
+        .run()
   }
 
   override def receive: Receive = {
     case UpdateStorage(ns) =>
-      update(ns).pipeTo(self)
-    case Done(ns) =>
-      log.info(s"published storage message for $ns")
-    case Status.Failure(ex) =>
-      log.error(ex, "Could not publish storage message")
+      require(namespaceUsageStream != null, "namespace stream not initialized properly")
+      namespaceUsageStream ! ns
+  }
+
+  private def update(namespace: Namespace): Future[Namespace] = {
+    async {
+      val usage = await(objectStore.usage(namespace))
+      await(publisher.publish(ImageStorageUsage(namespace, Instant.now, usage)))
+      log.info(s"published storage message for $namespace")
+      namespace
+    } recover {
+      case ex =>
+        log.error(ex, "Could not publish storage message")
+        namespace
+    }
   }
 }
-
 
 protected object BandwidthUpdate {
   def apply(messageBusPublisher: MessageBusPublisher, objectStore: ObjectStore): Props = {
     Props(new BandwidthUpdate(messageBusPublisher, objectStore))
   }
 }
-
 
 protected class BandwidthUpdate(publisher: MessageBusPublisher, objectStore: ObjectStore) extends Actor with ActorLogging {
   import context.dispatcher
