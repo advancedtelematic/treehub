@@ -37,7 +37,7 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
       _log.info("store took {}ms", TimeUnit.MILLISECONDS.convert(storeTime.stop(), TimeUnit.NANOSECONDS))
 
       val createOrUpdateTime = createOrUpdateTimer.time()
-      val tobj = await(objectRepository.createOrUpdate(TObject(namespace, id, size)))
+      val tobj = await(objectRepository.create(TObject(namespace, id, size)))
       _log.info("createOrUpdate took {}ms", TimeUnit.MILLISECONDS.convert(createOrUpdateTime.stop(), TimeUnit.NANOSECONDS))
 
       _log.info("storeFull took {}ms", TimeUnit.MILLISECONDS.convert(storeFullTime.stop(), TimeUnit.NANOSECONDS))

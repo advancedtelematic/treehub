@@ -18,8 +18,8 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
   import org.genivi.sota.db.SlickAnyVal._
   import org.genivi.sota.refined.SlickRefined._
 
-  def createOrUpdate(obj: TObject): Future[TObject] = {
-    val io = Schema.objects.insertOrUpdate(obj).map(_ => obj)
+  def create(obj: TObject): Future[TObject] = {
+    val io = (Schema.objects += obj).map(_ => obj)
     db.run(io)
   }
 
