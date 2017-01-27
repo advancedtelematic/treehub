@@ -15,10 +15,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NoStackTrace
 import java.nio.file.StandardOpenOption.{CREATE, READ, WRITE}
-import java.util.concurrent.TimeUnit
-
-import com.codahale.metrics.{Histogram, Timer}
-import org.genivi.sota.monitoring.MetricsSupport
 
 trait BlobStore {
   def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long]
@@ -52,19 +48,11 @@ object LocalFsBlobStore {
 }
 
 class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
-  private val _log = LoggerFactory.getLogger(this.getClass)
-
-  private val diskWrites = MetricsSupport.metricRegistry.timer("app.treehub.timers.async_blob_write")
-
   override def store(ns: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long] = {
-    val timer = diskWrites.time()
-
     for {
       path <- Future.fromTry(objectPath(ns, id))
       ioResult <- blob.runWith(FileIO.toPath(path, options = Set(READ, WRITE, CREATE)))
       res <- {
-        _log.info("async disk write took {}ms", TimeUnit.MILLISECONDS.convert(timer.stop(), TimeUnit.NANOSECONDS))
-
         if (ioResult.wasSuccessful) {
           Future.successful(ioResult.count)
         } else {
