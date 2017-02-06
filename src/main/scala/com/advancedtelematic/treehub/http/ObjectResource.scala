@@ -11,6 +11,7 @@ import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
+import scala.util.Success
 
 class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore, usageHandler: UsageMetricsRouter.HandlerRef)
                     (implicit db: Database, ec: ExecutionContext, mat: Materializer) {
@@ -40,10 +41,14 @@ class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore,
         complete(f)
       } ~
       get {
-        val f = objectStore.findBlob(ns, objectId).map { case (size, source) =>
-          publishBandwidthUsage(ns, size, objectId)
-          HttpEntity(MediaTypes.`application/octet-stream`, source)
-        }
+        val f =
+          objectStore
+            .findBlob(ns, objectId)
+            .andThen {
+              case Success((size, _)) => publishBandwidthUsage(ns, size, objectId)
+              case _ => ()
+            }
+            .map(_._2)
 
         complete(f)
       } ~

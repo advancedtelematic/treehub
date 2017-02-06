@@ -8,9 +8,11 @@ import akka.stream.ActorMaterializer
 import cats.data.Xor
 import com.advancedtelematic.treehub.client.CoreClient
 import com.advancedtelematic.treehub.http.{TreeHubRoutes, Http => TreeHubHttp}
-import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore}
+import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore, S3BlobStore, S3Credentials}
 import com.advancedtelematic.treehub.repo_metrics.{StorageUpdate, UsageMetricsRouter}
-import com.typesafe.config.ConfigFactory
+import com.amazonaws.regions.Regions
+import com.typesafe.config.ConfigException.Missing
+import com.typesafe.config.{ConfigException, ConfigFactory}
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.client.DeviceRegistryClient
 import org.genivi.sota.http.BootApp
@@ -19,6 +21,8 @@ import org.genivi.sota.http.VersionDirectives.versionHeaders
 import org.genivi.sota.messaging.MessageBus
 import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
 import org.slf4j.LoggerFactory
+
+import scala.util.Try
 
 trait Settings {
   lazy val config = ConfigFactory.load()
@@ -41,6 +45,15 @@ trait Settings {
   val deviceRegistryGroupApi = Uri(config.getString("device_registry.deviceGroupsUri"))
   val deviceRegistryMyApi = Uri(config.getString("device_registry.mydeviceUri"))
 
+  lazy val s3Credentials = {
+    val accessKey = config.getString("treehub.s3.accessKey")
+    val secretKey = config.getString("treehub.s3.secretKey")
+    val bucketId = config.getString("treehub.s3.bucketId")
+    val region = Regions.fromName(config.getString("treehub.s3.region"))
+    new S3Credentials(accessKey, secretKey, bucketId, region)
+  }
+
+  lazy val useS3 = config.getString("treehub.storage").equals("s3")
 }
 
 object Boot extends BootApp with Directives with Settings with VersionInfo
@@ -60,7 +73,15 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   val tokenValidator = TreeHubHttp.tokenValidator
   val namespaceExtractor = TreeHubHttp.extractNamespace.map(_.namespace)
   val deviceNamespace = TreeHubHttp.deviceNamespace(deviceRegistry)
-  val objectStore = new ObjectStore(LocalFsBlobStore(localStorePath))
+
+  val storage = {
+    if(useS3)
+      new S3BlobStore(s3Credentials)
+    else
+      LocalFsBlobStore(localStorePath)
+  }
+
+  val objectStore = new ObjectStore(storage)
   val coreClient = new CoreClient(coreUri, packagesApi, treeHubUri.toString())
 
   val msgPublisher = MessageBus.publisher(system, config) match {
