@@ -47,15 +47,19 @@ object DataType {
 
   type ObjectId = Refined[String, ValidObjectId]
 
+  implicit class ObjectIdOps(value: ObjectId) {
+    def path(parent: Path): Path = {
+      val (prefix, rest) = value.get.splitAt(2)
+      Paths.get(parent.toString, prefix, rest)
+    }
+
+    def filename: Path = path(Paths.get("/")).getFileName
+  }
+
   object ObjectId {
     def from(commit: Commit): ObjectId = ObjectId.parse(commit.get + ".commit").toEither.right.get
 
     def parse(string: String): Xor[String, ObjectId] = Xor.fromEither(refineV[ValidObjectId](string))
-
-    def path(parent: Path, id: ObjectId): Path = {
-      val (prefix, rest) = id.get.splitAt(2)
-      Paths.get(parent.toString, prefix, rest)
-    }
   }
 
   case class TObject(namespace: Namespace, id: ObjectId, byteSize: Long)

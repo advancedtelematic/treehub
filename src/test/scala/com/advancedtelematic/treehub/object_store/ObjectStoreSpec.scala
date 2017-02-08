@@ -10,7 +10,7 @@ import com.advancedtelematic.data.DataType.{ObjectId, TObject}
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.util.TreeHubSpec
 import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.time.{Seconds, Span}
 
 import scala.concurrent.ExecutionContext
 import com.advancedtelematic.treehub.http.Errors
@@ -23,7 +23,7 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
   implicit val system = ActorSystem("ObjectStoreSpecSystem")
   implicit val mat = ActorMaterializer()
 
-  override implicit def patienceConfig = PatienceConfig(timeout = Span(3, Seconds), interval = Span(500, Millis))
+  override implicit def patienceConfig = PatienceConfig().copy(timeout = Span(3, Seconds))
 
   val localStorageDir = Files.createTempDirectory("treehub").toFile
 
@@ -59,54 +59,5 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
     } yield usage
 
     f.futureValue shouldBe 300L
-  }
-
-  test("usage forces usage update if usage is 0L for at least one object") {
-    val ns = Namespace("usage-outdated-ns")
-
-    val obj1 = TObject(ns, ObjectId.parse("7ba6c2ff5ee68bbf528e3c4d5d227dcc40688c38155e114ea980749a08b45191.commit").toOption.get, 200L)
-    val obj2 = TObject(ns, ObjectId.parse("0016d23b9fcc8edf08ebfc74fa6abf589c3f555ae7845d6a57df7c13ce32fe64.filez").toOption.get, 0L)
-
-    val text = "This is object"
-
-    val nsDir = Files.createDirectories(Paths.get(localStorageDir.toString, ns.get))
-    val objPath = ObjectId.path(nsDir, obj2.id)
-    Files.createDirectories(objPath.getParent)
-    Files.write(objPath, text.toCharArray.map(_.toByte))
-
-    val f = for {
-       _ <- objectRepository.create(obj1)
-       _ <- objectRepository.create(obj2)
-       usage <- objectStore.usage(ns)
-    } yield usage
-
-    f.futureValue shouldBe (200L + text.length)
-  }
-
-  test("usage forces usage update on outdated (usage=0) rows only ") {
-    val ns = Namespace("usage-outdated-single-ns")
-
-    val obj1 = TObject(ns, ObjectId.parse("7ba6c2ff5ee68bbf528e3c4d5d227dcc40688c38155e114ea980749a08b45191.commit").toOption.get, 200L)
-    val obj2 = TObject(ns, ObjectId.parse("0016d23b9fcc8edf08ebfc74fa6abf589c3f555ae7845d6a57df7c13ce32fe64.filez").toOption.get, 0L)
-
-    val text = "This is object"
-
-    val nsDir = Files.createDirectories(Paths.get(localStorageDir.toString, ns.get))
-
-    val objPath1 = ObjectId.path(nsDir, obj1.id)
-    Files.createDirectories(objPath1.getParent)
-    Files.write(objPath1, text.toCharArray.map(_.toByte))
-
-    val objPath2 = ObjectId.path(nsDir, obj2.id)
-    Files.createDirectories(objPath2.getParent)
-    Files.write(objPath2, text.toCharArray.map(_.toByte))
-
-    val f = for {
-      _ <- objectRepository.create(obj1)
-      _ <- objectRepository.create(obj2)
-      usage <- objectStore.usage(ns)
-    } yield usage
-
-    f.futureValue shouldBe (200L + text.length)
   }
 }

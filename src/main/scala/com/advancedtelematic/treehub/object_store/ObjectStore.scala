@@ -1,18 +1,18 @@
 package com.advancedtelematic.treehub.object_store
 
 
+import akka.http.scaladsl.model.HttpResponse
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
-import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, StorageUsageStateUpdateSupport}
+import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.treehub.http.Errors
 import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Database) extends ObjectRepositorySupport
-  with StorageUsageStateUpdateSupport {
+class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Database) extends ObjectRepositorySupport {
 
   import scala.async.Async._
 
@@ -30,12 +30,12 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
       fsExists <- blobStore.exists(namespace, id)
     } yield fsExists && dbExists
 
-  def findBlob(namespace: Namespace, id: ObjectId): Future[(Long, Source[ByteString, _])] = {
+  def findBlob(namespace: Namespace, id: ObjectId): Future[(Long, HttpResponse)] = {
     for {
       _ <- ensureExists(namespace, id)
       tobj <- objectRepository.find(namespace, id)
-      bytes <- blobStore.find(namespace, id)
-    } yield (tobj.byteSize, bytes)
+      response <- blobStore.buildResponse(namespace, id)
+    } yield (tobj.byteSize, response)
   }
 
   def readFull(namespace: Namespace, id: ObjectId): Future[ByteString] = {
@@ -43,14 +43,7 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
   }
 
   def usage(namespace: Namespace): Future[Long] = {
-    storageUsageState.isOutdated(namespace).flatMap { isOutdated =>
-      if (isOutdated)
-        blobStore.usage(namespace)
-          .flatMap(usage => storageUsageState.update(namespace, usage))
-          .flatMap(_ => objectRepository.usage(namespace))
-      else
-        objectRepository.usage(namespace)
-    }
+    objectRepository.usage(namespace)
   }
 
   private def ensureExists(namespace: Namespace, id: ObjectId): Future[ObjectId] = {

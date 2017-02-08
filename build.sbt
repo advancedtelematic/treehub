@@ -54,7 +54,9 @@ lazy val root = (project in file("."))
       "com.typesafe.slick" %% "slick" % slickV,
       "com.typesafe.slick" %% "slick-hikaricp" % slickV,
       "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4",
-      "org.flywaydb" % "flyway-core" % "4.0.3"
+      "org.flywaydb" % "flyway-core" % "4.0.3",
+
+      "com.amazonaws" % "aws-java-sdk-s3" % "1.11.86"
     )
   }))
 

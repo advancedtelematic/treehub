@@ -13,22 +13,10 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import scala.util.control.NoStackTrace
 import java.nio.file.StandardOpenOption.{CREATE, READ, WRITE}
 
-trait BlobStore {
-  def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long]
+import akka.http.scaladsl.model.HttpResponse
 
-  def find(namespace: Namespace, id: ObjectId): Future[Source[ByteString, _]]
-
-  def readFull(namespace: Namespace, id: ObjectId): Future[ByteString]
-
-  def exists(namespace: Namespace, id: ObjectId): Future[Boolean]
-
-  def usage(namespace: Namespace): Future[Map[ObjectId, Long]]
-}
-
-case class BlobStoreError(msg: String, cause: Throwable = null) extends Throwable(msg, cause) with NoStackTrace
 
 object LocalFsBlobStore {
   private val _log = LoggerFactory.getLogger(this.getClass)
@@ -62,15 +50,23 @@ class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materiali
     } yield res
   }
 
-  override def find(ns: Namespace, id: ObjectId): Future[Source[ByteString, _]] = {
+  override def buildResponse(ns: Namespace, id: ObjectId): Future[HttpResponse] = {
     exists(ns, id).flatMap {
-      case true => Future.fromTry(objectPath(ns, id).map(FileIO.fromPath(_)))
+      case true =>
+        val triedResponse =
+          objectPath(ns, id)
+            .map(FileIO.fromPath(_))
+            .map(buildResponseFromBytes)
+        Future.fromTry(triedResponse)
       case false => Future.failed(Errors.BlobNotFound)
     }
   }
 
   override def readFull(ns: Namespace, id: ObjectId): Future[ByteString] = {
-    find(ns, id).flatMap(_.runWith(Sink.reduce(_ ++ _)))
+    buildResponse(ns, id).flatMap { response =>
+      val dataBytes = response.entity.dataBytes
+      dataBytes.runFold(ByteString.empty)(_ ++ _)
+    }
   }
 
   override def exists(ns: Namespace, id: ObjectId): Future[Boolean] = {
@@ -78,16 +74,12 @@ class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materiali
     Future.fromTry(path)
   }
 
-  override def usage(ns: Namespace): Future[Map[ObjectId, Long]] = {
-    Future.fromTry(FilesystemUsage.usageByObject(namespacePath(ns)))
-  }
-
   private def namespacePath(ns: Namespace): Path = {
     Paths.get(root.getAbsolutePath, ns.get)
   }
 
   private def objectPath(ns: Namespace, id: ObjectId): Try[Path] = {
-    val path = ObjectId.path(namespacePath(ns), id)
+    val path = id.path(namespacePath(ns))
 
     Try {
       if (Files.notExists(path.getParent))
