@@ -74,10 +74,6 @@ class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materiali
     Future.fromTry(path)
   }
 
-  override def usage(ns: Namespace): Future[Map[ObjectId, Long]] = {
-    Future.fromTry(FilesystemUsage.usageByObject(namespacePath(ns)))
-  }
-
   private def namespacePath(ns: Namespace): Path = {
     Paths.get(root.getAbsolutePath, ns.get)
   }

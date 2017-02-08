@@ -42,20 +42,19 @@ class S3BlobStore(s3Credentials: S3Credentials)
 
     // The s3 sdk requires us to specify the file size if using a stream
     // so we always need to cache the file into the filesystem before uploading
-    val sink = FileIO.toPath(tempFile.toPath)
-      .mapMaterializedValue {
-        _.flatMap { result =>
-          if(result.wasSuccessful) {
-            upload(tempFile, filename, blob).andThen { case _ => Try(tempFile.delete()) }
-          } else
-            Future.failed(result.getError)
-        }
+    val sink = FileIO.toPath(tempFile.toPath).mapMaterializedValue {
+      _.flatMap { result =>
+        if(result.wasSuccessful) {
+          upload(tempFile, filename).andThen { case _ => Try(tempFile.delete()) }
+        } else
+          Future.failed(result.getError)
       }
+    }
 
     blob.runWith(sink)
   }
 
-  protected def upload(file: File, filename: String, fileData: Source[ByteString, Any]): Future[Long] = {
+  protected def upload(file: File, filename: String): Future[Long] = {
     val request = new PutObjectRequest(s3Credentials.bucketId, filename, file)
       .withCannedAcl(CannedAccessControlList.AuthenticatedRead)
 
@@ -92,26 +91,6 @@ class S3BlobStore(s3Credentials: S3Credentials)
   override def exists(namespace: Namespace, id: ObjectId): Future[Boolean] = {
     val filename = objectFilename(namespace, id)
     Future { blocking { s3client.doesObjectExist(bucketId, filename) } }
-  }
-
-  // TODO: Should be temporary while users are not all migrated
-  override def usage(namespace: Namespace): Future[Map[ObjectId, Long]] = {
-    import scala.collection.JavaConverters._
-
-    Future {
-      s3client.listObjects(bucketId, namespaceDir(namespace)).getObjectSummaries.asScala.flatMap { summary =>
-        val file = Paths.get(summary.getKey).getFileName
-        val dirName = Paths.get(summary.getKey).getParent.getFileName.toString
-        val objectIdXor = ObjectId.parse(s"$dirName$file")
-
-        objectIdXor match {
-          case Xor.Right(objectId) => List(objectId -> summary.getSize)
-          case Xor.Left(err) =>
-            log.error(s"Could not parse objectId from s3: $err")
-            List.empty
-        }
-      }.toMap
-    }
   }
 
   private def namespaceDir(namespace: Namespace): String =

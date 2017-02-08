@@ -49,19 +49,6 @@ class S3BlobStoreIntegrationSpec extends TreeHubSpec {
     s3BlobStore.exists(tobj.namespace, tobj.id).futureValue shouldBe true
   }
 
-  test("usage returns map of usages") {
-    val tobj = TObject(defaultNs, ObjectId.parse("ce720e82a727efa4b30a6ab73cefe31a8d4ec6c0d197d721f07605913d2a279a.commit").toOption.get, 0L)
-
-    val source = Source.single(ByteString("this is byte. Call me. maybe."))
-
-    val f = async {
-      await(s3BlobStore.store(defaultNs, tobj.id, source))
-      await(s3BlobStore.usage(tobj.namespace))
-    }
-
-    f.futureValue should contain(tobj.id -> 29)
-  }
-
   test("build response builds a redirect") {
     val tobj = TObject(defaultNs, ObjectId.parse("ce720e82a727efa4b30a6ab73cefe31a8d4ec6c0d197d721f07605913d2a279a.commit").toOption.get, 0L)
 

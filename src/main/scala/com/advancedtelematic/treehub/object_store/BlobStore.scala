@@ -14,13 +14,9 @@ trait BlobStore {
 
   def buildResponse(namespace: Namespace, id: ObjectId): Future[HttpResponse]
 
-  // TODO: Remove this?
   def readFull(namespace: Namespace, id: ObjectId): Future[ByteString]
 
   def exists(namespace: Namespace, id: ObjectId): Future[Boolean]
-
-  // TODO: Remove this? What is correct, s3 usage or db usage?
-  def usage(namespace: Namespace): Future[Map[ObjectId, Long]]
 
   protected def buildResponseFromBytes(source: Source[ByteString, _]): HttpResponse = {
     val entity = HttpEntity(MediaTypes.`application/octet-stream`, source)
