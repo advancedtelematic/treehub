@@ -60,6 +60,8 @@ lazy val root = (project in file("."))
     )
   }))
 
+mainClass in Compile := Some("com.advancedtelematic.treehub.Boot")
+
 buildInfoOptions += BuildInfoOption.ToMap
 
 buildInfoOptions += BuildInfoOption.BuildTime
