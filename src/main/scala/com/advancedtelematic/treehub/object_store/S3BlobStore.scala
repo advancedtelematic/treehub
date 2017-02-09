@@ -31,7 +31,7 @@ class S3BlobStore(s3Credentials: S3Credentials)
 
   private val bucketId = s3Credentials.bucketId
 
-  lazy val s3client = AmazonS3ClientBuilder.standard()
+  private lazy val s3client = AmazonS3ClientBuilder.standard()
       .withCredentials(s3Credentials)
       .withRegion(s3Credentials.region)
       .build()
@@ -70,15 +70,18 @@ class S3BlobStore(s3Credentials: S3Credentials)
     }
   }
 
-  private val PUBLIC_URL_EXPIRE_TIME = Duration.ofDays(1)
+  private def streamS3Bytes(namespace: Namespace, id: ObjectId): Future[Source[ByteString, _]] = {
+    val filename = objectFilename(namespace, id)
+    Future {
+      blocking {
+        val s3ObjectInputStream = s3client.getObject(bucketId, filename).getObjectContent
+        StreamConverters.fromInputStream(() ⇒ s3ObjectInputStream)
+      }
+    }
+  }
 
   override def buildResponse(namespace: Namespace, id: ObjectId): Future[HttpResponse] = {
-    val filename = objectFilename(namespace, id)
-    val expire = java.util.Date.from(Instant.now.plus(PUBLIC_URL_EXPIRE_TIME))
-    val result = s3client.generatePresignedUrl(bucketId, filename, expire)
-    val uri = Uri(result.toURI.toString)
-    val response = HttpResponse(StatusCodes.Found, headers = List(Location(uri)))
-    Future.successful(response)
+    streamS3Bytes(namespace, id).map(buildResponseFromBytes)
   }
 
   override def readFull(namespace: Namespace, id: ObjectId): Future[ByteString] = {
