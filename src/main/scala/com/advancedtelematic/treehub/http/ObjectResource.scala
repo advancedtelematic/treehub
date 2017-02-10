@@ -40,10 +40,10 @@ class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore,
         }
         complete(f)
       } ~
-      get {
+      (get & optionalHeaderValueByName("x-ats-authorization")) { header ⇒
         val f =
           objectStore
-            .findBlob(ns, objectId)
+            .findBlob(ns, objectId, clientAcceptsRedirects = header.isDefined)
             .andThen {
               case Success((size, _)) => publishBandwidthUsage(ns, size, objectId)
               case _ => ()

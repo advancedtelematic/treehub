@@ -80,8 +80,25 @@ class S3BlobStore(s3Credentials: S3Credentials)
     }
   }
 
-  override def buildResponse(namespace: Namespace, id: ObjectId): Future[HttpResponse] = {
-    streamS3Bytes(namespace, id).map(buildResponseFromBytes)
+  private def fetchPresignedUri(namespace: Namespace, id: ObjectId): Future[Uri] = {
+    val publicExpireTime = Duration.ofDays(1)
+    val filename = objectFilename(namespace, id)
+    val expire = java.util.Date.from(Instant.now.plus(publicExpireTime))
+    Future {
+      val signedUri = blocking {
+        s3client.generatePresignedUrl(bucketId, filename, expire)
+      }
+      Uri(signedUri.toURI.toString)
+    }
+  }
+
+  override def buildResponse(namespace: Namespace, id: ObjectId, clientAcceptsRedirects: Boolean = false): Future[HttpResponse] = {
+    if(clientAcceptsRedirects) {
+      fetchPresignedUri(namespace, id).map { uri ⇒
+        HttpResponse(StatusCodes.Found, headers = List(Location(uri)))
+      }
+    } else
+      streamS3Bytes(namespace, id).map(buildResponseFromBytes)
   }
 
   override def readFull(namespace: Namespace, id: ObjectId): Future[ByteString] = {
