@@ -23,15 +23,16 @@ object Http {
   }
 
   // TODO: Should be Materializer instead of ActorMaterializer
-  def tokenValidator(implicit s: ActorSystem, mat: ActorMaterializer): Directive0 =
-    mapRequest { req ⇒
-        req.mapHeaders { headers ⇒
-          val atsAuthHeader = headers.find(_.is("x-ats-authorization"))
+  def tokenValidator(implicit s: ActorSystem, mat: ActorMaterializer): Directive0 = TokenValidator().fromConfig
 
-          atsAuthHeader match {
-            case Some(h) ⇒ headers :+ RawHeader("Authorization", h.value())
-            case None ⇒ headers
-          }
-        }
-    }.tflatMap(_ ⇒ TokenValidator().fromConfig)
+  def transformAtsAuthHeader: Directive0 = mapRequest { req ⇒
+    req.mapHeaders { headers ⇒
+      val atsAuthHeader = headers.find(_.is("x-ats-authorization"))
+
+      atsAuthHeader match {
+        case Some(h) ⇒ headers :+ RawHeader("Authorization", h.value())
+        case None ⇒ headers
+      }
+    }
+  }
 }

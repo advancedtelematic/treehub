@@ -92,7 +92,7 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   val usageHandler = system.actorOf(UsageMetricsRouter(msgPublisher, objectStore), "usage-router")
 
   val routes: Route =
-    (versionHeaders(version) & logResponseMetrics(projectName)) {
+    (versionHeaders(version) & logResponseMetrics(projectName) & TreeHubHttp.transformAtsAuthHeader) {
       new TreeHubRoutes(tokenValidator, namespaceExtractor, coreClient, deviceNamespace, objectStore, usageHandler).routes
     }
 
