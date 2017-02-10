@@ -1,7 +1,7 @@
 package com.advancedtelematic.treehub.http
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken, RawHeader}
 import akka.http.scaladsl.server.{Directives, _}
 import akka.stream.{ActorMaterializer, Materializer}
 import org.genivi.sota.common.DeviceRegistry
@@ -30,7 +30,9 @@ object Http {
       val atsAuthHeader = headers.find(_.is("x-ats-authorization"))
 
       atsAuthHeader match {
-        case Some(h) ⇒ headers :+ RawHeader("Authorization", h.value())
+        case Some(h) ⇒
+          val oauthToken = h.value().replace("Bearer ", "")
+          headers :+ Authorization(OAuth2BearerToken(oauthToken))
         case None ⇒ headers
       }
     }
