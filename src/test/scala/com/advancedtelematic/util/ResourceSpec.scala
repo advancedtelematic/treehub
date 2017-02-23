@@ -1,7 +1,5 @@
 package com.advancedtelematic.util
 
-import java.nio.file.Files
-
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.model.{HttpEntity, MediaTypes, Multipart}
@@ -9,16 +7,18 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.{Commit, ObjectId}
+import com.advancedtelematic.treehub.Settings
+import com.advancedtelematic.treehub.client._
 import com.advancedtelematic.treehub.http._
 import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore}
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
 import com.advancedtelematic.util.FakeUsageUpdate.{CurrentBandwith, CurrentStorage}
 import eu.timepit.refined.api.Refined
+import java.nio.file.Files
 import org.genivi.sota.core.DatabaseSpec
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.NamespaceDirectives
 import org.scalatest.Suite
-
 import scala.util.Random
 
 object ResourceSpec {
@@ -71,12 +71,14 @@ class FakeUsageUpdate extends Actor with ActorLogging {
   }
 }
 
-trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec {
+trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec with Settings {
   self: Suite =>
 
   def apiUri(path: String): String = "/api/v2/" + path
+  def apiUri(version: Int, path: String): String = s"/api/v$version/" + path
 
-  val testCore = new FakeCore()
+  val testHttpCore = new FakeHttpCore()
+  val testBusCore = new FakeBusCore()
 
   lazy val namespaceExtractor = NamespaceDirectives.defaultNamespaceExtractor.map(_.namespace)
   val objectStore = new ObjectStore(new LocalFsBlobStore(Files.createTempDirectory("treehub").toFile))
@@ -85,7 +87,8 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec {
 
   lazy val routes = new TreeHubRoutes(Directives.pass,
     namespaceExtractor,
-    testCore,
+    testHttpCore,
+    testBusCore,
     namespaceExtractor,
     objectStore,
     fakeUsageUpdate).routes

@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
 import cats.data.Xor
-import com.advancedtelematic.treehub.client.CoreClient
+import com.advancedtelematic.treehub.client._
 import com.advancedtelematic.treehub.http.{TreeHubRoutes, Http => TreeHubHttp}
 import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore, S3BlobStore, S3Credentials}
 import com.advancedtelematic.treehub.repo_metrics.{StorageUpdate, UsageMetricsRouter}
@@ -44,6 +44,7 @@ trait Settings {
   val deviceRegistryApi = Uri(config.getString("device_registry.devicesUri"))
   val deviceRegistryGroupApi = Uri(config.getString("device_registry.deviceGroupsUri"))
   val deviceRegistryMyApi = Uri(config.getString("device_registry.mydeviceUri"))
+  val deviceRegistryPackagesUri = Uri(config.getString("device_registry.packagesUri"))
 
   lazy val s3Credentials = {
     val accessKey = config.getString("treehub.s3.accessKey")
@@ -67,7 +68,7 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   log.info(s"Starting $version on http://$host:$port")
 
   val deviceRegistry = new DeviceRegistryClient(
-    deviceRegistryUri, deviceRegistryApi, deviceRegistryGroupApi, deviceRegistryMyApi
+    deviceRegistryUri, deviceRegistryApi, deviceRegistryGroupApi, deviceRegistryMyApi, deviceRegistryPackagesUri
   )
 
   val tokenValidator = TreeHubHttp.tokenValidator
@@ -82,18 +83,19 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   }
 
   val objectStore = new ObjectStore(storage)
-  val coreClient = new CoreClient(coreUri, packagesApi, treeHubUri.toString())
-
   val msgPublisher = MessageBus.publisher(system, config) match {
     case Xor.Right(mbp) => mbp
     case Xor.Left(err) => throw err
   }
+  val coreHttpClient = new CoreHttpClient(coreUri, packagesApi, treeHubUri)
+  val coreBusClient = new CoreBusClient(msgPublisher, treeHubUri)
 
   val usageHandler = system.actorOf(UsageMetricsRouter(msgPublisher, objectStore), "usage-router")
 
   val routes: Route =
     (versionHeaders(version) & logResponseMetrics(projectName) & TreeHubHttp.transformAtsAuthHeader) {
-      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreClient, deviceNamespace, objectStore, usageHandler).routes
+      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreHttpClient, coreBusClient,
+                        deviceNamespace, objectStore, usageHandler).routes
     }
 
   Http().bindAndHandle(routes, host, port)
