@@ -17,7 +17,6 @@ import slick.driver.MySQLDriver.api._
 class TreeHubRoutes(tokenValidator: Directive0,
                     namespaceExtractor: Directive1[Namespace],
                     coreClient: Core,
-                    deviceNamespace: Directive1[Namespace],
                     objectStore: ObjectStore,
                     usageHandler: UsageMetricsRouter.HandlerRef
                    )
@@ -37,7 +36,7 @@ class TreeHubRoutes(tokenValidator: Directive0,
         (pathPrefix("api" / "v2") & tokenValidator) {
             allRoutes(namespaceExtractor) ~
             pathPrefix("mydevice") {
-              allRoutes(deviceNamespace)
+              allRoutes(namespaceExtractor)
             }
         } ~ new HealthResource(db, versionMap).route
       }

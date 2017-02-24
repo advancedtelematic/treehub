@@ -1,24 +1,25 @@
 package com.advancedtelematic.treehub.http
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken, RawHeader}
+import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.server.{Directives, _}
 import akka.stream.{ActorMaterializer, Materializer}
-import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.Namespace
-import org.genivi.sota.http.{NamespaceDirectives, TokenValidator}
+import org.genivi.sota.http.{AuthedNamespaceScope, NamespaceDirectives, TokenValidator}
 
-import scala.concurrent.ExecutionContext
 
 object Http {
   import Directives._
 
-  lazy val extractNamespace = NamespaceDirectives.fromConfig()
+  private lazy val extractNamespaceFromHeader =
+    optionalHeaderValueByName("x-ats-namespace").map(_.map(ns => AuthedNamespaceScope(Namespace(ns))))
 
-  def deviceNamespace(deviceRegistry: DeviceRegistry)
-                     (implicit ec: ExecutionContext): Directive1[Namespace] = {
-    DeviceIdDirectives.extractFromToken.flatMap { deviceId =>
-      onSuccess(deviceRegistry.fetchMyDevice(deviceId).map(_.namespace))
+  lazy val extractNamespace: Directive1[AuthedNamespaceScope] = {
+    val authNamespaceExtractor = NamespaceDirectives.fromConfig()
+
+    extractNamespaceFromHeader.flatMap {
+      case Some(ns) => provide(ns)
+      case None => authNamespaceExtractor
     }
   }
 

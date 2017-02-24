@@ -72,7 +72,6 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
 
   val tokenValidator = TreeHubHttp.tokenValidator
   val namespaceExtractor = TreeHubHttp.extractNamespace.map(_.namespace)
-  val deviceNamespace = TreeHubHttp.deviceNamespace(deviceRegistry)
 
   val storage = {
     if(useS3)
@@ -93,7 +92,7 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
 
   val routes: Route =
     (versionHeaders(version) & logResponseMetrics(projectName) & TreeHubHttp.transformAtsAuthHeader) {
-      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreClient, deviceNamespace, objectStore, usageHandler).routes
+      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreClient, objectStore, usageHandler).routes
     }
 
   Http().bindAndHandle(routes, host, port)
