@@ -20,8 +20,8 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-class CoreClient(baseUri: Uri, packagesUri: Uri, treeHubUri: String)
-                (implicit system: ActorSystem, mat: ActorMaterializer) extends Core {
+class CoreHttpClient(baseUri: Uri, packagesUri: Uri, treeHubUri: Uri)
+                    (implicit system: ActorSystem, mat: ActorMaterializer) extends Core {
   import HttpMethods._
   import CirceMarshallingSupport._
 
@@ -31,7 +31,7 @@ class CoreClient(baseUri: Uri, packagesUri: Uri, treeHubUri: String)
 
   def publishRef(ref: Ref, description: String)
                 (implicit ec: ExecutionContext): Future[Unit] = {
-    val fileContents = ImageRequest(ref.value, ref.name, description, treeHubUri).asJson.noSpaces
+    val fileContents = ImageRequest(ref.value, ref.name, description, treeHubUri.toString).asJson.noSpaces
     val bodyPart = BodyPart.Strict("file", HttpEntity(fileContents), Map("fileName" -> ref.name.get))
     val formattedRefName = ref.name.get.replaceFirst("^heads/", "").replace("/", "-")
     val uri = baseUri.withPath(packagesUri.path + s"/treehub-$formattedRefName/${ref.value.get}")
