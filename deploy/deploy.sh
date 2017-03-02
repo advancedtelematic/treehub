@@ -30,9 +30,22 @@ fi
 # Merge service environment variables with secrets from this vault endpoint.
 export CATALOG_ADDR="http://catalog.gw.prod01.internal.advancedtelematic.com"
 
-REQ=$(envsubst < deploy/service.json)
-curl --show-error --silent --fail \
+function deploy {
+  REQ=$(envsubst < deploy/service.json)
+  curl --show-error --silent --fail \
      --header "X-Vault-Token: ${VAULT_TOKEN}" \
      --request POST \
      --data "$REQ" \
      ${CATALOG_ADDR}/service/${VAULT_ENDPOINT}
+}
+
+export SERVICE_SCOPE="public"
+export AUTH_PROTOCOL="oauth.accesstoken"
+export AUTH_VERIFICATION="auth-plus"
+deploy
+
+export JOB_NAME="${JOB_NAME}-internal"
+export SERVICE_SCOPE="internal"
+export AUTH_PROTOCOL="none"
+export AUTH_VERIFICATION="none"
+deploy
