@@ -14,17 +14,16 @@ export REGISTRY="advancedtelematic"
 export IMAGE_ARTIFACT=${REGISTRY}/${IMAGE_NAME}:${DOCKER_TAG}
 export KAFKA_TOPIC_SUFFIX="${DEPLOY_ENV-production}"
 
+export CLUSTER_CONSTRAINT="${CLUSTER_CONSTRAINT}-ostree}"
 
 if [[ "$JOB_NAME" == "treehub" ]]; then # production
     export JAVA_OPTS="-Xmx1800m"
     export CONTAINER_MEM="2048.0"
     export CONTAINER_CPU="0.9"
-    export CLUSTER_CONSTRAINT="ostreeprod"
 else
     export JAVA_OPTS="-Xmx900m"
     export CONTAINER_MEM="1024.0"
     export CONTAINER_CPU="0.8"
-    export CLUSTER_CONSTRAINT="ostree"
 fi
 
 # Merge service environment variables with secrets from this vault endpoint.
