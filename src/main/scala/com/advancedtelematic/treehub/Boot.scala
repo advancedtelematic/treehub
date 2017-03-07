@@ -75,11 +75,14 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   val namespaceExtractor = TreeHubHttp.extractNamespace.map(_.namespace)
   val deviceNamespace = TreeHubHttp.deviceNamespace(deviceRegistry)
 
-  val storage = {
-    if(useS3)
+  lazy val storage = {
+    if(useS3) {
+      log.info("Using s3 storage for object blobs")
       new S3BlobStore(s3Credentials)
-    else
+    } else {
+      log.info(s"Using local storage a t$localStorePath for object blobs")
       LocalFsBlobStore(localStorePath)
+    }
   }
 
   val objectStore = new ObjectStore(storage)
