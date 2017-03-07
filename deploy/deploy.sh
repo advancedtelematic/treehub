@@ -14,7 +14,7 @@ export REGISTRY="advancedtelematic"
 export IMAGE_ARTIFACT=${REGISTRY}/${IMAGE_NAME}:${DOCKER_TAG}
 export KAFKA_TOPIC_SUFFIX="${DEPLOY_ENV-production}"
 
-export CLUSTER_CONSTRAINT="${CLUSTER_CONSTRAINT}-ostree}"
+export CLUSTER_CONSTRAINT="${CLUSTER_CONSTRAINT-ostree}"
 
 if [[ "$JOB_NAME" == "treehub" ]]; then # production
     export JAVA_OPTS="-Xmx1800m"
