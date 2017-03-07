@@ -14,7 +14,19 @@ export REGISTRY="advancedtelematic"
 export IMAGE_ARTIFACT=${REGISTRY}/${IMAGE_NAME}:${DOCKER_TAG}
 export KAFKA_TOPIC_SUFFIX="${DEPLOY_ENV-production}"
 
-export CLUSTER_CONSTRAINT="${CLUSTER_CONSTRAINT-ostree}"
+# Merge service environment variables with secrets from this vault endpoint.
+export CATALOG_ADDR="http://catalog.gw.prod01.internal.advancedtelematic.com"
+
+function deploy {
+  cat deploy/service.json |
+  envsubst |
+  curl --show-error --silent --fail \
+     --header "X-Vault-Token: ${VAULT_TOKEN}" \
+     --header "Content-Type: application/json" \
+     --request POST \
+     --data @- \
+     ${CATALOG_ADDR}/service/${VAULT_ENDPOINT}
+}
 
 if [[ "$JOB_NAME" == "treehub" ]]; then # production
     export JAVA_OPTS="-Xmx1800m"
@@ -25,18 +37,6 @@ else
     export CONTAINER_MEM="1024.0"
     export CONTAINER_CPU="0.8"
 fi
-
-# Merge service environment variables with secrets from this vault endpoint.
-export CATALOG_ADDR="http://catalog.gw.prod01.internal.advancedtelematic.com"
-
-function deploy {
-  REQ=$(envsubst < deploy/service.json)
-  curl --show-error --silent --fail \
-     --header "X-Vault-Token: ${VAULT_TOKEN}" \
-     --request POST \
-     --data "$REQ" \
-     ${CATALOG_ADDR}/service/${VAULT_ENDPOINT}
-}
 
 export SERVICE_SCOPE="public"
 export AUTH_PROTOCOL="oauth.accesstoken"
