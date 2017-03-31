@@ -23,10 +23,15 @@ class TreeHubRoutes(tokenValidator: Directive0,
 
   import Directives._
 
-  def allRoutes(nsExtract: Directive1[Namespace], coreClient: Core): Route = {
+  def deviceRoutes(nsExtract: Directive1[Namespace], coreClient: Core): Route = {
     new ConfResource().route ~
-    new ObjectResource(nsExtract, objectStore, usageHandler).route ~
+    new ObjectResource(nsExtract, objectStore, usageHandler).deviceRoutes ~
     new RefResource(nsExtract, coreClient, objectStore).route
+  }
+
+  def allRoutes(nsExtract: Directive1[Namespace], coreClient: Core): Route = {
+    deviceRoutes(nsExtract, coreClient) ~
+    new ObjectResource(nsExtract, objectStore, usageHandler).adminRoutes
   }
 
   val routes: Route =
@@ -35,12 +40,13 @@ class TreeHubRoutes(tokenValidator: Directive0,
         (pathPrefix("api" / "v2") & tokenValidator) {
           allRoutes(namespaceExtractor, coreHttpClient) ~
           pathPrefix("mydevice") {
-            allRoutes(deviceNamespace, coreHttpClient)
+            deviceRoutes(deviceNamespace, coreHttpClient)
           }
         } ~
         (pathPrefix("api" / "v3") & tokenValidator) {
           allRoutes(namespaceExtractor, coreBusClient)
-        } ~ new HealthResource(db, versionMap).route
+        } ~
+        new HealthResource(db, versionMap).route
       }
     }
 }

@@ -31,7 +31,7 @@ class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore,
     usageHandler ! UpdateBandwidth(namespace, usageBytes, objectId)
   }
 
-  val route = namespace { ns =>
+  val deviceRoutes = namespace { ns =>
     path("objects" / PrefixedObjectId) { objectId =>
       head {
         val f = objectStore.exists(ns, objectId).map {
@@ -60,4 +60,16 @@ class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore,
       }
     }
   }
+
+  val adminRoutes =
+      path("objects" / PrefixedObjectId) { objectId =>
+        namespace { ns =>
+          (post & hintNamespaceStorage(ns)) {
+            fileUpload("file") { case (_, content) =>
+              val f = objectStore.store(ns, objectId, content).map(_ => StatusCodes.OK)
+              complete(f)
+            }
+          }
+        }
+      }
 }
