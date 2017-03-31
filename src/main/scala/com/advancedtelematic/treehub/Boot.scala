@@ -33,7 +33,7 @@ trait Settings {
   val packagesApi = config.getString("core.packagesApi")
 
   val treeHubUri = {
-    val uri = Uri(config.getString("server.treeHubHost"))
+    val uri = Uri(config.getString("server.treehubUri"))
     if(!uri.isAbsolute) throw new IllegalArgumentException("Treehub host is not an absolute uri")
     uri
   }
