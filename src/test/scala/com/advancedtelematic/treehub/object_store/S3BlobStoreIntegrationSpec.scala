@@ -1,7 +1,5 @@
 package com.advancedtelematic.treehub.object_store
 
-import java.nio.file.Paths
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.ActorMaterializer
@@ -13,6 +11,7 @@ import org.scalatest.time.{Seconds, Span}
 import com.advancedtelematic.data.DataType.ObjectIdOps
 import scala.async.Async.{async, await}
 import scala.concurrent.ExecutionContext
+import cats.syntax.either._
 
 class S3BlobStoreIntegrationSpec extends TreeHubSpec {
   implicit val ec = ExecutionContext.global

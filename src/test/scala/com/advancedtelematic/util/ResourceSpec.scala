@@ -15,11 +15,14 @@ import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBand
 import com.advancedtelematic.util.FakeUsageUpdate.{CurrentBandwith, CurrentStorage}
 import eu.timepit.refined.api.Refined
 import java.nio.file.Files
-import org.genivi.sota.core.DatabaseSpec
-import org.genivi.sota.data.Namespace
-import org.genivi.sota.http.NamespaceDirectives
+
 import org.scalatest.Suite
+
 import scala.util.Random
+import cats.syntax.either._
+import com.advancedtelematic.libats.auth.NamespaceDirectives
+import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.test.DatabaseSpec
 
 object ResourceSpec {
   class ClientTObject(blobStr: String = Random.nextString(10)) {

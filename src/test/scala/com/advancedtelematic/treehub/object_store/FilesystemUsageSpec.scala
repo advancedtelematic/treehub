@@ -4,6 +4,7 @@ import java.nio.file.{Files, Paths}
 
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.util.TreeHubSpec
+import cats.syntax.either._
 
 
 class FilesystemUsageSpec extends TreeHubSpec {

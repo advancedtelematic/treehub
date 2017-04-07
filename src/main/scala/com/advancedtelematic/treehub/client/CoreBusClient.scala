@@ -4,13 +4,13 @@
   */
 package com.advancedtelematic.treehub.client
 
-import scala.concurrent.ExecutionContext
 import akka.http.scaladsl.model.Uri
-import org.genivi.sota.messaging.MessageBusPublisher
-import scala.concurrent.{ExecutionContext, Future}
-import com.advancedtelematic.data.DataType.{Commit, Ref, RefName}
-import org.genivi.sota.messaging.Messages.TreehubCommit
 
+import scala.concurrent.{ExecutionContext, Future}
+import com.advancedtelematic.data.DataType.Ref
+import com.advancedtelematic.libats.messaging.MessageBusPublisher
+import com.advancedtelematic.libats.messaging_datatype.DataType.TreehubCommit
+import com.advancedtelematic.libats.messaging_datatype.Messages._
 
 class CoreBusClient(messageBusPublisher: MessageBusPublisher, treeHubUri: Uri) extends Core {
 

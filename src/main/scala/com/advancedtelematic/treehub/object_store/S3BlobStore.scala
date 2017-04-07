@@ -9,14 +9,14 @@ import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{FileIO, Source, StreamConverters}
 import akka.util.ByteString
-import cats.data.Xor
+import cats.syntax.either._
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.ObjectId
+import com.advancedtelematic.libats.data.Namespace
 import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider}
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.{CannedAccessControlList, PutObjectRequest}
-import org.genivi.sota.data.Namespace
 import org.slf4j.LoggerFactory
 
 import scala.async.Async._

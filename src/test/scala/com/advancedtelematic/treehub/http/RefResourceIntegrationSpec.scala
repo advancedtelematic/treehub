@@ -2,6 +2,7 @@ package com.advancedtelematic.treehub.http
 
 import java.io.File
 
+import cats.syntax.either._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.scaladsl.FileIO

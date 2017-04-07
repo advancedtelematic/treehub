@@ -2,15 +2,15 @@ package com.advancedtelematic.treehub.repo_metrics
 
 import java.nio.file.{Files, Paths}
 
+import cats.syntax.either._
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKitBase
-import cats.data.Xor
+import com.advancedtelematic.libats.messaging.MessageBus
+import com.advancedtelematic.libats.test.DatabaseSpec
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore}
 import com.advancedtelematic.util.TreeHubSpec
-import org.genivi.sota.core.DatabaseSpec
-import org.genivi.sota.messaging.MessageBus
 
 trait UsageUpdateSpec extends DatabaseSpec with ObjectRepositorySupport with TestKitBase {
   self: TreeHubSpec =>
@@ -27,8 +27,5 @@ trait UsageUpdateSpec extends DatabaseSpec with ObjectRepositorySupport with Tes
 
   lazy val objectStore = new ObjectStore(new LocalFsBlobStore(localFsDir.toFile))
 
-  lazy val messageBus = MessageBus.publisher(system, config) match {
-    case Xor.Right(mbp) => mbp
-    case Xor.Left(err) => throw err
-  }
+  lazy val messageBus = MessageBus.publisher(system, config).valueOr(throw _)
 }

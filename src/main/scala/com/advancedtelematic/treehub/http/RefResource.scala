@@ -3,11 +3,11 @@ package com.advancedtelematic.treehub.http
 import akka.http.scaladsl.server.{Directive, Directive1, Route}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.{Commit, Ref, RefName}
+import com.advancedtelematic.libats.data.Namespace
 import com.advancedtelematic.treehub.client.Core
 import com.advancedtelematic.treehub.db.RefRepository.RefNotFound
 import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
 import com.advancedtelematic.treehub.object_store.ObjectStore
-import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -18,7 +18,7 @@ class RefResource(namespace: Directive1[Namespace], coreClient: Core, objectStor
   extends RefRepositorySupport {
 
   import akka.http.scaladsl.server.Directives._
-  import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+  import com.advancedtelematic.libats.http.RefinedMarshallingSupport._
 
   private val refUpdateProcess = new RefUpdateProcess(coreClient, objectStore)
 

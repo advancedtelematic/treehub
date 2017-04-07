@@ -2,11 +2,11 @@ package com.advancedtelematic.data
 
 import java.nio.file.{Path, Paths}
 
-import cats.data.Xor
 import com.advancedtelematic.common.DigestCalculator
+import com.advancedtelematic.libats.data.Namespace
 import eu.timepit.refined.api.{Refined, Validate}
-import org.genivi.sota.data.Namespace
 import eu.timepit.refined.refineV
+import cats.syntax.either._
 
 object DataType {
   import ValidationUtils._
@@ -23,10 +23,8 @@ object DataType {
     )
 
   object Commit {
-    def from(bytes: Array[Byte]): Xor[String, Commit] = {
-      val commitE = refineV[ValidCommit](DigestCalculator.byteDigest()(bytes))
-      Xor.fromEither(commitE)
-    }
+    def from(bytes: Array[Byte]): Either[String, Commit] =
+      refineV[ValidCommit](DigestCalculator.byteDigest()(bytes))
   }
 
   case class Ref(namespace: Namespace, name: RefName, value: Commit, objectId: ObjectId)
@@ -57,9 +55,9 @@ object DataType {
   }
 
   object ObjectId {
-    def from(commit: Commit): ObjectId = ObjectId.parse(commit.get + ".commit").toEither.right.get
+    def from(commit: Commit): ObjectId = ObjectId.parse(commit.get + ".commit").right.get
 
-    def parse(string: String): Xor[String, ObjectId] = Xor.fromEither(refineV[ValidObjectId](string))
+    def parse(string: String): Either[String, ObjectId] = refineV[ValidObjectId](string)
   }
 
   case class TObject(namespace: Namespace, id: ObjectId, byteSize: Long)

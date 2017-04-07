@@ -1,11 +1,11 @@
 package com.advancedtelematic.treehub.repo_metrics
 
+import cats.syntax.either._
 import akka.testkit.{TestActorRef, TestKitBase}
 import com.advancedtelematic.data.DataType.ObjectId
+import com.advancedtelematic.libats.messaging_datatype.DataType.{BandwidthUsage, UpdateType}
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.UpdateBandwidth
 import com.advancedtelematic.util.TreeHubSpec
-import org.genivi.sota.data.UpdateType
-import org.genivi.sota.messaging.Messages.BandwidthUsage
 
 import scala.concurrent.duration._
 

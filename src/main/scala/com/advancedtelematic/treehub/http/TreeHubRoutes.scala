@@ -2,13 +2,14 @@ package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.server.{Directives, _}
 import akka.stream.Materializer
+import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.http.{DefaultRejectionHandler, ErrorHandler}
+import com.advancedtelematic.libats.slick.monitoring.DbHealthResource
 import com.advancedtelematic.treehub.VersionInfo
 import com.advancedtelematic.treehub.client.Core
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
-import org.genivi.sota.data.Namespace
-import org.genivi.sota.http.{ErrorHandler, HealthResource}
-import org.genivi.sota.rest.SotaRejectionHandler._
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
@@ -30,7 +31,7 @@ class TreeHubRoutes(tokenValidator: Directive0,
   }
 
   val routes: Route =
-    handleRejections(rejectionHandler) {
+    handleRejections(DefaultRejectionHandler.rejectionHandler) {
       ErrorHandler.handleErrors {
         (pathPrefix("api" / "v2") & tokenValidator) {
           allRoutes(namespaceExtractor, coreHttpClient) ~
@@ -40,7 +41,7 @@ class TreeHubRoutes(tokenValidator: Directive0,
         } ~
         (pathPrefix("api" / "v3") & tokenValidator) {
           allRoutes(namespaceExtractor, coreBusClient)
-        } ~ new HealthResource(db, versionMap).route
+        } ~ DbHealthResource(versionMap).route
       }
     }
 }

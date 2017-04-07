@@ -8,7 +8,6 @@ import akka.stream.scaladsl.{FileIO, Sink, Source}
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.treehub.http.Errors
-import org.genivi.sota.data.Namespace
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,6 +15,7 @@ import scala.util.Try
 import java.nio.file.StandardOpenOption.{CREATE, READ, WRITE}
 
 import akka.http.scaladsl.model.HttpResponse
+import com.advancedtelematic.libats.data.Namespace
 
 
 object LocalFsBlobStore {

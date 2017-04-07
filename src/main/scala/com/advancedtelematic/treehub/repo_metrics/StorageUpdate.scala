@@ -8,11 +8,12 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props, Status}
 import akka.stream.{ActorMaterializer, OverflowStrategy}
 import akka.stream.scaladsl.{Sink, Source}
 import com.advancedtelematic.data.DataType.ObjectId
+import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.messaging.MessageBusPublisher
+import com.advancedtelematic.libats.messaging_datatype.DataType.{BandwidthUsage, ImageStorageUsage, UpdateType}
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{Done, UpdateBandwidth, UpdateStorage}
-import org.genivi.sota.data.{Namespace, UpdateType}
-import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.{BandwidthUsage, ImageStorageUsage}
+import com.advancedtelematic.libats.messaging_datatype.Messages._
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration

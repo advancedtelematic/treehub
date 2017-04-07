@@ -3,12 +3,14 @@ package com.advancedtelematic.treehub.http
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.StatusCodes
 import com.advancedtelematic.data.DataType.{ObjectId, Ref, RefName, _}
+import com.advancedtelematic.libats.data.Namespace
 import com.advancedtelematic.treehub.client.Core
-import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
+import com.advancedtelematic.treehub.db.RefRepositorySupport
 import com.advancedtelematic.treehub.object_store.ObjectStore
-import org.genivi.sota.data.Namespace
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
+import com.advancedtelematic.libats.codecs.AkkaCirce._
+import de.heikoseeberger.akkahttpcirce.CirceSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
 

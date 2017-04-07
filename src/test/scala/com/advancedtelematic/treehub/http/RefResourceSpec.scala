@@ -8,6 +8,7 @@ import com.advancedtelematic.util.ResourceSpec.ClientTObject
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
 import eu.timepit.refined.api.{Refined, Validate}
 import org.slf4j.LoggerFactory
+import com.advancedtelematic.libats.http.RefinedMarshallingSupport._
 
 import scala.util.Random
 

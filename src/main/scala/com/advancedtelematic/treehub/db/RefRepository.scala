@@ -1,9 +1,9 @@
 package com.advancedtelematic.treehub.db
 
 import com.advancedtelematic.data.DataType.Ref
+import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.http.Errors.MissingEntity
 import com.advancedtelematic.treehub.http.Errors
-import org.genivi.sota.data.Namespace
-import org.genivi.sota.http.Errors.MissingEntity
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,9 +18,9 @@ object RefRepository {
 
 protected class RefRepository()(implicit db: Database, ec: ExecutionContext) {
   import RefRepository._
-  import org.genivi.sota.db.SlickAnyVal._
+  import com.advancedtelematic.libats.slick.db.SlickAnyVal._
   import com.advancedtelematic.data.DataType._
-  import org.genivi.sota.db.SlickExtensions._
+  import com.advancedtelematic.libats.slick.db.SlickExtensions._
 
   def persist(ref: Ref): Future[Unit] =
     db.run(Schema.refs

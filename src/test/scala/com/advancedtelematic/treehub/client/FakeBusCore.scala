@@ -6,7 +6,8 @@ package com.advancedtelematic.treehub.client
 
 import akka.actor.ActorSystem
 import com.advancedtelematic.data.DataType.{Commit, Ref}
-import org.genivi.sota.messaging.LocalMessageBus
+import com.advancedtelematic.libats.messaging.LocalMessageBus
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeBusCore()

@@ -1,11 +1,11 @@
 package com.advancedtelematic.treehub.db
 
-import org.genivi.sota.data.Namespace
+import com.advancedtelematic.libats.data.Namespace
 import slick.driver.MySQLDriver.api._
 
 object Schema {
-  import org.genivi.sota.db.SlickAnyVal._
-  import org.genivi.sota.refined.SlickRefined._
+  import com.advancedtelematic.libats.slick.db.SlickAnyVal._
+  import com.advancedtelematic.libats.slick.codecs.SlickRefined._
   import com.advancedtelematic.data.DataType._
 
   class TObjectTable(tag: Tag) extends Table[TObject](tag, "object") {

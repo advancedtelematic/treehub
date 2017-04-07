@@ -1,15 +1,15 @@
 package com.advancedtelematic.treehub.http
 
-import akka.http.scaladsl.model.{HttpEntity, MediaTypes, StatusCodes}
+import akka.http.scaladsl.model.{HttpEntity, HttpResponse, MediaTypes, StatusCodes}
 import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.ObjectId
+import com.advancedtelematic.libats.data.Namespace
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
-import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._
-
+import cats.syntax.either._
 import scala.concurrent.ExecutionContext
 import scala.util.Success
 

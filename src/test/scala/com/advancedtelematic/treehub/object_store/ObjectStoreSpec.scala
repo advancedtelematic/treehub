@@ -1,12 +1,15 @@
 package com.advancedtelematic.treehub.object_store
 
-import java.nio.file.{Files, Paths}
+import java.nio.file.Files
 
+import cats.syntax.either._
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
+import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.test.DatabaseSpec
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.util.TreeHubSpec
 import org.scalatest.concurrent.PatienceConfiguration
@@ -14,8 +17,6 @@ import org.scalatest.time.{Seconds, Span}
 
 import scala.concurrent.ExecutionContext
 import com.advancedtelematic.treehub.http.Errors
-import org.genivi.sota.core.DatabaseSpec
-import org.genivi.sota.data.Namespace
 
 class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositorySupport with PatienceConfiguration {
 
