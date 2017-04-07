@@ -10,7 +10,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.libats.data.Namespace
 import com.advancedtelematic.libats.messaging.MessageBusPublisher
-import com.advancedtelematic.libats.messaging_datatype.DataType.{BandwidthUsage, ImageStorageUsage, UpdateType}
+import com.advancedtelematic.libats.messaging_datatype.DataType.UpdateType
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{Done, UpdateBandwidth, UpdateStorage}
 import com.advancedtelematic.libats.messaging_datatype.Messages._

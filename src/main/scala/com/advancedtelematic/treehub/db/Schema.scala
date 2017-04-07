@@ -1,6 +1,7 @@
 package com.advancedtelematic.treehub.db
 
 import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import slick.driver.MySQLDriver.api._
 
 object Schema {

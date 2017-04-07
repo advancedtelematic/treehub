@@ -7,6 +7,7 @@ import com.advancedtelematic.libats.http.{DefaultRejectionHandler, ErrorHandler}
 import com.advancedtelematic.libats.slick.monitoring.DbHealthResource
 import com.advancedtelematic.treehub.VersionInfo
 import com.advancedtelematic.treehub.client.Core
+import com.advancedtelematic.treehub.delta_store.StaticDeltaStorage
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 
@@ -19,6 +20,7 @@ class TreeHubRoutes(tokenValidator: Directive0,
                     coreBusClient: Core,
                     deviceNamespace: Directive1[Namespace],
                     objectStore: ObjectStore,
+                    deltaStorage: StaticDeltaStorage,
                     usageHandler: UsageMetricsRouter.HandlerRef)
                    (implicit val db: Database, ec: ExecutionContext, mat: Materializer) extends VersionInfo {
 
@@ -27,7 +29,8 @@ class TreeHubRoutes(tokenValidator: Directive0,
   def allRoutes(nsExtract: Directive1[Namespace], coreClient: Core): Route = {
     new ConfResource().route ~
     new ObjectResource(nsExtract, objectStore, usageHandler).route ~
-    new RefResource(nsExtract, coreClient, objectStore).route
+    new RefResource(nsExtract, coreClient, objectStore).route ~
+    new DeltaResource(nsExtract, deltaStorage, usageHandler).route
   }
 
   val routes: Route =

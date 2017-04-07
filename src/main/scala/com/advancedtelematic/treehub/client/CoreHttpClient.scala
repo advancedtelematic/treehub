@@ -11,8 +11,9 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import com.advancedtelematic.data.DataType.{Commit, Ref, RefName}
+import com.advancedtelematic.data.DataType.{Ref, RefName}
 import com.advancedtelematic.libats.auth.NamespaceDirectives.nsHeader
+import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import io.circe.generic.auto._
 import io.circe.syntax._
 

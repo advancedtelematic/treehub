@@ -1,6 +1,6 @@
 package com.advancedtelematic.treehub.http
 
-import akka.http.scaladsl.model.{HttpEntity, HttpResponse, MediaTypes, StatusCodes}
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.ObjectId

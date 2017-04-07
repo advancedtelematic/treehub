@@ -22,7 +22,9 @@ import scala.util.Random
 import cats.syntax.either._
 import com.advancedtelematic.libats.auth.NamespaceDirectives
 import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import com.advancedtelematic.libats.test.DatabaseSpec
+import com.advancedtelematic.treehub.delta_store.LocalDeltaStorage
 
 object ResourceSpec {
   class ClientTObject(blobStr: String = Random.nextString(10)) {
@@ -84,7 +86,10 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec with Settings {
   val testBusCore = new FakeBusCore()
 
   lazy val namespaceExtractor = NamespaceDirectives.defaultNamespaceExtractor.map(_.namespace)
-  val objectStore = new ObjectStore(new LocalFsBlobStore(Files.createTempDirectory("treehub").toFile))
+
+  val objectStore = new ObjectStore(new LocalFsBlobStore(Files.createTempDirectory("treehub-obj")))
+
+  val deltaStore = new LocalDeltaStorage(Files.createTempDirectory("treehub-deltas"))
 
   val fakeUsageUpdate = system.actorOf(Props(new FakeUsageUpdate), "fake-usage-update")
 
@@ -94,5 +99,6 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec with Settings {
     testBusCore,
     namespaceExtractor,
     objectStore,
+    deltaStore,
     fakeUsageUpdate).routes
 }

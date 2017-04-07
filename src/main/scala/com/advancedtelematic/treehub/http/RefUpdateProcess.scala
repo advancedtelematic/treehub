@@ -10,6 +10,7 @@ import com.advancedtelematic.treehub.object_store.ObjectStore
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 import com.advancedtelematic.libats.codecs.AkkaCirce._
+import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import de.heikoseeberger.akkahttpcirce.CirceSupport._
 
 import scala.concurrent.{ExecutionContext, Future}

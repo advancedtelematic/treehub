@@ -26,7 +26,7 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
 
   override implicit def patienceConfig = PatienceConfig().copy(timeout = Span(3, Seconds))
 
-  val localStorageDir = Files.createTempDirectory("treehub").toFile
+  val localStorageDir = Files.createTempDirectory("treehub")
 
   val localStorage = new LocalFsBlobStore(localStorageDir)
 

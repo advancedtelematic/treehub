@@ -25,7 +25,7 @@ trait UsageUpdateSpec extends DatabaseSpec with ObjectRepositorySupport with Tes
 
   lazy val namespaceDir = Files.createDirectories(Paths.get(s"${localFsDir.toAbsolutePath}/${defaultNs.get}"))
 
-  lazy val objectStore = new ObjectStore(new LocalFsBlobStore(localFsDir.toFile))
+  lazy val objectStore = new ObjectStore(new LocalFsBlobStore(localFsDir))
 
   lazy val messageBus = MessageBus.publisher(system, config).valueOr(throw _)
 }

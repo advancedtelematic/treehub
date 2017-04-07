@@ -18,6 +18,7 @@ lazy val ItTest = config("it").extend(Test)
 
 lazy val UnitTest = config("ut").extend(Test)
 
+
 lazy val root = (project in file("."))
   .enablePlugins(BuildInfoPlugin)
   .configs(ItTest)
@@ -30,8 +31,7 @@ lazy val root = (project in file("."))
     val akkaV = "2.4.14"
     val akkaHttpV = "10.0.0"
     val scalaTestV = "3.0.0"
-    val slickV = "3.1.1"
-    val sotaV = "0.2.81"
+    val libatsV = "0.0.1-37-g55dd826"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
@@ -44,17 +44,14 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % "1.1.3",
       "org.slf4j" % "slf4j-api" % "1.7.16",
 
-      "org.genivi" %% "sota-common" % sotaV,
-      "org.genivi" %% "sota-common-messaging" % sotaV,
-      "org.genivi" %% "sota-common-client" % sotaV,
-      "org.genivi" %% "sota-common-db-test" % sotaV % "test",
+      "com.advancedtelematic" %% "libats" % libatsV,
+      "com.advancedtelematic" %% "libats-messaging" % libatsV,
+      "com.advancedtelematic" %% "libats-messaging-datatype" % libatsV,
+      "com.advancedtelematic" %% "libats-auth" % libatsV,
+      "com.advancedtelematic" %% "libats-slick" % libatsV,
 
       "org.scala-lang.modules" %% "scala-async" % "0.9.6",
-
-      "com.typesafe.slick" %% "slick" % slickV,
-      "com.typesafe.slick" %% "slick-hikaricp" % slickV,
       "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4",
-      "org.flywaydb" % "flyway-core" % "4.0.3",
 
       "com.amazonaws" % "aws-java-sdk-s3" % "1.11.86"
     )
@@ -65,13 +62,6 @@ mainClass in Compile := Some("com.advancedtelematic.treehub.Boot")
 buildInfoOptions += BuildInfoOption.ToMap
 
 buildInfoOptions += BuildInfoOption.BuildTime
-
-
-flywayUrl := sys.env.getOrElse("DB_URL", "jdbc:mysql://localhost:3306/ota_treehub")
-
-flywayUser := sys.env.getOrElse("DB_USER", "treehub")
-
-flywayPassword := sys.env.getOrElse("DB_PASSWORD", "treehub")
 
 import com.typesafe.sbt.packager.docker._
 

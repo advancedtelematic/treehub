@@ -3,10 +3,10 @@ package com.advancedtelematic.treehub.http
 import akka.util.ByteString
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.{TObject, _}
-import eu.timepit.refined.boolean.Xor
 import org.slf4j.LoggerFactory
 import eu.timepit.refined.refineV
 import cats.syntax.either._
+import com.advancedtelematic.libats.messaging_datatype.DataType.{Commit, ValidCommit}
 
 object RefUpdateValidation {
   val _log = LoggerFactory.getLogger(this.getClass)

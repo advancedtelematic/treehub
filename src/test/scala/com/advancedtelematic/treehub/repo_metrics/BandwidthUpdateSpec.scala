@@ -3,7 +3,8 @@ package com.advancedtelematic.treehub.repo_metrics
 import cats.syntax.either._
 import akka.testkit.{TestActorRef, TestKitBase}
 import com.advancedtelematic.data.DataType.ObjectId
-import com.advancedtelematic.libats.messaging_datatype.DataType.{BandwidthUsage, UpdateType}
+import com.advancedtelematic.libats.messaging_datatype.DataType.UpdateType
+import com.advancedtelematic.libats.messaging_datatype.Messages.BandwidthUsage
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.UpdateBandwidth
 import com.advancedtelematic.util.TreeHubSpec
 
