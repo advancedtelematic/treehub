@@ -1,33 +1,20 @@
 package com.advancedtelematic.data
 
 import java.nio.file.{Path, Paths}
+import java.util.Base64
 
-import cats.data.Xor
 import com.advancedtelematic.common.DigestCalculator
+import com.advancedtelematic.libats.data.Namespace
 import eu.timepit.refined.api.{Refined, Validate}
-import org.genivi.sota.data.Namespace
 import eu.timepit.refined.refineV
+import cats.syntax.either._
+import com.advancedtelematic.libats.messaging_datatype.DataType.{Commit, ValidCommit}
+import org.apache.commons.codec.binary.Hex
+
+import scala.util.Try
 
 object DataType {
-  import ValidationUtils._
-
-  case class ValidCommit()
-
-  type Commit = Refined[String, ValidCommit]
-
-  implicit val validCommit: Validate.Plain[String, ValidCommit] =
-    Validate.fromPredicate(
-      hash => validHex(64, hash),
-      hash => s"$hash is not a sha-256 commit hash",
-      ValidCommit()
-    )
-
-  object Commit {
-    def from(bytes: Array[Byte]): Xor[String, Commit] = {
-      val commitE = refineV[ValidCommit](DigestCalculator.byteDigest()(bytes))
-      Xor.fromEither(commitE)
-    }
-  }
+  import com.advancedtelematic.libats.data.ValidationUtils._
 
   case class Ref(namespace: Namespace, name: RefName, value: Commit, objectId: ObjectId)
 
@@ -57,16 +44,43 @@ object DataType {
   }
 
   object ObjectId {
-    def from(commit: Commit): ObjectId = ObjectId.parse(commit.get + ".commit").toEither.right.get
+    def from(commit: Commit): ObjectId = ObjectId.parse(commit.get + ".commit").right.get
 
-    def parse(string: String): Xor[String, ObjectId] = Xor.fromEither(refineV[ValidObjectId](string))
+    def parse(string: String): Either[String, ObjectId] = refineV[ValidObjectId](string)
   }
 
   case class TObject(namespace: Namespace, id: ObjectId, byteSize: Long)
-}
 
-protected[data] object ValidationUtils {
-  def validHex(length: Long, str: String): Boolean = {
-    str.length == length && str.forall(h => ('0' to '9').contains(h) || ('a' to 'f').contains(h))
+  protected def toBase64(value: String): Try[Array[Byte]] = {
+    Try(Base64.getDecoder.decode(value.replace("/", "").replace("_", "/")))
+  }
+
+  case class ValidDeltaId()
+  type DeltaId = Refined[String, ValidDeltaId]
+
+
+
+  implicit val validDeltaId: Validate.Plain[String, ValidDeltaId] =
+    Validate.fromPredicate(
+      v => {
+        val parts = v.split("-")
+        parts.length == 2 && toBase64(parts.head).isSuccess && toBase64(parts.last).isSuccess
+      },
+      v => s"$v is not a valid DeltaId (cc/mbase64(from.rest)-mbase64(to))",
+      ValidDeltaId()
+    )
+
+  implicit class DeltaIdOps(value: DeltaId) {
+    def asObjectId: Either[Throwable, ObjectId] = for {
+      toStr <- Either.catchNonFatal(value.get.split("-").last)
+      toBytes <- Either.fromTry(toBase64(toStr))
+      toCommit <- Either.catchNonFatal(Hex.encodeHexString(toBytes))
+      objectId <- ObjectId.parse(s"$toCommit.commit").leftMap(s => new IllegalArgumentException(s))
+    } yield objectId
+  }
+
+  object Commit {
+    def from(bytes: Array[Byte]): Either[String, Commit] =
+      refineV[ValidCommit](DigestCalculator.byteDigest()(bytes))
   }
 }

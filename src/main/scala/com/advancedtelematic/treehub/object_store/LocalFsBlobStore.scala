@@ -8,7 +8,6 @@ import akka.stream.scaladsl.{FileIO, Sink, Source}
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.treehub.http.Errors
-import org.genivi.sota.data.Namespace
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,26 +15,26 @@ import scala.util.Try
 import java.nio.file.StandardOpenOption.{CREATE, READ, WRITE}
 
 import akka.http.scaladsl.model.HttpResponse
+import com.advancedtelematic.libats.data.Namespace
 
 
 object LocalFsBlobStore {
   private val _log = LoggerFactory.getLogger(this.getClass)
 
-  def apply(root: String)(implicit mat: Materializer, ec: ExecutionContext): LocalFsBlobStore = {
-    val f = new File(root)
-    if(!f.exists() && !f.getParentFile.canWrite) {
+  def apply(root: Path)(implicit mat: Materializer, ec: ExecutionContext): LocalFsBlobStore = {
+    if(!root.toFile.exists() && !root.getParent.toFile.canWrite) {
       throw new IllegalArgumentException(s"Could not open $root as local blob store")
-    } else if (!f.exists()) {
-      Files.createDirectory(f.toPath)
+    } else if (!root.toFile.exists()) {
+      Files.createDirectories(root)
       _log.info(s"Created local fs blob store directory: $root")
     }
 
     _log.info(s"local fs blob store set to $root")
-    new LocalFsBlobStore(f)
+    new LocalFsBlobStore(root)
   }
 }
 
-class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
+class LocalFsBlobStore(root: Path)(implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
   override def store(ns: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long] = {
     for {
       path <- Future.fromTry(objectPath(ns, id))
@@ -74,9 +73,8 @@ class LocalFsBlobStore(root: File)(implicit ec: ExecutionContext, mat: Materiali
     Future.fromTry(path)
   }
 
-  private def namespacePath(ns: Namespace): Path = {
-    Paths.get(root.getAbsolutePath, ns.get)
-  }
+  private def namespacePath(ns: Namespace): Path =
+    root.toAbsolutePath.resolve(ns.get)
 
   private def objectPath(ns: Namespace, id: ObjectId): Try[Path] = {
     val path = id.path(namespacePath(ns))

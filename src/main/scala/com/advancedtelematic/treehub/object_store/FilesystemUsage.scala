@@ -4,8 +4,8 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.{FileVisitResult, Files, Path, SimpleFileVisitor}
 import java.util.function.BiFunction
 
-import cats.data.Xor
 import com.advancedtelematic.data.DataType.ObjectId
+import eu.timepit.refined.boolean.Xor
 import org.slf4j.LoggerFactory
 
 import scala.util.Try
@@ -28,12 +28,12 @@ object FilesystemUsage {
             val idXor = ObjectId.parse(s"$dirName${file.getFileName.toString}")
 
             idXor match {
-              case Xor.Right(id) =>
+              case Right(id) =>
                 usage.compute(id, new BiFunction[ObjectId, Long, Long]() {
                   override def apply(t: ObjectId, u: Long): Long =
                     Option(u).map(_ + size).getOrElse(size)
                 })
-              case Xor.Left(err) =>
+              case Left(err) =>
                 _log.warn(s"Could not parse file name into commit: $err")
             }
 

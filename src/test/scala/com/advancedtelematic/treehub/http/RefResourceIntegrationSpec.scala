@@ -2,10 +2,12 @@ package com.advancedtelematic.treehub.http
 
 import java.io.File
 
+import cats.syntax.either._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.scaladsl.FileIO
 import com.advancedtelematic.data.DataType.{Commit, ObjectId, Ref, RefName, TObject}
+import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
 import io.circe.generic.auto._

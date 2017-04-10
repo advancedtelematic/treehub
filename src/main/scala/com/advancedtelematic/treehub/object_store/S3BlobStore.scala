@@ -9,14 +9,14 @@ import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{FileIO, Source, StreamConverters}
 import akka.util.ByteString
-import cats.data.Xor
+import cats.syntax.either._
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.ObjectId
+import com.advancedtelematic.libats.data.Namespace
 import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider}
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.{CannedAccessControlList, PutObjectRequest}
-import org.genivi.sota.data.Namespace
 import org.slf4j.LoggerFactory
 
 import scala.async.Async._
@@ -29,7 +29,7 @@ class S3BlobStore(s3Credentials: S3Credentials)
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  private val bucketId = s3Credentials.bucketId
+  private val bucketId = s3Credentials.blobBucketId
 
   private lazy val s3client = AmazonS3ClientBuilder.standard()
       .withCredentials(s3Credentials)
@@ -55,7 +55,7 @@ class S3BlobStore(s3Credentials: S3Credentials)
   }
 
   protected def upload(file: File, filename: String): Future[Long] = {
-    val request = new PutObjectRequest(s3Credentials.bucketId, filename, file)
+    val request = new PutObjectRequest(s3Credentials.blobBucketId, filename, file)
       .withCannedAcl(CannedAccessControlList.AuthenticatedRead)
 
     log.info(s"Uploading $filename to amazon s3")
@@ -120,8 +120,10 @@ class S3BlobStore(s3Credentials: S3Credentials)
     objectId.path(Paths.get(namespaceDir(namespace))).toString
 }
 
-class S3Credentials(accessKey: String, secretKey: String, val bucketId: String, val region: Regions)
-  extends AWSCredentials with AWSCredentialsProvider {
+class S3Credentials(accessKey: String, secretKey: String,
+                    val blobBucketId: String,
+                    val deltasBucketId: String,
+                    val region: Regions) extends AWSCredentials with AWSCredentialsProvider {
   override def getAWSAccessKeyId: String = accessKey
 
   override def getAWSSecretKey: String = secretKey

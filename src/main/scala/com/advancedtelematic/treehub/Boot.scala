@@ -1,28 +1,27 @@
 package com.advancedtelematic.treehub
 
-import akka.actor.{ActorSystem, Props}
+import java.nio.file.Paths
+
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.{Directives, Route}
-import akka.stream.ActorMaterializer
-import cats.data.Xor
+import com.advancedtelematic.libats.http.BootApp
+import com.advancedtelematic.libats.messaging.MessageBus
+import com.advancedtelematic.libats.monitoring.MetricsSupport
+import com.advancedtelematic.libats.slick.db.{BootMigrations, DatabaseConfig}
+import com.advancedtelematic.libats.slick.monitoring.DatabaseMetrics
 import com.advancedtelematic.treehub.client._
 import com.advancedtelematic.treehub.http.{TreeHubRoutes, Http => TreeHubHttp}
 import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore, S3BlobStore, S3Credentials}
-import com.advancedtelematic.treehub.repo_metrics.{StorageUpdate, UsageMetricsRouter}
+import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 import com.amazonaws.regions.Regions
-import com.typesafe.config.ConfigException.Missing
-import com.typesafe.config.{ConfigException, ConfigFactory}
-import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
-import org.genivi.sota.client.DeviceRegistryClient
-import org.genivi.sota.http.BootApp
-import org.genivi.sota.http.LogDirectives.logResponseMetrics
-import org.genivi.sota.http.VersionDirectives.versionHeaders
-import org.genivi.sota.messaging.MessageBus
-import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
-import org.slf4j.LoggerFactory
+import com.typesafe.config.ConfigFactory
+import cats.syntax.either._
+import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.http.VersionDirectives._
+import com.advancedtelematic.libats.http.LogDirectives._
+import com.advancedtelematic.treehub.delta_store.{LocalDeltaStorage, S3DeltaStorage}
 
-import scala.util.Try
 
 trait Settings {
   lazy val config = ConfigFactory.load()
@@ -38,20 +37,19 @@ trait Settings {
     uri
   }
 
-  val localStorePath = config.getString("treehub.localStorePath")
+  val localStorePath = Paths.get(config.getString("treehub.localStorePath"))
 
   val deviceRegistryUri = Uri(config.getString("device_registry.baseUri"))
-  val deviceRegistryApi = Uri(config.getString("device_registry.devicesUri"))
-  val deviceRegistryGroupApi = Uri(config.getString("device_registry.deviceGroupsUri"))
   val deviceRegistryMyApi = Uri(config.getString("device_registry.mydeviceUri"))
-  val deviceRegistryPackagesUri = Uri(config.getString("device_registry.packagesUri"))
 
   lazy val s3Credentials = {
     val accessKey = config.getString("treehub.s3.accessKey")
     val secretKey = config.getString("treehub.s3.secretKey")
-    val bucketId = config.getString("treehub.s3.bucketId")
+    val objectBucketId = config.getString("treehub.s3.bucketId")
+    val deltasBucketId = config.getString("treehub.s3.deltasBucketId")
     val region = Regions.fromName(config.getString("treehub.s3.region"))
-    new S3Credentials(accessKey, secretKey, bucketId, region)
+
+    new S3Credentials(accessKey, secretKey, objectBucketId, deltasBucketId, region)
   }
 
   lazy val useS3 = config.getString("treehub.storage").equals("s3")
@@ -67,29 +65,34 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
 
   log.info(s"Starting $version on http://$host:$port")
 
-  val deviceRegistry = new DeviceRegistryClient(
-    deviceRegistryUri, deviceRegistryApi, deviceRegistryGroupApi, deviceRegistryMyApi, deviceRegistryPackagesUri
-  )
+  val deviceRegistry = new DeviceRegistryHttpClient(deviceRegistryUri, deviceRegistryMyApi)
 
   val tokenValidator = TreeHubHttp.tokenValidator
-  val namespaceExtractor = TreeHubHttp.extractNamespace.map(_.namespace)
+  val namespaceExtractor = TreeHubHttp.extractNamespace.map(_.namespace.get).map(Namespace.apply)
   val deviceNamespace = TreeHubHttp.deviceNamespace(deviceRegistry)
 
-  lazy val storage = {
+  lazy val objectStorage = {
     if(useS3) {
       log.info("Using s3 storage for object blobs")
       new S3BlobStore(s3Credentials)
     } else {
       log.info(s"Using local storage a t$localStorePath for object blobs")
-      LocalFsBlobStore(localStorePath)
+      LocalFsBlobStore(localStorePath.resolve("object-storage"))
     }
   }
 
-  val objectStore = new ObjectStore(storage)
-  val msgPublisher = MessageBus.publisher(system, config) match {
-    case Xor.Right(mbp) => mbp
-    case Xor.Left(err) => throw err
+  lazy val deltaStorage = {
+    if(useS3) {
+      log.info("Using s3 storage for object blobs")
+      new S3DeltaStorage(s3Credentials)
+    } else {
+      log.info(s"Using local storage at $localStorePath for object blobs")
+      new LocalDeltaStorage(localStorePath.resolve("delta-storage"))
+    }
   }
+
+  val objectStore = new ObjectStore(objectStorage)
+  val msgPublisher = MessageBus.publisher(system, config).valueOr(throw _)
   val coreHttpClient = new CoreHttpClient(coreUri, packagesApi, treeHubUri)
   val coreBusClient = new CoreBusClient(msgPublisher, treeHubUri)
 
@@ -98,7 +101,7 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   val routes: Route =
     (versionHeaders(version) & logResponseMetrics(projectName) & TreeHubHttp.transformAtsAuthHeader) {
       new TreeHubRoutes(tokenValidator, namespaceExtractor, coreHttpClient, coreBusClient,
-                        deviceNamespace, objectStore, usageHandler).routes
+                        deviceNamespace, objectStore, deltaStorage, usageHandler).routes
     }
 
   Http().bindAndHandle(routes, host, port)

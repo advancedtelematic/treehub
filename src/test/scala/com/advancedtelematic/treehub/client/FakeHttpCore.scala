@@ -4,8 +4,7 @@
   */
 package com.advancedtelematic.treehub.client
 
-import com.advancedtelematic.data.DataType.{Commit, Ref}
-import org.genivi.sota.data.Namespace
+import com.advancedtelematic.data.DataType.Ref
 
 import scala.concurrent.{ExecutionContext, Future}
 

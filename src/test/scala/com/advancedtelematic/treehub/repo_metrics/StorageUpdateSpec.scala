@@ -4,8 +4,9 @@ import akka.testkit.TestActorRef
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.UpdateStorage
 import com.advancedtelematic.util.TreeHubSpec
-import org.genivi.sota.data.Namespace
-import org.genivi.sota.messaging.Messages.ImageStorageUsage
+import cats.syntax.either._
+import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.messaging_datatype.Messages.ImageStorageUsage
 
 import scala.concurrent.duration._
 

@@ -11,11 +11,11 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import com.advancedtelematic.data.DataType.{Commit, Ref, RefName}
+import com.advancedtelematic.data.DataType.{Ref, RefName}
+import com.advancedtelematic.libats.auth.NamespaceDirectives.nsHeader
+import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.genivi.sota.http.NamespaceDirectives.nsHeader
-import org.genivi.sota.marshalling.CirceMarshallingSupport
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
@@ -23,7 +23,7 @@ import scala.reflect.ClassTag
 class CoreHttpClient(baseUri: Uri, packagesUri: Uri, treeHubUri: Uri)
                     (implicit system: ActorSystem, mat: ActorMaterializer) extends Core {
   import HttpMethods._
-  import CirceMarshallingSupport._
+  import de.heikoseeberger.akkahttpcirce.CirceSupport._
 
   private val http = akka.http.scaladsl.Http()
 
@@ -37,6 +37,7 @@ class CoreHttpClient(baseUri: Uri, packagesUri: Uri, treeHubUri: Uri)
     val uri = baseUri.withPath(packagesUri.path + s"/treehub-$formattedRefName/${ref.value.get}")
                      .withQuery(Query("description" -> description))
     val req = HttpRequest(method = PUT, uri = uri, entity = Multipart.FormData(bodyPart).toEntity())
+
     execHttp[Unit](req.addHeader(nsHeader(ref.namespace)))
   }
 

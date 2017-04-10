@@ -1,7 +1,7 @@
 package com.advancedtelematic.util
 
+import com.advancedtelematic.libats.data.Namespace
 import com.advancedtelematic.treehub.Settings
-import org.genivi.sota.data.Namespace
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, Matchers}
 
