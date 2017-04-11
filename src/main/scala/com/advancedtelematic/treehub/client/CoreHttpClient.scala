@@ -11,23 +11,32 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
+import com.advancedtelematic.data.Codecs._
 import com.advancedtelematic.data.DataType.{Ref, RefName}
 import com.advancedtelematic.libats.auth.NamespaceDirectives.nsHeader
+import com.advancedtelematic.libats.codecs.AkkaCirce.refinedEncoder
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
-import io.circe.generic.auto._
+import de.heikoseeberger.akkahttpcirce.CirceSupport._
+import io.circe.Encoder
+import io.circe.generic.semiauto._
 import io.circe.syntax._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
+object Requests {
+  sealed case class ImageRequest(commit: Commit, refName: RefName, description: String, pullUri: String)
+  object ImageRequest {
+    implicit val imageRequestEncoder: Encoder[ImageRequest] = deriveEncoder
+  }
+}
+
 class CoreHttpClient(baseUri: Uri, packagesUri: Uri, treeHubUri: Uri)
                     (implicit system: ActorSystem, mat: ActorMaterializer) extends Core {
   import HttpMethods._
-  import de.heikoseeberger.akkahttpcirce.CirceSupport._
+  import Requests._
 
   private val http = akka.http.scaladsl.Http()
-
-  sealed case class ImageRequest(commit: Commit, refName: RefName, description: String, pullUri: String)
 
   def publishRef(ref: Ref, description: String)
                 (implicit ec: ExecutionContext): Future[Unit] = {
