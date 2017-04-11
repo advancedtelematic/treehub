@@ -84,3 +84,11 @@ object DataType {
       refineV[ValidCommit](DigestCalculator.byteDigest()(bytes))
   }
 }
+
+object Codecs {
+  import io.circe.{Encoder, Decoder}
+  import DataType._
+
+  implicit val refNameEncoder: Encoder[RefName] = Encoder[String].contramap(_.get)
+  implicit val refNameDecoder: Decoder[RefName] = Decoder[String].map(RefName.apply)
+}
