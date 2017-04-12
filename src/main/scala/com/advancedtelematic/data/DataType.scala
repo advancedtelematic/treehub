@@ -58,8 +58,6 @@ object DataType {
   case class ValidDeltaId()
   type DeltaId = Refined[String, ValidDeltaId]
 
-
-
   implicit val validDeltaId: Validate.Plain[String, ValidDeltaId] =
     Validate.fromPredicate(
       v => {
@@ -71,6 +69,8 @@ object DataType {
     )
 
   implicit class DeltaIdOps(value: DeltaId) {
+    def urlSafe: String = value.get.replace("+", "_")
+
     def asObjectId: Either[Throwable, ObjectId] = for {
       toStr <- Either.catchNonFatal(value.get.split("-").last)
       toBytes <- Either.fromTry(toBase64(toStr))

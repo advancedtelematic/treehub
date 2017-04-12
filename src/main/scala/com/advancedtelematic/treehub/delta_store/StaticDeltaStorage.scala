@@ -28,7 +28,7 @@ trait StaticDeltaStorage {
   }
 
   protected[delta_store] def deltaDir(namespace: Namespace, deltaId: DeltaId): Path  =
-    namespaceDir(namespace).resolve(deltaId.get)
+    namespaceDir(namespace).resolve(deltaId.urlSafe)
 
   protected[delta_store] def summaryPath(namespace: Namespace): Path =
     namespaceDir(namespace).resolve("summary")
@@ -88,6 +88,7 @@ class S3DeltaStorage(s3Credentials: S3Credentials)(implicit ec: ExecutionContext
     val expire = java.util.Date.from(Instant.now.plus(publicExpireTime))
     Future {
       val filePath = deltaDir(namespace, deltaId).resolve(path)
+
       val signedUri = blocking {
         s3client.generatePresignedUrl(s3Credentials.deltasBucketId, filePath.toString, expire)
       }
