@@ -1,0 +1,8 @@
+%% Ensure when adding entities here they match what's defined in the internal-docs repo
+
+treehub --> auth_plus
+treehub --> kafka
+subgraph Treehub
+  treehub --> treehub_maria_db
+  treehub --> treehub_s3
+end
