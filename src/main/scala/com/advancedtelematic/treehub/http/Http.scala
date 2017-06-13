@@ -23,17 +23,4 @@ object Http {
 
   // TODO: Should be Materializer instead of ActorMaterializer
   def tokenValidator(implicit s: ActorSystem, mat: ActorMaterializer): Directive0 = TokenValidator().fromConfig
-
-  def transformAtsAuthHeader: Directive0 = mapRequest { req ⇒
-    req.mapHeaders { headers ⇒
-      val atsAuthHeader = headers.find(_.is("x-ats-authorization"))
-
-      atsAuthHeader match {
-        case Some(h) ⇒
-          val oauthToken = h.value().replace("Bearer ", "")
-          headers :+ Authorization(OAuth2BearerToken(oauthToken))
-        case None ⇒ headers
-      }
-    }
-  }
 }

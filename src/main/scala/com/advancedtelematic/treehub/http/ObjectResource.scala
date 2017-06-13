@@ -1,6 +1,7 @@
 package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.headers.Authorization
 import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.ObjectId
@@ -40,10 +41,10 @@ class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore,
         }
         complete(f)
       } ~
-      (get & optionalHeaderValueByName("x-ats-authorization")) { header ⇒
+      (get & optionalHeaderValueByType[Authorization]()) { header ⇒
         val f =
           objectStore
-            .findBlob(ns, objectId, clientAcceptsRedirects = header.isDefined)
+            .findBlob(ns, objectId, clientAcceptsRedirects = header.isEmpty)
             .andThen {
               case Success((size, _)) => publishBandwidthUsage(ns, size, objectId)
               case _ => ()
