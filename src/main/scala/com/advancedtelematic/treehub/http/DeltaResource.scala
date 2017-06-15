@@ -6,10 +6,13 @@ import com.advancedtelematic.data.DataType.{DeltaId, ValidDeltaId}
 import com.advancedtelematic.libats.data.Namespace
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 import com.advancedtelematic.libats.data.RefinedUtils.RefineTry
+import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import com.advancedtelematic.treehub.delta_store.StaticDeltaStorage
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.UpdateBandwidth
 import org.slf4j.LoggerFactory
+import com.advancedtelematic.data.DataType.CommitTupleOps
 import scala.util.Success
+import scala.collection.Searching.Found
 
 class DeltaResource(namespace: Directive1[Namespace], deltaStorage: StaticDeltaStorage, usageHandler: UsageMetricsRouter.HandlerRef) {
 
@@ -30,6 +33,8 @@ class DeltaResource(namespace: Directive1[Namespace], deltaStorage: StaticDeltaS
         usageHandler ! UpdateBandwidth(namespace, usageBytes, objectId)
     }
   }
+
+  import com.advancedtelematic.libats.http.RefinedMarshallingSupport._
 
   val route =
     extractExecutionContext { implicit ec =>
@@ -54,6 +59,11 @@ class DeltaResource(namespace: Directive1[Namespace], deltaStorage: StaticDeltaS
           }
 
           complete(f)
+        } ~
+        (path("deltas") & parameters('from.as[Commit], 'to.as[Commit])) { (from, to) =>
+          val deltaId = (from, to).toDeltaId
+          val uri = Uri(s"/deltas/${deltaId.get}")
+          complete(HttpResponse(StatusCodes.Found, headers = List(Location(uri))))
         }
       }
     }
