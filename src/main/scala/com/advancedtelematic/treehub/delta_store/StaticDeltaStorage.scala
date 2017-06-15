@@ -1,5 +1,6 @@
 package com.advancedtelematic.treehub.delta_store
 
+import java.io.IOException
 import java.nio.file.{Files, Path, Paths}
 import java.time.{Duration, Instant}
 
@@ -131,10 +132,10 @@ class LocalDeltaStorage(root: Path) extends StaticDeltaStorage {
     Future.successful(())
   }
 
-  def storeDelta(namespace: Namespace, deltaId: DeltaId, superBlock: Array[Byte]): Future[Unit] = {
-    val path = root.resolve(deltaDir(namespace, deltaId).resolve("superblock"))
+  def storeBytes(namespace: Namespace, deltaId: DeltaId, objPath: String, bytes: Array[Byte]): Future[Unit] = {
+    val path = root.resolve(deltaDir(namespace, deltaId).resolve(objPath))
     ensureDirExists(path)
-    Files.write(path, superBlock)
+    Files.write(path, bytes)
     Future.successful(())
   }
 

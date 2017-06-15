@@ -2,7 +2,6 @@ package com.advancedtelematic.data
 
 import java.nio.file.{Path, Paths}
 import java.util.Base64
-
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.libats.data.Namespace
 import eu.timepit.refined.api.{Refined, Validate}
@@ -10,6 +9,7 @@ import eu.timepit.refined.refineV
 import cats.syntax.either._
 import com.advancedtelematic.libats.messaging_datatype.DataType.{Commit, ValidCommit}
 import org.apache.commons.codec.binary.Hex
+import com.advancedtelematic.libats.data.RefinedUtils.RefineTry
 
 import scala.util.Try
 
@@ -33,6 +33,21 @@ object DataType {
     )
 
   type ObjectId = Refined[String, ValidObjectId]
+
+  implicit class CommitTupleOps(value: (Commit, Commit)) {
+    private def mbase64(str: String): String = {
+      val hex = Hex.decodeHex(str.toCharArray)
+      Base64.getEncoder.encodeToString(hex).replace("/", "_").replace("=", "")
+    }
+
+    def toDeltaId: DeltaId = {
+      val (from, to) = value
+      val (fromHead, fromTail) =  mbase64(from.get).splitAt(2)
+      val toMbase = mbase64(to.get)
+
+      s"$fromHead/$fromTail-$toMbase".refineTry[ValidDeltaId].get
+    }
+  }
 
   implicit class ObjectIdOps(value: ObjectId) {
     def path(parent: Path): Path = {
