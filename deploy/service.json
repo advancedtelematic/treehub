@@ -1,43 +1,55 @@
-{
-  "id": "${JOB_NAME}",
+[{
+  "id": "${DEPLOY_ENV}/${JOB_NAME}",
   "uris": ["/root/docker.tar.gz"],
-  "constraints": [["rack_id", "CLUSTER", "stateless"]],
-  "cpus": ${CONTAINER_CPU},
-  "mem": ${CONTAINER_MEM},
+  "constraints": [["rack_id", "CLUSTER", "$MARATHON_CONSTRAINTS"]],
+  "cpus": ${USE_CPU},
+  "mem": ${USE_MEM},
   "instances": 1,
   "container": {
     "type": "DOCKER",
     "docker": {
       "image": "${IMAGE_ARTIFACT}",
-      "parameters": [{"key": "log-driver", "value": "syslog"}],
+      "parameters": [{"key": "log-driver", "value": "syslog"},
+                     {"key": "log-opt", "value": "tag=${JOB_NAME}"}],
       "forcePullImage": true,
       "network": "BRIDGE",
       "portMappings": [{
-        "containerPort": 8084,
+        "containerPort": 9001,
         "hostPort": 0,
         "protocol": "tcp"
       }]
-    },
-    "volumes": [{
-      "containerPath": "/data",
-      "hostPath": "/data/${JOB_NAME}",
-      "mode": "RW"
-    }]
+    }
   },
   "env": {
-    "SERVICE_NAME": "${JOB_NAME}",
-    "SERVICE_SCOPE": "${SERVICE_SCOPE}",
-    "SERVICE_TYPE": "http",
-    "SERVICE_IMAGE": "${IMAGE_ARTIFACT}",
-    "SERVICE_HEALTH_CHECK": "curl --show-error --silent %<host>s:%<port>s/health",
+    "AUTH_PROTOCOL": "none",
     "BIND_HOST": "0.0.0.0",
-    "BIND_PORT": "8084",
-    "AUTH_PROTOCOL": "${AUTH_PROTOCOL}",
-    "AUTH_VERIFICATION": "${AUTH_VERIFICATION}",
+    "BIND_PORT": "9001",
     "DB_MIGRATE": "true",
+    "DB_PASSWORD": "${DB_PASSWORD}",
+    "DB_URL": "${DB_URL}",
+    "DB_USER": "${DB_USER}",
+    "DELTAS_AWS_BUCKET_ID": "${DELTAS_AWS_BUCKET_ID}",
+    "DEVICE_REGISTRY_HOST": "${DEVICE_REGISTRY_HOST}",
+    "DEVICE_REGISTRY_PORT": "${DEVICE_REGISTRY_PORT}",
+    "DEVICE_TOKEN": "${DEVICE_TOKEN}",
     "JAVA_OPTS": "${JAVA_OPTS}",
+    "JWT_SECRET": "${JWT_SECRET}",
+    "KAFKA_HOST": "${KAFKA_HOST}",
     "KAFKA_TOPIC_SUFFIX": "${KAFKA_TOPIC_SUFFIX}",
-    "MESSAGING_MODE": "kafka"
+    "MESSAGING_MODE": "kafka",
+    "SERVICE_HEALTH_CHECK": "curl --show-error --silent %<host>s:%<port>s/health",
+    "SERVICE_IMAGE": "${IMAGE_ARTIFACT}",
+    "SERVICE_NAME": "${JOB_NAME}",
+    "SERVICE_SCOPE": "internal",
+    "SERVICE_TYPE": "http",
+    "SOTA_CORE_HOST": "${SOTA_CORE_HOST}",
+    "SOTA_CORE_PORT": "${SOTA_CORE_PORT}",
+    "TREEHUB_AWS_ACCESS_KEY": "${TREEHUB_AWS_ACCESS_KEY}",
+    "TREEHUB_AWS_BUCKET_ID": "${TREEHUB_AWS_BUCKET_ID}",
+    "TREEHUB_AWS_REGION": "${TREEHUB_AWS_REGION}",
+    "TREEHUB_AWS_SECRET_KEY": "${TREEHUB_AWS_SECRET_KEY}",
+    "TREEHUB_HOSTNAME": "${TREEHUB_HOSTNAME}",
+    "TREEHUB_STORAGE": "${TREEHUB_STORAGE}"
   },
   "healthChecks": [{
     "protocol": "HTTP",
@@ -48,4 +60,74 @@
   "backoffFactor": 1.15,
   "maxLaunchDelaySeconds": 3600,
   "taskKillGracePeriodSeconds": 2
-}
+},
+{
+  "id": "${DEPLOY_ENV}/${JOB_NAME}-pub",
+  "uris": ["/root/docker.tar.gz"],
+  "constraints": [["rack_id", "CLUSTER", "$MARATHON_CONSTRAINTS"]],
+  "cpus": ${USE_CPU},
+  "mem": ${USE_MEM},
+  "instances": 1,
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "${IMAGE_ARTIFACT}",
+      "parameters": [{"key": "log-driver", "value": "syslog"},
+                     {"key": "log-opt", "value": "tag=${JOB_NAME}-pub"}],
+      "forcePullImage": true,
+      "network": "BRIDGE",
+      "portMappings": [{
+        "containerPort": 9001,
+        "hostPort": 0,
+        "protocol": "tcp"
+      }]
+    }
+  },
+  "env": {
+    "AUTHPLUS_CLIENT_ID": "${AUTHPLUS_CLIENT_ID}",
+    "AUTHPLUS_CLIENT_SECRET": "${AUTHPLUS_CLIENT_SECRET}",
+    "AUTH_PLUS_HOST": "${AUTH_PLUS_HOST}",
+    "AUTH_PLUS_PORT": "${AUTH_PLUS_PORT}",
+    "AUTH_PLUS_SCHEME": "https",
+    "AUTH_PROTOCOL": "oauth.accesstoken",
+    "AUTH_VERIFICATION": "auth-plus",
+    "BIND_HOST": "0.0.0.0",
+    "BIND_PORT": "9001",
+    "DB_MIGRATE": "true",
+    "DB_PASSWORD": "${DB_PASSWORD}",
+    "DB_URL": "${DB_URL}",
+    "DB_USER": "${DB_USER}",
+    "DELTAS_AWS_BUCKET_ID": "${DELTAS_AWS_BUCKET_ID}",
+    "DEVICE_REGISTRY_HOST": "${DEVICE_REGISTRY_HOST}",
+    "DEVICE_REGISTRY_PORT": "${DEVICE_REGISTRY_PORT}",
+    "DEVICE_TOKEN": "${DEVICE_TOKEN}",
+    "JAVA_OPTS": "${JAVA_OPTS}",
+    "JWT_SECRET": "${JWT_SECRET}",
+    "KAFKA_HOST": "${KAFKA_HOST}",
+    "KAFKA_TOPIC_SUFFIX": "${KAFKA_TOPIC_SUFFIX}",
+    "MESSAGING_MODE": "kafka",
+    "SERVICE_HEALTH_CHECK": "curl --show-error --silent %<host>s:%<port>s/health",
+    "SERVICE_IMAGE": "${IMAGE_ARTIFACT}",
+    "SERVICE_NAME": "${JOB_NAME}-pub",
+    "SERVICE_SCOPE": "public",
+    "SERVICE_TYPE": "http",
+    "SOTA_CORE_HOST": "${SOTA_CORE_HOST}",
+    "SOTA_CORE_PORT": "${SOTA_CORE_PORT}",
+    "TREEHUB_AWS_ACCESS_KEY": "${TREEHUB_AWS_ACCESS_KEY}",
+    "TREEHUB_AWS_BUCKET_ID": "${TREEHUB_AWS_BUCKET_ID}",
+    "TREEHUB_AWS_REGION": "${TREEHUB_AWS_REGION}",
+    "TREEHUB_AWS_SECRET_KEY": "${TREEHUB_AWS_SECRET_KEY}",
+    "TREEHUB_HOSTNAME": "${TREEHUB_HOSTNAME}",
+    "TREEHUB_STORAGE": "${TREEHUB_STORAGE}"
+  },
+  "healthChecks": [{
+    "protocol": "HTTP",
+    "path": "/health",
+    "intervalSeconds": 30
+  }],
+  "backoffSeconds": 1,
+  "backoffFactor": 1.15,
+  "maxLaunchDelaySeconds": 3600,
+  "taskKillGracePeriodSeconds": 2
+}]
+
