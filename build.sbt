@@ -4,9 +4,9 @@ scalaVersion := "2.11.8"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
-resolvers += "ATS Releases" at "http://nexus.prod01.internal.advancedtelematic.com:8081/content/repositories/releases"
+resolvers += "ATS Releases" at "http://nexus.advancedtelematic.com:8081/content/repositories/releases"
 
-resolvers += "ATS Snapshots" at "http://nexus.prod01.internal.advancedtelematic.com:8081/content/repositories/snapshots"
+resolvers += "ATS Snapshots" at "http://nexus.advancedtelematic.com:8081/content/repositories/snapshots"
 
 resolvers += "commons-logging-empty" at "http://version99.qos.ch"
 
