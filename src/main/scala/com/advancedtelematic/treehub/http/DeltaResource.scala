@@ -62,7 +62,7 @@ class DeltaResource(namespace: Directive1[Namespace], deltaStorage: StaticDeltaS
         } ~
         (path("deltas") & parameters('from.as[Commit], 'to.as[Commit])) { (from, to) =>
           val deltaId = (from, to).toDeltaId
-          val uri = Uri(s"/deltas/${deltaId.get}")
+          val uri = Uri(s"/deltas/${deltaId.value}")
           complete(HttpResponse(StatusCodes.Found, headers = List(Location(uri))))
         }
       }

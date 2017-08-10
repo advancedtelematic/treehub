@@ -6,7 +6,7 @@ import com.advancedtelematic.treehub.db.Schema.TObjectTable
 import com.advancedtelematic.treehub.http.Errors
 
 import scala.concurrent.{ExecutionContext, Future}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 trait ObjectRepositorySupport {
   def objectRepository(implicit db: Database, ec: ExecutionContext) = new ObjectRepository()

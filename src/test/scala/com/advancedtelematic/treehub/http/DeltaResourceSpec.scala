@@ -28,7 +28,7 @@ class DeltaResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposit
     val deltaId = "81/18918981-278278".refineTry[ValidDeltaId].get
     deltaStore.storeBytes(defaultNs, deltaId, "superblock", "some superblock data".getBytes)
 
-    Get(apiUri(s"deltas/${deltaId.get}/superblock")) ~> routes ~> check {
+    Get(apiUri(s"deltas/${deltaId.value}/superblock")) ~> routes ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Array[Byte]] shouldBe "some superblock data".getBytes
     }
@@ -39,9 +39,9 @@ class DeltaResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposit
     val to: Commit = Refined.unsafeApply("82e35a63ceba37e9646434c5dd412ea577147f1e4a41ccde1614253187e3dbf9")
     val deltaId = (from, to).toDeltaId
 
-    Get(apiUri(s"deltas?from=${from.get}&to=${to.get}")) ~> routes ~> check {
+    Get(apiUri(s"deltas?from=${from.value}&to=${to.value}")) ~> routes ~> check {
       status shouldBe StatusCodes.Found
-      header[Location].map(_.uri.toString()) should contain(s"/deltas/${deltaId.get}")
+      header[Location].map(_.uri.toString()) should contain(s"/deltas/${deltaId.value}")
     }
   }
 
@@ -50,7 +50,7 @@ class DeltaResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposit
     val blob = "some other data".getBytes
     deltaStore.storeBytes(defaultNs, deltaId, "superblock", blob)
 
-    Get(apiUri(s"deltas/${deltaId.get}/superblock")) ~> routes ~> check {
+    Get(apiUri(s"deltas/${deltaId.value}/superblock")) ~> routes ~> check {
       status shouldBe StatusCodes.OK
     }
 

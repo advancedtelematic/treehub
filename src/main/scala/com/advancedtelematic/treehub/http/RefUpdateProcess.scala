@@ -8,10 +8,10 @@ import com.advancedtelematic.treehub.client.Core
 import com.advancedtelematic.treehub.db.RefRepositorySupport
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import org.slf4j.LoggerFactory
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import com.advancedtelematic.libats.codecs.AkkaCirce._
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
-import de.heikoseeberger.akkahttpcirce.CirceSupport._
+import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -28,7 +28,7 @@ class RefUpdateProcess(coreClient: Core, objectStore: ObjectStore)(implicit db: 
         for {
           _ <- refRepository.persist(newRef)
           _ <- publishIfPending(ref, newRef)
-        } yield StatusCodes.OK -> commit.get
+        } yield StatusCodes.OK -> commit.value
 
       } else {
         Future.successful(StatusCodes.PreconditionFailed -> "Cannot force push")
@@ -42,7 +42,7 @@ class RefUpdateProcess(coreClient: Core, objectStore: ObjectStore)(implicit db: 
     for {
       _ <- refRepository.persist(newRef)
       _ <- publishRef(newRef)
-    } yield commit.get
+    } yield commit.value
   }
 
   private def commitIsValidParent(ns: Namespace, ref: Ref, newCommit: Commit): Future[Boolean] = {
@@ -63,7 +63,7 @@ class RefUpdateProcess(coreClient: Core, objectStore: ObjectStore)(implicit db: 
   private def publishRef(ref: Ref): Future[Unit] = {
     //TODO: PRO-1802 pass the refname as the description until we can parse the real description out of the commit
     coreClient
-      .publishRef(ref, ref.value.get)
+      .publishRef(ref, ref.value.value)
       .flatMap(_ => refRepository.setPublished(ref.namespace, ref.name, published = true))
       .recover { case err =>
         _log.error("Could not publish ref to core", err)

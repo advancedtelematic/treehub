@@ -9,7 +9,7 @@ import com.advancedtelematic.treehub.client.Core
 import com.advancedtelematic.treehub.db.RefRepository.RefNotFound
 import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
 import com.advancedtelematic.treehub.object_store.ObjectStore
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -51,7 +51,7 @@ class RefResource(namespace: Directive1[Namespace], coreClient: Core, objectStor
         }
       } ~
       get {
-        val f = refRepository.find(ns, refName).map(_.value.get)
+        val f = refRepository.find(ns, refName).map(_.value.value)
         complete(f)
       }
     }

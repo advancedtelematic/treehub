@@ -20,46 +20,48 @@ import cats.syntax.either._
 import com.advancedtelematic.libats.data.Namespace
 import com.advancedtelematic.libats.http.VersionDirectives._
 import com.advancedtelematic.libats.http.LogDirectives._
+import com.advancedtelematic.metrics.{InfluxDbMetricsReporterSettings, InfluxdbMetricsReporterSupport}
 import com.advancedtelematic.treehub.delta_store.{LocalDeltaStorage, S3DeltaStorage}
 
 
 trait Settings {
-  lazy val config = ConfigFactory.load()
+  private lazy val _config = ConfigFactory.load()
 
-  val host = config.getString("server.host")
-  val port = config.getInt("server.port")
-  val coreUri = config.getString("core.baseUri")
-  val packagesApi = config.getString("core.packagesApi")
+  val host = _config.getString("server.host")
+  val port = _config.getInt("server.port")
+  val coreUri = _config.getString("core.baseUri")
+  val packagesApi = _config.getString("core.packagesApi")
 
   val treeHubUri = {
-    val uri = Uri(config.getString("server.treehubUri"))
+    val uri = Uri(_config.getString("server.treehubUri"))
     if(!uri.isAbsolute) throw new IllegalArgumentException("Treehub host is not an absolute uri")
     uri
   }
 
-  val localStorePath = Paths.get(config.getString("treehub.localStorePath"))
+  val localStorePath = Paths.get(_config.getString("treehub.localStorePath"))
 
-  val deviceRegistryUri = Uri(config.getString("device_registry.baseUri"))
-  val deviceRegistryMyApi = Uri(config.getString("device_registry.mydeviceUri"))
+  val deviceRegistryUri = Uri(_config.getString("device_registry.baseUri"))
+  val deviceRegistryMyApi = Uri(_config.getString("device_registry.mydeviceUri"))
 
   lazy val s3Credentials = {
-    val accessKey = config.getString("treehub.s3.accessKey")
-    val secretKey = config.getString("treehub.s3.secretKey")
-    val objectBucketId = config.getString("treehub.s3.bucketId")
-    val deltasBucketId = config.getString("treehub.s3.deltasBucketId")
-    val region = Regions.fromName(config.getString("treehub.s3.region"))
+    val accessKey = _config.getString("treehub.s3.accessKey")
+    val secretKey = _config.getString("treehub.s3.secretKey")
+    val objectBucketId = _config.getString("treehub.s3.bucketId")
+    val deltasBucketId = _config.getString("treehub.s3.deltasBucketId")
+    val region = Regions.fromName(_config.getString("treehub.s3.region"))
 
     new S3Credentials(accessKey, secretKey, objectBucketId, deltasBucketId, region)
   }
 
-  lazy val useS3 = config.getString("treehub.storage").equals("s3")
+  lazy val useS3 = _config.getString("treehub.storage").equals("s3")
 }
 
 object Boot extends BootApp with Directives with Settings with VersionInfo
   with BootMigrations
   with DatabaseConfig
   with MetricsSupport
-  with DatabaseMetrics {
+  with DatabaseMetrics
+  with InfluxdbMetricsReporterSupport {
 
   implicit val _db = db
 

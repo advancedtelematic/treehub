@@ -31,7 +31,7 @@ object DeviceIdDirectives {
     if (tokens.size == 1) {
       refineV[Uuid](tokens.toVector(0)) match {
         case Left(msg) => Left(msg)
-        case Right(uuid) => Right(UUID.fromString(uuid.get))
+        case Right(uuid) => Right(UUID.fromString(uuid.value))
       }
     } else {
       Left("Can't extract uuid from scopes")

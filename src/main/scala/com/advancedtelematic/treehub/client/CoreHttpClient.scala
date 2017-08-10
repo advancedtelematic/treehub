@@ -16,7 +16,7 @@ import com.advancedtelematic.data.DataType.{Ref, RefName}
 import com.advancedtelematic.libats.auth.NamespaceDirectives.nsHeader
 import com.advancedtelematic.libats.codecs.AkkaCirce.refinedEncoder
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
-import de.heikoseeberger.akkahttpcirce.CirceSupport._
+import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.Encoder
 import io.circe.generic.semiauto._
 import io.circe.syntax._
@@ -43,7 +43,7 @@ class CoreHttpClient(baseUri: Uri, packagesUri: Uri, treeHubUri: Uri)
     val fileContents = ImageRequest(ref.value, ref.name, description, treeHubUri.toString).asJson.noSpaces
     val bodyPart = BodyPart.Strict("file", HttpEntity(fileContents), Map("fileName" -> ref.name.get))
     val formattedRefName = ref.name.get.replaceFirst("^heads/", "").replace("/", "-")
-    val uri = baseUri.withPath(packagesUri.path + s"/treehub-$formattedRefName/${ref.value.get}")
+    val uri = baseUri.withPath(packagesUri.path + s"/treehub-$formattedRefName/${ref.value.value}")
                      .withQuery(Query("description" -> description))
     val req = HttpRequest(method = PUT, uri = uri, entity = Multipart.FormData(bodyPart).toEntity())
 

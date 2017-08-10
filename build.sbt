@@ -28,10 +28,10 @@ lazy val root = (project in file("."))
   .settings(testOptions in UnitTest := Seq(Tests.Filter(unitFilter)))
   .settings(testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)))
   .settings(Seq(libraryDependencies ++= {
-    val akkaV = "2.4.14"
-    val akkaHttpV = "10.0.0"
+    val akkaV = "2.4.17"
+    val akkaHttpV = "10.0.5"
     val scalaTestV = "3.0.0"
-    val libatsV = "0.0.1-37-g55dd826"
+    val libatsV = "0.0.1-92-g4c0fb8e"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
@@ -49,6 +49,7 @@ lazy val root = (project in file("."))
       "com.advancedtelematic" %% "libats-messaging-datatype" % libatsV,
       "com.advancedtelematic" %% "libats-auth" % libatsV,
       "com.advancedtelematic" %% "libats-slick" % libatsV,
+      "com.advancedtelematic" %% "libats-metrics-akka" % libatsV,
 
       "org.scala-lang.modules" %% "scala-async" % "0.9.6",
       "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4",

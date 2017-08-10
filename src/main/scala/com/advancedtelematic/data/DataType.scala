@@ -42,8 +42,8 @@ object DataType {
 
     def toDeltaId: DeltaId = {
       val (from, to) = value
-      val (fromHead, fromTail) =  mbase64(from.get).splitAt(2)
-      val toMbase = mbase64(to.get)
+      val (fromHead, fromTail) =  mbase64(from.value).splitAt(2)
+      val toMbase = mbase64(to.value)
 
       s"$fromHead/$fromTail-$toMbase".refineTry[ValidDeltaId].get
     }
@@ -51,7 +51,7 @@ object DataType {
 
   implicit class ObjectIdOps(value: ObjectId) {
     def path(parent: Path): Path = {
-      val (prefix, rest) = value.get.splitAt(2)
+      val (prefix, rest) = value.value.splitAt(2)
       Paths.get(parent.toString, prefix, rest)
     }
 
@@ -59,7 +59,7 @@ object DataType {
   }
 
   object ObjectId {
-    def from(commit: Commit): ObjectId = ObjectId.parse(commit.get + ".commit").right.get
+    def from(commit: Commit): ObjectId = ObjectId.parse(commit.value + ".commit").right.get
 
     def parse(string: String): Either[String, ObjectId] = refineV[ValidObjectId](string)
   }
@@ -84,10 +84,10 @@ object DataType {
     )
 
   implicit class DeltaIdOps(value: DeltaId) {
-    def urlSafe: String = value.get.replace("+", "_")
+    def urlSafe: String = value.value.replace("+", "_")
 
     def asObjectId: Either[Throwable, ObjectId] = for {
-      toStr <- Either.catchNonFatal(value.get.split("-").last)
+      toStr <- Either.catchNonFatal(value.value.split("-").last)
       toBytes <- Either.fromTry(toBase64(toStr))
       toCommit <- Either.catchNonFatal(Hex.encodeHexString(toBytes))
       objectId <- ObjectId.parse(s"$toCommit.commit").leftMap(s => new IllegalArgumentException(s))

@@ -103,9 +103,9 @@ protected class BandwidthUpdate(publisher: MessageBusPublisher, objectStore: Obj
   import akka.pattern.pipe
 
   private def update(namespace: Namespace, usedBandwidthBytes: Long, objectId: ObjectId): Future[Done] = {
-    val uuid = UUID.nameUUIDFromBytes(Instant.now.toString.getBytes ++ objectId.get.getBytes)
+    val uuid = UUID.nameUUIDFromBytes(Instant.now.toString.getBytes ++ objectId.value.getBytes)
     publisher.publish(BandwidthUsage(uuid, namespace, Instant.now, usedBandwidthBytes,
-      UpdateType.Image, objectId.get)).map(_ => Done(namespace))
+      UpdateType.Image, objectId.value)).map(_ => Done(namespace))
   }
 
   override def receive: Receive = {

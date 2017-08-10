@@ -2,7 +2,7 @@ package com.advancedtelematic.treehub.db
 
 import com.advancedtelematic.libats.data.Namespace
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 object Schema {
   import com.advancedtelematic.libats.slick.db.SlickAnyVal._

@@ -4,7 +4,7 @@ import com.advancedtelematic.data.DataType.Ref
 import com.advancedtelematic.libats.data.Namespace
 import com.advancedtelematic.libats.http.Errors.MissingEntity
 import com.advancedtelematic.treehub.http.Errors
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -13,7 +13,7 @@ trait RefRepositorySupport {
 }
 
 object RefRepository {
-  val RefNotFound = MissingEntity(classOf[Ref])
+  val RefNotFound = MissingEntity[Ref]()
 }
 
 protected class RefRepository()(implicit db: Database, ec: ExecutionContext) {

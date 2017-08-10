@@ -17,7 +17,7 @@ class RefResourceSpec extends TreeHubSpec with ResourceSpec with RefRepositorySu
   val log = LoggerFactory.getLogger(this.getClass)
 
   implicit def refinedMarshaller[P](implicit p: Validate.Plain[String, P]): ToEntityMarshaller[Refined[String, P]] =
-    Marshaller.StringMarshaller.compose(_.get)
+    Marshaller.StringMarshaller.compose(_.value)
 
   test("POST creates a new ref, GET returns") {
     val obj = new ClientTObject()
@@ -33,7 +33,7 @@ class RefResourceSpec extends TreeHubSpec with ResourceSpec with RefRepositorySu
 
     Get(apiUri("refs/some/ref")) ~> routes ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[String] shouldBe ref.get
+      responseAs[String] shouldBe ref.value
     }
   }
 

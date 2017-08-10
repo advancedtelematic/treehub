@@ -8,7 +8,7 @@ import com.advancedtelematic.data.DataType.{ObjectId, TObject}
 import com.advancedtelematic.libats.data.Namespace
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.treehub.http.Errors
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -16,13 +16,11 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
 
   import scala.async.Async._
 
-  def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[TObject] = {
-    async {
-      await(ensureNotExists(namespace, id))
-      val size = await(blobStore.store(namespace, id, blob))
-      await(objectRepository.create(TObject(namespace, id, size)))
-    }
-  }
+  def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[TObject] = for {
+    _ <- ensureNotExists(namespace, id)
+    size <- blobStore.store(namespace, id, blob)
+    obj <- objectRepository.create(TObject(namespace, id, size))
+  } yield obj
 
   def exists(namespace: Namespace, id: ObjectId): Future[Boolean] =
     for {
