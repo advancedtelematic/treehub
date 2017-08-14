@@ -46,7 +46,7 @@ class RefResourceIntegrationSpec extends TreeHubSpec with ResourceSpec with Obje
     } yield newCommit
 
 
-    Post(apiUri("refs/master"), newCommit.futureValue.get) ~> routes ~> check {
+    Post(apiUri("refs/master"), newCommit.futureValue.value) ~> routes ~> check {
       status shouldBe StatusCodes.OK
     }
   }
@@ -54,7 +54,7 @@ class RefResourceIntegrationSpec extends TreeHubSpec with ResourceSpec with Obje
   test("accepts a commit without a parent") {
     val (commit, _) = createCommitObject("initial_commit.blob").futureValue
 
-    Post(apiUri("refs/initial-master"), commit.get) ~> routes ~> check {
+    Post(apiUri("refs/initial-master"), commit.value) ~> routes ~> check {
       status shouldBe StatusCodes.OK
     }
   }
@@ -66,7 +66,7 @@ class RefResourceIntegrationSpec extends TreeHubSpec with ResourceSpec with Obje
       (firstCommit, firstObj) <- createCommitObject("initial_commit.blob")
     } yield firstCommit
 
-    Post(apiUri("refs/not-master"), commit.futureValue.get) ~> routes ~> check {
+    Post(apiUri("refs/not-master"), commit.futureValue.value) ~> routes ~> check {
       status shouldBe StatusCodes.PreconditionFailed
     }
   }
@@ -78,7 +78,7 @@ class RefResourceIntegrationSpec extends TreeHubSpec with ResourceSpec with Obje
       (firstCommit, firstObj) <- createCommitObject("initial_commit.blob")
     } yield firstCommit
 
-    Post(apiUri("refs/master-force"), commit.futureValue.get)
+    Post(apiUri("refs/master-force"), commit.futureValue.value)
       .addHeader(RawHeader("x-ats-ostree-force", "true")) ~> routes ~> check {
       status shouldBe StatusCodes.OK
     }

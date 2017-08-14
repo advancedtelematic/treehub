@@ -24,7 +24,7 @@ class BandwidthUpdateSpec extends TreeHubSpec with UsageUpdateSpec with TestKitB
 
     expectMsgPF(10.seconds, "message with len == text.length") {
       case p @ BandwidthUsage(_, ns, _, len, updateType, objId)
-        if (updateType == UpdateType.Image) && (ns == defaultNs) && (len == text.length) && (objId == objectId.get) => p
+        if (updateType == UpdateType.Image) && (ns == defaultNs) && (len == text.length) && (objId == objectId.value) => p
     }
   }
 }

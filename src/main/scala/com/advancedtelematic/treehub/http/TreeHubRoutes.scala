@@ -12,7 +12,7 @@ import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 class TreeHubRoutes(tokenValidator: Directive0,
                     namespaceExtractor: Directive1[Namespace],

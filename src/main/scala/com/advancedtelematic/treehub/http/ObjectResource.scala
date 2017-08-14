@@ -9,7 +9,7 @@ import com.advancedtelematic.libats.data.Namespace
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import cats.syntax.either._
 import scala.concurrent.ExecutionContext
 import scala.util.Success

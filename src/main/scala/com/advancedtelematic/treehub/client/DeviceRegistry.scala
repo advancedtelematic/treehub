@@ -11,7 +11,7 @@ import akka.stream.Materializer
 import com.advancedtelematic.libats.data.Namespace
 import io.circe.Json
 import org.slf4j.LoggerFactory
-import de.heikoseeberger.akkahttpcirce.CirceSupport._
+import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag

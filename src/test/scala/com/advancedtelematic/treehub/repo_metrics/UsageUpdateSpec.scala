@@ -11,6 +11,7 @@ import com.advancedtelematic.libats.test.DatabaseSpec
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore}
 import com.advancedtelematic.util.TreeHubSpec
+import com.typesafe.config.ConfigFactory
 
 trait UsageUpdateSpec extends DatabaseSpec with ObjectRepositorySupport with TestKitBase {
   self: TreeHubSpec =>
@@ -27,5 +28,5 @@ trait UsageUpdateSpec extends DatabaseSpec with ObjectRepositorySupport with Tes
 
   lazy val objectStore = new ObjectStore(new LocalFsBlobStore(localFsDir))
 
-  lazy val messageBus = MessageBus.publisher(system, config).valueOr(throw _)
+  lazy val messageBus = MessageBus.publisher(system, ConfigFactory.load()).valueOr(throw _)
 }
