@@ -10,7 +10,7 @@
     "docker": {
       "image": "${IMAGE_ARTIFACT}",
       "parameters": [{"key": "log-driver", "value": "syslog"},
-                     {"key": "log-opt", "value": "tag=${JOB_NAME}"}],
+                     {"key": "log-opt", "value": "tag=${SERVICE_NAME}"}],
       "forcePullImage": true,
       "network": "BRIDGE",
       "portMappings": [{
@@ -38,7 +38,7 @@
     "MESSAGING_MODE": "kafka",
     "SERVICE_HEALTH_CHECK": "curl --show-error --silent %<host>s:%<port>s/health",
     "SERVICE_IMAGE": "${IMAGE_ARTIFACT}",
-    "SERVICE_NAME": "${JOB_NAME}",
+    "SERVICE_NAME": "${SERVICE_NAME}",
     "SERVICE_SCOPE": "internal",
     "SERVICE_TYPE": "http",
     "SOTA_CORE_HOST": "${SOTA_CORE_HOST}",
@@ -72,7 +72,7 @@
     "docker": {
       "image": "${IMAGE_ARTIFACT}",
       "parameters": [{"key": "log-driver", "value": "syslog"},
-                     {"key": "log-opt", "value": "tag=${JOB_NAME}-pub"}],
+                     {"key": "log-opt", "value": "tag=${SERVICE_NAME}-pub"}],
       "forcePullImage": true,
       "network": "BRIDGE",
       "portMappings": [{
@@ -106,7 +106,7 @@
     "MESSAGING_MODE": "kafka",
     "SERVICE_HEALTH_CHECK": "curl --show-error --silent %<host>s:%<port>s/health",
     "SERVICE_IMAGE": "${IMAGE_ARTIFACT}",
-    "SERVICE_NAME": "${JOB_NAME}-pub",
+    "SERVICE_NAME": "${SERVICE_NAME}-pub",
     "SERVICE_SCOPE": "public",
     "SERVICE_TYPE": "http",
     "SOTA_CORE_HOST": "${SOTA_CORE_HOST}",
