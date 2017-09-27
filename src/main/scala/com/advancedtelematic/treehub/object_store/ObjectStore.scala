@@ -1,6 +1,5 @@
 package com.advancedtelematic.treehub.object_store
 
-
 import akka.http.scaladsl.model.HttpResponse
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
@@ -14,10 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Database) extends ObjectRepositorySupport {
 
-  import scala.async.Async._
-
   def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[TObject] = for {
-    _ <- ensureNotExists(namespace, id)
     size <- blobStore.store(namespace, id, blob)
     obj <- objectRepository.create(TObject(namespace, id, size))
   } yield obj
