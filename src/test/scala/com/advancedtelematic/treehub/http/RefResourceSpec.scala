@@ -66,4 +66,17 @@ class RefResourceSpec extends TreeHubSpec with ResourceSpec with RefRepositorySu
       status shouldBe StatusCodes.PreconditionFailed
     }
   }
+
+  test("refname is rejected if length is too long") {
+    val obj = new ClientTObject()
+    val ref = obj.commit
+
+    Post(apiUri(s"objects/${obj.prefixedObjectId}"), obj.form) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
+    }
+
+    Post(apiUri("refs/" + "!"*189), ref) ~> routes ~> check {
+      status shouldBe StatusCodes.MethodNotAllowed
+    }
+  }
 }

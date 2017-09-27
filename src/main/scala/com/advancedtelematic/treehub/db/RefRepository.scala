@@ -18,8 +18,9 @@ object RefRepository {
 
 protected class RefRepository()(implicit db: Database, ec: ExecutionContext) {
   import RefRepository._
-  import com.advancedtelematic.libats.slick.db.SlickAnyVal._
   import com.advancedtelematic.data.DataType._
+  import com.advancedtelematic.libats.slick.codecs.SlickRefined._
+  import com.advancedtelematic.libats.slick.db.SlickAnyVal._
   import com.advancedtelematic.libats.slick.db.SlickExtensions._
 
   def persist(ref: Ref): Future[Unit] =
