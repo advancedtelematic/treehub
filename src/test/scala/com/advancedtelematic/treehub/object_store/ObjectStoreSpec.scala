@@ -46,7 +46,7 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
     val tobj = TObject(defaultNs, ObjectId.parse("ce720e82a727efa4b30a6ab73cefe31a8d4ec6c0d197d721f07605913d2a279a.commit").toOption.get, 0L)
 
     whenReady(objectRepository.create(tobj)) { _ =>
-      objectStore.findBlob(tobj.namespace, tobj.id, clientAcceptsRedirects = false).failed.futureValue shouldBe Errors.ObjectNotFound
+      objectStore.findBlob(tobj.namespace, tobj.id).failed.futureValue shouldBe Errors.ObjectNotFound
     }
   }
 

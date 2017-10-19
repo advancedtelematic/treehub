@@ -20,7 +20,7 @@ class S3BlobStoreIntegrationSpec extends TreeHubSpec {
 
   implicit lazy val mat = ActorMaterializer()
 
-  val s3BlobStore = new S3BlobStore(s3Credentials)
+  val s3BlobStore = new S3BlobStore(s3Credentials, true)
 
   override implicit def patienceConfig = PatienceConfig().copy(timeout = Span(3, Seconds))
 
@@ -55,7 +55,7 @@ class S3BlobStoreIntegrationSpec extends TreeHubSpec {
 
     val response = async {
       await(s3BlobStore.store(defaultNs, tobj.id, source))
-      await(s3BlobStore.buildResponse(tobj.namespace, tobj.id, clientAcceptsRedirects = true))
+      await(s3BlobStore.buildResponse(tobj.namespace, tobj.id))
     }.futureValue
 
     response.status shouldBe StatusCodes.Found

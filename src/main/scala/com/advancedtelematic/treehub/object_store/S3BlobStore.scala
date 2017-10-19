@@ -24,7 +24,7 @@ import scala.concurrent.blocking
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class S3BlobStore(s3Credentials: S3Credentials)
+class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
                  (implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
 
   private val log = LoggerFactory.getLogger(this.getClass)
@@ -92,8 +92,8 @@ class S3BlobStore(s3Credentials: S3Credentials)
     }
   }
 
-  override def buildResponse(namespace: Namespace, id: ObjectId, clientAcceptsRedirects: Boolean = false): Future[HttpResponse] = {
-    if(clientAcceptsRedirects) {
+  override def buildResponse(namespace: Namespace, id: ObjectId): Future[HttpResponse] = {
+    if(allowRedirects) {
       fetchPresignedUri(namespace, id).map { uri ⇒
         HttpResponse(StatusCodes.Found, headers = List(Location(uri)))
       }
