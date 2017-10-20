@@ -12,7 +12,7 @@ import scala.util.control.NoStackTrace
 trait BlobStore {
   def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long]
 
-  def buildResponse(namespace: Namespace, id: ObjectId, clientAcceptsRedirects: Boolean = false): Future[HttpResponse]
+  def buildResponse(namespace: Namespace, id: ObjectId): Future[HttpResponse]
 
   def readFull(namespace: Namespace, id: ObjectId): Future[ByteString]
 

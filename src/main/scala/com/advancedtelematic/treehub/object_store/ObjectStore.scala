@@ -28,11 +28,11 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
       fsExists <- blobStore.exists(namespace, id)
     } yield fsExists && dbExists
 
-  def findBlob(namespace: Namespace, id: ObjectId, clientAcceptsRedirects: Boolean): Future[(Long, HttpResponse)] = {
+  def findBlob(namespace: Namespace, id: ObjectId): Future[(Long, HttpResponse)] = {
     for {
       _ <- ensureExists(namespace, id)
       tobj <- objectRepository.find(namespace, id)
-      response <- blobStore.buildResponse(namespace, id, clientAcceptsRedirects)
+      response <- blobStore.buildResponse(namespace, id)
     } yield (tobj.byteSize, response)
   }
 

@@ -54,6 +54,8 @@ trait Settings {
   }
 
   lazy val useS3 = _config.getString("treehub.storage").equals("s3")
+
+  lazy val allowRedirectsToS3 = _config.getBoolean("treehub.s3.allowRedirects")
 }
 
 object Boot extends BootApp with Directives with Settings with VersionInfo
@@ -76,7 +78,7 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   lazy val objectStorage = {
     if(useS3) {
       log.info("Using s3 storage for object blobs")
-      new S3BlobStore(s3Credentials)
+      new S3BlobStore(s3Credentials, allowRedirectsToS3)
     } else {
       log.info(s"Using local storage a t$localStorePath for object blobs")
       LocalFsBlobStore(localStorePath.resolve("object-storage"))

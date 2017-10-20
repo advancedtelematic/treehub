@@ -14,7 +14,9 @@ import cats.syntax.either._
 import scala.concurrent.ExecutionContext
 import scala.util.Success
 
-class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore, usageHandler: UsageMetricsRouter.HandlerRef)
+class ObjectResource(namespace: Directive1[Namespace],
+                     objectStore: ObjectStore,
+                     usageHandler: UsageMetricsRouter.HandlerRef)
                     (implicit db: Database, ec: ExecutionContext, mat: Materializer) {
   import akka.http.scaladsl.server.Directives._
 
@@ -41,10 +43,10 @@ class ObjectResource(namespace: Directive1[Namespace], objectStore: ObjectStore,
         }
         complete(f)
       } ~
-      (get & optionalHeaderValueByType[Authorization]()) { header ⇒
+      get {
         val f =
           objectStore
-            .findBlob(ns, objectId, clientAcceptsRedirects = header.isEmpty)
+            .findBlob(ns, objectId)
             .andThen {
               case Success((size, _)) => publishBandwidthUsage(ns, size, objectId)
               case _ => ()

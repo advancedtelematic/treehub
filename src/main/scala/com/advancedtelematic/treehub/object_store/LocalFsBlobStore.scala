@@ -49,7 +49,7 @@ class LocalFsBlobStore(root: Path)(implicit ec: ExecutionContext, mat: Materiali
     } yield res
   }
 
-  override def buildResponse(ns: Namespace, id: ObjectId, clientAcceptsRedirects: Boolean): Future[HttpResponse] = {
+  override def buildResponse(ns: Namespace, id: ObjectId): Future[HttpResponse] = {
     exists(ns, id).flatMap {
       case true =>
         val triedResponse =
