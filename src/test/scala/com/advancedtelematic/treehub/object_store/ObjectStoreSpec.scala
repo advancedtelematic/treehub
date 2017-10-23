@@ -42,6 +42,14 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
     localStorage.exists(tobj.namespace, tobj.id).futureValue shouldBe true
   }
 
+  test("store fails if object already exists") {
+    val blob = ByteString("Let it crash!!!")
+    val tobj = TObject(defaultNs, ObjectId.parse("5f81be9929a8c52f3a3f2d22376d1149ff53d357d623645987542e8265937945.filez").toOption.get, blob.length)
+    objectStore.store(defaultNs, tobj.id, Source.single(blob)).futureValue
+    val error = objectStore.store(defaultNs, tobj.id, Source.single(blob)).failed.futureValue
+    error shouldBe Errors.ObjectExists
+  }
+
   test("findBlob fails if object is not found") {
     val tobj = TObject(defaultNs, ObjectId.parse("ce720e82a727efa4b30a6ab73cefe31a8d4ec6c0d197d721f07605913d2a279a.commit").toOption.get, 0L)
 
