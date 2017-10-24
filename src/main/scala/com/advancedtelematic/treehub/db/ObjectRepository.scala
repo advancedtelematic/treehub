@@ -19,12 +19,25 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
   import com.advancedtelematic.libats.slick.codecs.SlickRefined._
 
   def create(obj: TObject): Future[TObject] = {
-    val io = (Schema.objects += obj).map(_ => obj)
+    val io = (Schema.objects += obj).map(_ => obj).handleIntegrityErrors(Errors.ObjectExists)
+    db.run(io)
+  }
+
+  def updateSize(obj: TObject): Future[Int] = {
+    val io = findQuery(obj.namespace, obj.id).map(_.size).update(obj.byteSize)
+    db.run(io)
+  }
+
+  def delete(namespace: Namespace, id: ObjectId): Future[Int] = {
+    val io = findQuery(namespace, id).delete
     db.run(io)
   }
 
   def exists(namespace: Namespace, id: ObjectId): Future[Boolean] =
     db.run(findQuery(namespace, id).exists.result)
+
+  def isUploaded(namespace: Namespace, id: ObjectId): Future[Boolean] =
+    db.run(findQuery(namespace, id).filter(_.size > TObject.reserveSize).exists.result)
 
   def find(namespace: Namespace, id: ObjectId): Future[TObject] = {
     db.run(findAction(namespace, id))

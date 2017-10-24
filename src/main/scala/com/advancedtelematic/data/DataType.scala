@@ -66,6 +66,10 @@ object DataType {
 
   case class TObject(namespace: Namespace, id: ObjectId, byteSize: Long)
 
+  object TObject {
+    val reserveSize: Long = -1
+  }
+
   protected def toBase64(value: String): Try[Array[Byte]] = {
     Try(Base64.getDecoder.decode(value.replace("/", "").replace("_", "/")))
   }
