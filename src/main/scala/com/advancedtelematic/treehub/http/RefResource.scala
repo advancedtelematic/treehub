@@ -2,8 +2,9 @@ package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.server.{Directive, Directive1, Route}
 import akka.stream.Materializer
-import com.advancedtelematic.data.DataType.{Commit, Ref, RefName}
+import com.advancedtelematic.data.DataType.{Commit, Ref, ValidRefName}
 import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.RefinedUtils._
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import com.advancedtelematic.treehub.client.Core
 import com.advancedtelematic.treehub.db.RefRepository.RefNotFound
@@ -23,7 +24,7 @@ class RefResource(namespace: Directive1[Namespace], coreClient: Core, objectStor
 
   private val refUpdateProcess = new RefUpdateProcess(coreClient, objectStore)
 
-  private val RefNameUri = Segments.map(s => RefName(s.mkString("/")))
+  private val RefNameUri = Segments.flatMap(_.mkString("/").refineTry[ValidRefName].toOption)
 
   private val forcePushHeader: Directive[Tuple1[Boolean]] =
     optionalHeaderValueByName("x-ats-ostree-force").map(_.contains("true"))

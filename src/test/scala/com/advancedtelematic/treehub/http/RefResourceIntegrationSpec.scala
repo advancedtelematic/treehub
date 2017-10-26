@@ -6,10 +6,11 @@ import cats.syntax.either._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.scaladsl.FileIO
-import com.advancedtelematic.data.DataType.{Commit, ObjectId, Ref, RefName, TObject}
+import com.advancedtelematic.data.DataType.{Commit, ObjectId, Ref, TObject}
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
+import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.slf4j.LoggerFactory
@@ -41,7 +42,7 @@ class RefResourceIntegrationSpec extends TreeHubSpec with ResourceSpec with Obje
   test("accepts commit if object points to previous refName") {
     val newCommit = for {
       (commit, obj) <- createCommitObject("initial_commit.blob")
-      _ <- refRepository.persist(Ref(defaultNs, RefName("master"), commit, obj.id))
+      _ <- refRepository.persist(Ref(defaultNs, Refined.unsafeApply("master"), commit, obj.id))
       (newCommit, newObj) <- createCommitObject("second_commit.blob")
     } yield newCommit
 
@@ -62,7 +63,7 @@ class RefResourceIntegrationSpec extends TreeHubSpec with ResourceSpec with Obje
   test("rejects commit if object does not point to previous refName") {
     val commit = for {
       (commit, obj) <- createCommitObject("third_commit.blob")
-      _ <- refRepository.persist(Ref(defaultNs, RefName("not-master"), commit, obj.id))
+      _ <- refRepository.persist(Ref(defaultNs, Refined.unsafeApply("not-master"), commit, obj.id))
       (firstCommit, firstObj) <- createCommitObject("initial_commit.blob")
     } yield firstCommit
 
@@ -74,7 +75,7 @@ class RefResourceIntegrationSpec extends TreeHubSpec with ResourceSpec with Obje
   test("accepts invalid parent on force push") {
     val commit = for {
       (commit, obj) <- createCommitObject("third_commit.blob")
-      _ <- refRepository.persist(Ref(defaultNs, RefName("master-force"), commit, obj.id))
+      _ <- refRepository.persist(Ref(defaultNs, Refined.unsafeApply("master-force"), commit, obj.id))
       (firstCommit, firstObj) <- createCommitObject("initial_commit.blob")
     } yield firstCommit
 

@@ -18,7 +18,15 @@ object DataType {
 
   case class Ref(namespace: Namespace, name: RefName, value: Commit, objectId: ObjectId)
 
-  case class RefName(get: String) extends AnyVal
+  case class ValidRefName()
+
+  implicit val validRefName: Validate.Plain[String, ValidRefName] =
+    Validate.fromPredicate(refname => refname.length < 189,
+                           refname => s"$refname must be less than 189 characters",
+                           ValidRefName()
+    )
+
+  type RefName = Refined[String, ValidRefName]
 
   case class ValidObjectId()
 
@@ -102,12 +110,4 @@ object DataType {
     def from(bytes: Array[Byte]): Either[String, Commit] =
       refineV[ValidCommit](DigestCalculator.byteDigest()(bytes))
   }
-}
-
-object Codecs {
-  import io.circe.{Encoder, Decoder}
-  import DataType._
-
-  implicit val refNameEncoder: Encoder[RefName] = Encoder[String].contramap(_.get)
-  implicit val refNameDecoder: Decoder[RefName] = Decoder[String].map(RefName.apply)
 }
