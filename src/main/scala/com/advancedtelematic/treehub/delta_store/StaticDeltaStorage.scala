@@ -9,7 +9,7 @@ import akka.http.scaladsl.util.FastFuture
 import akka.stream.scaladsl.{Source, StreamConverters}
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.DeltaId
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.delta_store.StaticDeltaStorage.{StaticDeltaContent, StaticDeltaRedirectResponse, StaticDeltaResponse}
 import com.advancedtelematic.treehub.http.Errors
 import com.advancedtelematic.treehub.object_store.S3Credentials

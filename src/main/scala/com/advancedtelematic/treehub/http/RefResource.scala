@@ -3,7 +3,7 @@ package com.advancedtelematic.treehub.http
 import akka.http.scaladsl.server.{Directive, Directive1, Route}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.{Commit, Ref, RefName}
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import com.advancedtelematic.treehub.client.Core
 import com.advancedtelematic.treehub.db.RefRepository.RefNotFound

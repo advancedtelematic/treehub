@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.{HttpEntity, HttpResponse, MediaTypes, StatusCod
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.ObjectId
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 
 import scala.concurrent.Future
 import scala.util.control.NoStackTrace

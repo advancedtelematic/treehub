@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.headers.Authorization
 import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.ObjectId
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter

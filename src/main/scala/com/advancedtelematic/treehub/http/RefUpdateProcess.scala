@@ -3,7 +3,7 @@ package com.advancedtelematic.treehub.http
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.StatusCodes
 import com.advancedtelematic.data.DataType.{ObjectId, Ref, RefName, _}
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.client.Core
 import com.advancedtelematic.treehub.db.RefRepositorySupport
 import com.advancedtelematic.treehub.object_store.ObjectStore

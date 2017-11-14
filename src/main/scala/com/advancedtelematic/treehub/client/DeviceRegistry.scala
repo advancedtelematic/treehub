@@ -8,7 +8,7 @@ import akka.http.scaladsl.model.{HttpRequest, ResponseEntity, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.Materializer
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import io.circe.Json
 import org.slf4j.LoggerFactory
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._

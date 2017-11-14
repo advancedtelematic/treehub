@@ -1,7 +1,7 @@
 package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model.StatusCodes
-import com.advancedtelematic.libats.http.ErrorCode
+import com.advancedtelematic.libats.data.ErrorCode
 import com.advancedtelematic.libats.http.Errors.RawError
 
 object ErrorCodes {

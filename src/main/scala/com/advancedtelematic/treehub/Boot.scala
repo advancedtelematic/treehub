@@ -7,7 +7,6 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.{Directives, Route}
 import com.advancedtelematic.libats.http.BootApp
 import com.advancedtelematic.libats.messaging.MessageBus
-import com.advancedtelematic.libats.monitoring.MetricsSupport
 import com.advancedtelematic.libats.slick.db.{BootMigrations, DatabaseConfig}
 import com.advancedtelematic.libats.slick.monitoring.DatabaseMetrics
 import com.advancedtelematic.treehub.client._
@@ -17,10 +16,11 @@ import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 import com.amazonaws.regions.Regions
 import com.typesafe.config.ConfigFactory
 import cats.syntax.either._
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.http.VersionDirectives._
 import com.advancedtelematic.libats.http.LogDirectives._
-import com.advancedtelematic.metrics.{InfluxDbMetricsReporterSettings, InfluxdbMetricsReporterSupport}
+import com.advancedtelematic.libats.http.monitoring.MetricsSupport
+import com.advancedtelematic.metrics.InfluxdbMetricsReporterSupport
 import com.advancedtelematic.treehub.delta_store.{LocalDeltaStorage, S3DeltaStorage}
 
 

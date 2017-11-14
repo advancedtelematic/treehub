@@ -1,6 +1,6 @@
 package com.advancedtelematic.treehub.db
 
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import slick.jdbc.MySQLProfile.api._
 

@@ -8,7 +8,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.test.DatabaseSpec
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.util.TreeHubSpec

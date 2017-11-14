@@ -8,7 +8,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props, Status}
 import akka.stream.{ActorMaterializer, OverflowStrategy}
 import akka.stream.scaladsl.{Sink, Source}
 import com.advancedtelematic.data.DataType.ObjectId
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.messaging.MessageBusPublisher
 import com.advancedtelematic.libats.messaging_datatype.DataType.UpdateType
 import com.advancedtelematic.treehub.object_store.ObjectStore

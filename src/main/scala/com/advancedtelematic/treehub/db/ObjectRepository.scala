@@ -1,7 +1,7 @@
 package com.advancedtelematic.treehub.db
 
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.db.Schema.TObjectTable
 import com.advancedtelematic.treehub.http.Errors
 

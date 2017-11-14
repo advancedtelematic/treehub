@@ -2,9 +2,16 @@
 
 set -u
 
-docker rm --force treehub-mariadb || true
+docker rm --force treehub-mariadb
 
-mkdir entrypoint.d/ || true
+# Some jobs don't behave, nuke them all
+if [[ `docker ps -q | wc -l` -gt 0 ]]; then
+    docker ps -q | xargs docker rm --force
+fi
+
+if [[ ! -d "entrypoint.d/" ]]; then
+    mkdir --verbose entrypoint.d/
+fi
 
 echo "
 CREATE DATABASE ota_treehub;
@@ -37,7 +44,7 @@ TRIES=60
 TIMEOUT=1s
 
 for t in `seq $TRIES`; do
-    res=$(mysqladmin_alive || true)
+    res=$(mysqladmin_alive)
     if [[ $res =~ "mysqld is alive" ]]; then
         echo "mysql is ready"
         exit 0

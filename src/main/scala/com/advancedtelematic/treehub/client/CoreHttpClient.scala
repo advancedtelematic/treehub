@@ -14,7 +14,7 @@ import akka.stream.ActorMaterializer
 import com.advancedtelematic.data.Codecs._
 import com.advancedtelematic.data.DataType.{Ref, RefName}
 import com.advancedtelematic.libats.auth.NamespaceDirectives.nsHeader
-import com.advancedtelematic.libats.codecs.AkkaCirce.refinedEncoder
+import com.advancedtelematic.libats.codecs.CirceCodecs.refinedEncoder
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.Encoder

@@ -15,7 +15,7 @@ import scala.util.Try
 import java.nio.file.StandardOpenOption.{CREATE, READ, WRITE}
 
 import akka.http.scaladsl.model.HttpResponse
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 
 
 object LocalFsBlobStore {

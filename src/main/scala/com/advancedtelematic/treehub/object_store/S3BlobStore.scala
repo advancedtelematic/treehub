@@ -12,7 +12,7 @@ import akka.util.ByteString
 import cats.syntax.either._
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.ObjectId
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider}
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder

@@ -4,7 +4,8 @@ import akka.http.scaladsl.model.HttpResponse
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.{ObjectId, TObject}
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.treehub.http.Errors
 import slick.jdbc.MySQLProfile.api._

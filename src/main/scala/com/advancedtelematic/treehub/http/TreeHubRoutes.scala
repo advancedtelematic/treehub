@@ -2,7 +2,7 @@ package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.server.{Directives, _}
 import akka.stream.Materializer
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.http.{DefaultRejectionHandler, ErrorHandler}
 import com.advancedtelematic.libats.slick.monitoring.DbHealthResource
 import com.advancedtelematic.treehub.VersionInfo

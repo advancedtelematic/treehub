@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.server.{Directives, _}
 import akka.stream.{ActorMaterializer, Materializer}
 import com.advancedtelematic.libats.auth.{NamespaceDirectives, TokenValidator}
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.client.DeviceRegistryClient
 import scala.concurrent.ExecutionContext
 

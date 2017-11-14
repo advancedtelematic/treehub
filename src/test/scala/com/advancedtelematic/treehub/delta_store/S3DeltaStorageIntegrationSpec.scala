@@ -3,7 +3,7 @@ package com.advancedtelematic.treehub.delta_store
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.advancedtelematic.data.DataType.ValidDeltaId
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.delta_store.StaticDeltaStorage.StaticDeltaRedirectResponse
 import com.advancedtelematic.treehub.http.Errors
 import com.advancedtelematic.util.TreeHubSpec

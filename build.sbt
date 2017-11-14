@@ -1,6 +1,6 @@
 name := "treehub"
 organization := "com.advancedtelematic.com"
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.4"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
@@ -31,7 +31,7 @@ lazy val root = (project in file("."))
     val akkaV = "2.4.17"
     val akkaHttpV = "10.0.5"
     val scalaTestV = "3.0.0"
-    val libatsV = "0.0.1-92-g4c0fb8e"
+    val libatsV = "0.1.0-5-g6b585f0"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,

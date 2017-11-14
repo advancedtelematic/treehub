@@ -3,7 +3,7 @@ package com.advancedtelematic.data
 import java.nio.file.{Path, Paths}
 import java.util.Base64
 import com.advancedtelematic.common.DigestCalculator
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import eu.timepit.refined.api.{Refined, Validate}
 import eu.timepit.refined.refineV
 import cats.syntax.either._

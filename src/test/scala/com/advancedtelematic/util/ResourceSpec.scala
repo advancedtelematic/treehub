@@ -21,7 +21,7 @@ import org.scalatest.Suite
 import scala.util.Random
 import cats.syntax.either._
 import com.advancedtelematic.libats.auth.NamespaceDirectives
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import com.advancedtelematic.libats.test.DatabaseSpec
 import com.advancedtelematic.treehub.delta_store.LocalDeltaStorage

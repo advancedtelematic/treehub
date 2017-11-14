@@ -3,7 +3,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Directive1
 import com.advancedtelematic.data.DataType.{DeltaId, ValidDeltaId}
-import com.advancedtelematic.libats.data.Namespace
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 import com.advancedtelematic.libats.data.RefinedUtils.RefineTry
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
