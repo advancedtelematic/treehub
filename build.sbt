@@ -28,10 +28,10 @@ lazy val root = (project in file("."))
   .settings(testOptions in UnitTest := Seq(Tests.Filter(unitFilter)))
   .settings(testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)))
   .settings(Seq(libraryDependencies ++= {
-    val akkaV = "2.4.17"
-    val akkaHttpV = "10.0.5"
+    val akkaV = "2.5.7"
+    val akkaHttpV = "10.0.10"
     val scalaTestV = "3.0.0"
-    val libatsV = "0.1.0-5-g6b585f0"
+    val libatsV = "0.1.1-1-gf9dc44c"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
