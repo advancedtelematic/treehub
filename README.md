@@ -1,10 +1,20 @@
 # Treehub
 
-`ostree` repository storage for ATS Garage.
+Treehub implements an `ostree` repository storage for over the air
+updates. This project is part of [ota-community-edition][1].
 
-- No storage of static deltas.
+This project implements an HTTP api that `ostree` can use to natively
+pull objects and revisions to update an `ostree` repository.
 
-- The client implementation is a very hacky bash script.
+An HTTP api is provided to receive `ostree` repository objects and
+refs from command line tools such as `garage-push`, included with
+[sota-tools](https://github.com/advancedtelematic/sota-tools).
+
+## Running
+
+Edit `application.conf` and run `sbt run`.
+
+Check [ota-community-edition][1] for documentation on how to run this project as part of ota-community-edition.
 
 ## Testing
 
@@ -14,7 +24,7 @@ To test the current implementation, the following steps can be followed:
 
    This can be done with your package manager, for example:
 
-        pacman -S ostree
+        apt-get install ostree
   
 2. Create a ostree repository
 
@@ -60,41 +70,8 @@ To test the current implementation, the following steps can be followed:
 
         This is my file. There are many files like this, but this one is mine.
 
-
-## Release
-
-A treehub release consists of two steps:
-
-1. Create git tags and push them to github
-
-2. Create a docker image and publish it to docker hub
-
-These steps are automated in teamcity. To trigger a new release, you
-can merge master to release and push:
-
-    git checkout release
-    git merge master --ff-only
-    git push origin
-    
-## Deploy to stable
-
-Deploying a commit to stable is independent of the release
-process. This means you can deploy a commit that was not previously
-released as a git tag. In this case, the deployed image version will
-have the format `0.0.0-g<commit>` instead of a released version format
-(`0.0.0`).
-
-To deploy to stable, you should first release the commit (see above)
-and then merge to stable:
-
-    git fetch
-    git checkout stable
-    git reset --hard origin/stable
-    git merge origin/release --ff-only
-    git push
-    
-This will build a docker image and deploy it to mesos.
-
 ## License
 
 This code is licensed under the [Mozilla Public License 2.0](LICENSE), a copy of which can be found in this repository. All code is copyright [ATS Advanced Telematic Systems GmbH](https://www.advancedtelematic.com), 2016-2018.
+
+[1]: https://github.com/advancedtelematic/ota-community-edition
