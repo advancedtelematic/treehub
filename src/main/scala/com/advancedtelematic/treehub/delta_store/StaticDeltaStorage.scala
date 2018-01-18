@@ -115,8 +115,13 @@ class LocalDeltaStorage(root: Path) extends StaticDeltaStorage {
   private val _log = LoggerFactory.getLogger(this.getClass)
 
   override def summary(namespace: Namespace): Future[Source[ByteString, _]] = {
-    val path = Files.newInputStream(root.resolve(namespaceDir(namespace).resolve("summary")))
-    Future.successful(StreamConverters.fromInputStream(() => path))
+    val path = root.resolve(namespaceDir(namespace).resolve("summary"))
+    if(Files.exists(path)) {
+      val is = Files.newInputStream(path)
+      Future.successful(StreamConverters.fromInputStream(() => is))
+    } else {
+      FastFuture.failed(Errors.SummaryDoesNotExist)
+    }
   }
 
   override def retrieve(namespace: Namespace, deltaId: DeltaId, path: String): Future[StaticDeltaResponse] = {
