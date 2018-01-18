@@ -1,7 +1,7 @@
 package com.advancedtelematic.treehub.delta_store
 
 import java.io.IOException
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, NoSuchFileException, Path, Paths}
 import java.time.{Duration, Instant}
 
 import akka.http.scaladsl.model.Uri
@@ -114,15 +114,19 @@ class S3DeltaStorage(s3Credentials: S3Credentials)(implicit ec: ExecutionContext
 class LocalDeltaStorage(root: Path) extends StaticDeltaStorage {
   private val _log = LoggerFactory.getLogger(this.getClass)
 
-  override def summary(namespace: Namespace): Future[Source[ByteString, _]] = {
+  override def summary(namespace: Namespace): Future[Source[ByteString, _]] = try {
     val path = Files.newInputStream(root.resolve(namespaceDir(namespace).resolve("summary")))
     Future.successful(StreamConverters.fromInputStream(() => path))
+  } catch {
+    case e: NoSuchFileException => Future.failed(Errors.SummaryDoesNotExist)
   }
 
-  override def retrieve(namespace: Namespace, deltaId: DeltaId, path: String): Future[StaticDeltaResponse] = {
+  override def retrieve(namespace: Namespace, deltaId: DeltaId, path: String): Future[StaticDeltaResponse] = try {
     val file = root.resolve(deltaDir(namespace, deltaId)).resolve(path)
     val is = Files.newInputStream(file)
     Future.successful(StaticDeltaContent(StreamConverters.fromInputStream(() => is), file.toFile.length()))
+  } catch {
+    case e: NoSuchFileException => Future.failed(Errors.StaticDeltaDoesNotExist)
   }
 
   def storeSummary(namespace: Namespace, data: Array[Byte]): Future[Unit] = {
