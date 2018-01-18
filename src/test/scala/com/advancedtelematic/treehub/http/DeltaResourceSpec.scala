@@ -1,7 +1,7 @@
 package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.headers.Location
+import akka.http.scaladsl.model.headers.{Location, RawHeader}
 import com.advancedtelematic.data.DataType.ValidDeltaId
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
@@ -9,6 +9,7 @@ import com.advancedtelematic.libats.data.RefinedUtils.RefineTry
 import com.advancedtelematic.util.FakeUsageUpdate.CurrentBandwith
 import akka.pattern.ask
 import com.advancedtelematic.data.DataType.CommitTupleOps
+
 import scala.concurrent.duration._
 import cats.syntax.either._
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
@@ -21,6 +22,12 @@ class DeltaResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposit
     Get(apiUri(s"summary")) ~> routes ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Array[Byte]] shouldBe "some data".getBytes
+    }
+  }
+
+  test("GET summary returns 404 Not Found if summary is not in the delta store") {
+    Get(apiUri(s"summary")) ~> RawHeader("x-ats-namespace", "notfound") ~> routes ~> check {
+      status shouldBe StatusCodes.NotFound
     }
   }
 
