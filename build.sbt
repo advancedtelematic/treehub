@@ -31,7 +31,7 @@ lazy val root = (project in file("."))
     val akkaV = "2.5.7"
     val akkaHttpV = "10.0.10"
     val scalaTestV = "3.0.0"
-    val libatsV = "0.1.1-1-gf9dc44c"
+    val libatsV = "0.1.2-1-ge3e863e"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
