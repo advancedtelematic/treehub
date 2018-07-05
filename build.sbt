@@ -31,7 +31,7 @@ lazy val root = (project in file("."))
     val akkaV = "2.5.7"
     val akkaHttpV = "10.0.10"
     val scalaTestV = "3.0.0"
-    val libatsV = "0.1.2-1-ge3e863e"
+    val libatsV = "0.1.2-15-g3c1cdd2"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
@@ -50,6 +50,7 @@ lazy val root = (project in file("."))
       "com.advancedtelematic" %% "libats-auth" % libatsV,
       "com.advancedtelematic" %% "libats-slick" % libatsV,
       "com.advancedtelematic" %% "libats-metrics-akka" % libatsV,
+      "com.advancedtelematic" %% "libats-metrics-prometheus" % libatsV,
 
       "org.scala-lang.modules" %% "scala-async" % "0.9.6",
       "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4",

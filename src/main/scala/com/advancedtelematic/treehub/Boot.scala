@@ -15,12 +15,12 @@ import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 import com.amazonaws.regions.Regions
 import com.typesafe.config.ConfigFactory
-import cats.syntax.either._
 import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.http.VersionDirectives._
 import com.advancedtelematic.libats.http.LogDirectives._
 import com.advancedtelematic.libats.http.monitoring.MetricsSupport
-import com.advancedtelematic.metrics.InfluxdbMetricsReporterSupport
+import com.advancedtelematic.metrics.{AkkaHttpRequestMetrics, InfluxdbMetricsReporterSupport}
+import com.advancedtelematic.metrics.prometheus.PrometheusMetricsSupport
 import com.advancedtelematic.treehub.delta_store.{LocalDeltaStorage, S3DeltaStorage}
 
 
@@ -63,7 +63,9 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   with DatabaseConfig
   with MetricsSupport
   with DatabaseMetrics
-  with InfluxdbMetricsReporterSupport {
+  with InfluxdbMetricsReporterSupport
+  with AkkaHttpRequestMetrics
+  with PrometheusMetricsSupport {
 
   implicit val _db = db
 
@@ -96,14 +98,15 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   }
 
   val objectStore = new ObjectStore(objectStorage)
-  val msgPublisher = MessageBus.publisher(system, config).valueOr(throw _)
+  val msgPublisher = MessageBus.publisher(system, config)
   val coreHttpClient = new CoreHttpClient(coreUri, packagesApi, treeHubUri)
   val coreBusClient = new CoreBusClient(msgPublisher, treeHubUri)
 
   val usageHandler = system.actorOf(UsageMetricsRouter(msgPublisher, objectStore), "usage-router")
 
   val routes: Route =
-    (versionHeaders(version) & logResponseMetrics(projectName)) {
+    (versionHeaders(version) & requestMetrics(metricRegistry) & logResponseMetrics(projectName)) {
+      prometheusMetricsRoutes ~
       new TreeHubRoutes(tokenValidator, namespaceExtractor, coreHttpClient, coreBusClient,
                         deviceNamespace, objectStore, deltaStorage, usageHandler).routes
     }
