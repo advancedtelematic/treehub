@@ -2,7 +2,6 @@ package com.advancedtelematic.treehub.repo_metrics
 
 import java.nio.file.{Files, Paths}
 
-import cats.syntax.either._
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKitBase
@@ -28,5 +27,5 @@ trait UsageUpdateSpec extends DatabaseSpec with ObjectRepositorySupport with Tes
 
   lazy val objectStore = new ObjectStore(new LocalFsBlobStore(localFsDir))
 
-  lazy val messageBus = MessageBus.publisher(system, ConfigFactory.load()).valueOr(throw _)
+  lazy val messageBus = MessageBus.publisher(system, ConfigFactory.load())
 }
