@@ -19,7 +19,7 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
   import com.advancedtelematic.libats.slick.codecs.SlickRefined._
 
   def create(obj: TObject): Future[TObject] = {
-    val io = (Schema.objects += obj).map(_ => obj).handleIntegrityErrors(Errors.ObjectExists)
+    val io = (Schema.objects += obj).map(_ => obj).handleIntegrityErrors(Errors.ObjectExists(obj.id))
     db.run(io)
   }
 

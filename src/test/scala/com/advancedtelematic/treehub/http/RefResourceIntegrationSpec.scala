@@ -31,7 +31,7 @@ class RefResourceIntegrationSpec extends TreeHubSpec with ResourceSpec with Obje
       id = ObjectId.from(commit)
       tobj <- objectStore.store(defaultNs, id, blob)
         .recover {
-          case Errors.ObjectExists =>
+          case Errors.ObjectExists(_) =>
             log.info("TOBject already exists")
             TObject(defaultNs, id, 0L)
         }
