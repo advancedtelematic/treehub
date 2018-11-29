@@ -23,8 +23,8 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
     db.run(io)
   }
 
-  def updateSize(obj: TObject): Future[Int] = {
-    val io = findQuery(obj.namespace, obj.id).map(_.size).update(obj.byteSize)
+  def updateSize(namespace: Namespace, id: ObjectId, size: Long): Future[Unit] = {
+    val io = findQuery(namespace, id).map(_.size).update(size).handleSingleUpdateError(Errors.ObjectNotFound)
     db.run(io)
   }
 

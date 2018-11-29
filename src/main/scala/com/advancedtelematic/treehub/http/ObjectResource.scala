@@ -37,7 +37,7 @@ class ObjectResource(namespace: Directive1[Namespace],
   val route = namespace { ns =>
     path("objects" / PrefixedObjectId) { objectId =>
       head {
-        val f = objectStore.exists(ns, objectId).map {
+        val f = objectStore.isUploaded(ns, objectId).map {
           case true => StatusCodes.OK
           case false => StatusCodes.NotFound
         }

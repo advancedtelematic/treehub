@@ -64,9 +64,11 @@ class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
       await(Future { blocking { s3client.putObject(request) } })
       val metadata = await(Future { blocking { s3client.getObjectMetadata(bucketId, filename) } })
 
-      log.info(s"$filename uploaded to s3")
+      val size = metadata.getContentLength
 
-      metadata.getContentLength
+      log.info(s"$filename with size $size uploaded to s3")
+
+      size
     }
   }
 
