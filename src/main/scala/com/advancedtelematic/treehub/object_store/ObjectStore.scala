@@ -18,9 +18,9 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
 
   def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[TObject] = {
     val obj = TObject(namespace, id, TObject.reserveSize)
-    val createF = objectRepository.create(obj)
+    lazy val createF = objectRepository.create(obj)
 
-    val uploadF = async {
+    lazy val uploadF = async {
       val size = await(blobStore.store(namespace, id, blob))
       val newObj = obj.copy(byteSize = size)
       await(objectRepository.updateSize(namespace, id, size))
