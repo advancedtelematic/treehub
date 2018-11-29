@@ -17,12 +17,13 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
   import scala.async.Async._
 
   def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[TObject] = {
-    val createF = objectRepository.create(TObject(namespace, id, TObject.reserveSize))
+    val obj = TObject(namespace, id, TObject.reserveSize)
+    val createF = objectRepository.create(obj)
 
     val uploadF = async {
       val size = await(blobStore.store(namespace, id, blob))
-      val newObj = TObject(namespace, id, size)
-      await(objectRepository.updateSize(newObj))
+      val newObj = obj.copy(byteSize = size)
+      await(objectRepository.updateSize(namespace, id, size))
       newObj
     }.recoverWith {
       case e =>
@@ -33,12 +34,6 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
 
     createF.flatMap(_ => uploadF)
   }
-
-  def exists(namespace: Namespace, id: ObjectId): Future[Boolean] =
-    for {
-      dbExists <- objectRepository.exists(namespace, id)
-      fsExists <- blobStore.exists(namespace, id)
-    } yield fsExists && dbExists
 
   def isUploaded(namespace: Namespace, id: ObjectId): Future[Boolean] =
     for {
