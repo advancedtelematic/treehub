@@ -91,20 +91,6 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
     }
   }
 
-  test("HEAD returns 404 if file size is invalid") {
-    val obj = new ClientTObject()
-
-    Post(apiUri(s"objects/${obj.prefixedObjectId}"), obj.form) ~> routes ~> check {
-      status shouldBe StatusCodes.OK
-    }
-
-    objectRepository.updateSize(defaultNs, obj.objectId, -1).futureValue
-
-    Head(apiUri(s"objects/${obj.prefixedObjectId}")) ~> routes ~> check {
-      status shouldBe StatusCodes.NotFound
-    }
-  }
-
   test("HEAD returns 200 if commit exists") {
     val obj = new ClientTObject()
 

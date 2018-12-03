@@ -35,6 +35,12 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
     createF.flatMap(_ => uploadF)
   }
 
+  def exists(namespace: Namespace, id: ObjectId): Future[Boolean] =
+    for {
+      dbExists <- objectRepository.exists(namespace, id)
+      fsExists <- blobStore.exists(namespace, id)
+    } yield fsExists && dbExists
+
   def isUploaded(namespace: Namespace, id: ObjectId): Future[Boolean] =
     for {
       dbUploaded <- objectRepository.isUploaded(namespace, id)
