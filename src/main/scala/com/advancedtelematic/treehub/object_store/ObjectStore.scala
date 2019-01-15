@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import com.advancedtelematic.data.DataType.{ObjectId, TObject}
+import com.advancedtelematic.data.DataType.{ObjectId, ObjectStatus, TObject}
 import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.treehub.http.Errors
@@ -17,13 +17,15 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
   import scala.async.Async._
 
   def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[TObject] = {
-    val obj = TObject(namespace, id, TObject.reserveSize)
+    // TODO: Do we already know size somehow? Sort of...
+
+    val obj = TObject(namespace, id, -1, ObjectStatus.SERVER_UPLOADING)
     lazy val createF = objectRepository.create(obj)
 
     lazy val uploadF = async {
       val size = await(blobStore.store(namespace, id, blob))
-      val newObj = obj.copy(byteSize = size)
-      await(objectRepository.updateSize(namespace, id, size))
+      val newObj = obj.copy(byteSize = size, status = ObjectStatus.UPLOADED)
+      await(objectRepository.update(namespace, id, size, ObjectStatus.UPLOADED))
       newObj
     }.recoverWith {
       case e =>

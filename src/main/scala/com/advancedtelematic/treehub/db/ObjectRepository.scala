@@ -1,6 +1,7 @@
 package com.advancedtelematic.treehub.db
 
-import com.advancedtelematic.data.DataType.{ObjectId, TObject}
+import com.advancedtelematic.data.DataType.ObjectStatus.ObjectStatus
+import com.advancedtelematic.data.DataType.{ObjectId, ObjectStatus, TObject}
 import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.db.Schema.TObjectTable
 import com.advancedtelematic.treehub.http.Errors
@@ -14,6 +15,7 @@ trait ObjectRepositorySupport {
 
 protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) {
   import com.advancedtelematic.libats.slick.db.Operators._
+  import SlickMappings._
   import com.advancedtelematic.libats.slick.db.SlickExtensions._
   import com.advancedtelematic.libats.slick.db.SlickAnyVal._
   import com.advancedtelematic.libats.slick.codecs.SlickRefined._
@@ -23,8 +25,11 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
     db.run(io)
   }
 
-  def updateSize(namespace: Namespace, id: ObjectId, size: Long): Future[Unit] = {
-    val io = findQuery(namespace, id).map(_.size).update(size).handleSingleUpdateError(Errors.ObjectNotFound)
+  def update(namespace: Namespace, id: ObjectId, size: Long, status: ObjectStatus): Future[Unit] = {
+    val io = findQuery(namespace, id)
+      .map { r => r.size -> r.status }
+      .update((size, ObjectStatus.UPLOADED))
+      .handleSingleUpdateError(Errors.ObjectNotFound)
     db.run(io)
   }
 
@@ -37,7 +42,7 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
     db.run(findQuery(namespace, id).exists.result)
 
   def isUploaded(namespace: Namespace, id: ObjectId): Future[Boolean] =
-    db.run(findQuery(namespace, id).filter(_.size > TObject.reserveSize).exists.result)
+    db.run(findQuery(namespace, id).filter(_.status === ObjectStatus.UPLOADED).exists.result)
 
   def find(namespace: Namespace, id: ObjectId): Future[TObject] = {
     db.run(findAction(namespace, id))

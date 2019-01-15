@@ -6,7 +6,7 @@ import cats.syntax.either._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.scaladsl.FileIO
-import com.advancedtelematic.data.DataType.{Commit, ObjectId, Ref, RefName, TObject}
+import com.advancedtelematic.data.DataType.{Commit, ObjectId, ObjectStatus, Ref, RefName, TObject}
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
@@ -33,7 +33,7 @@ class RefResourceIntegrationSpec extends TreeHubSpec with ResourceSpec with Obje
         .recover {
           case Errors.ObjectExists(_) =>
             log.info("TOBject already exists")
-            TObject(defaultNs, id, 0L)
+            TObject(defaultNs, id, 0L, ObjectStatus.UPLOADED)
         }
     } yield (commit, tobj)
   }
