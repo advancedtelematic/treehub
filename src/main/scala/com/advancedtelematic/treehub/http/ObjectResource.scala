@@ -1,16 +1,18 @@
 package com.advancedtelematic.treehub.http
 
+import java.io.File
+
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.headers.Authorization
-import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1}
+import akka.http.scaladsl.server._
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.libats.data.DataType.Namespace
+import com.advancedtelematic.treehub.object_store.BlobStore.UploadAt
 import com.advancedtelematic.treehub.object_store.ObjectStore
-import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
+import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
 import slick.jdbc.MySQLProfile.api._
-import cats.syntax.either._
+
 import scala.concurrent.ExecutionContext
 import scala.util.Success
 
@@ -34,6 +36,10 @@ class ObjectResource(namespace: Directive1[Namespace],
     usageHandler ! UpdateBandwidth(namespace, usageBytes, objectId)
   }
 
+  import OutOfBandStorageHeader._
+
+  private val outOfBandStorageEnabled = validate(objectStore.outOfBandStorageEnabled, "Out of band storage not enabled")
+
   val route = namespace { ns =>
     path("objects" / PrefixedObjectId) { objectId =>
       head {
@@ -55,10 +61,24 @@ class ObjectResource(namespace: Directive1[Namespace],
 
         complete(f)
       } ~
+      (put & hintNamespaceStorage(ns)) {
+        complete(objectStore.completeClientUpload(ns, objectId).map(_ => StatusCodes.NoContent))
+      } ~
       (post & hintNamespaceStorage(ns)) {
-        fileUpload("file") { case (_, content) =>
-          val f = objectStore.store(ns, objectId, content).map(_ => StatusCodes.OK)
+        (outOfBandStorageEnabled & headerValueByType[OutOfBandStorageHeader](()) & parameter("size".as[Long])) { (_, size) =>
+          onSuccess(objectStore.storeOutOfBand(ns, objectId, size)) { case UploadAt(uri) =>
+            redirect(uri, StatusCodes.Found)
+          }
+        } ~
+        storeUploadedFile("file", _ => File.createTempFile("http-upload", ".tmp")) { case (_, file) =>
+          val f = objectStore.storeFile(ns, objectId, file).map(_ => StatusCodes.OK)
           complete(f)
+        } ~
+        extractRequestEntity { entity =>
+          entity.contentLengthOption match {
+            case Some(size) if size > 0 => complete(objectStore.storeStream(ns, objectId, size, entity.dataBytes).map(_ => StatusCodes.NoContent))
+            case _ => reject(MalformedHeaderRejection("Content-Length", "a finite length request is required to upload a file", cause = None))
+          }
         }
       }
     }

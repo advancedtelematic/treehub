@@ -1,7 +1,7 @@
 package com.advancedtelematic.treehub.repo_metrics
 
 import akka.testkit.TestActorRef
-import com.advancedtelematic.data.DataType.{ObjectId, TObject}
+import com.advancedtelematic.data.DataType.{ObjectId, ObjectStatus, TObject}
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.UpdateStorage
 import com.advancedtelematic.util.TreeHubSpec
 import cats.syntax.either._
@@ -21,7 +21,7 @@ class StorageUpdateSpec extends TreeHubSpec with UsageUpdateSpec {
   val objId =  ObjectId.parse("bc27b27e4dff813880183a339d903d2f45529ee81d543c755e8ccdae5a907311.commit").toOption.get
 
   test("sends update message to bus") {
-    objectRepository.create(TObject(defaultNs, objId, text.length))
+    objectRepository.create(TObject(defaultNs, objId, text.length, ObjectStatus.UPLOADED))
 
     subject ! UpdateStorage(defaultNs)
 
@@ -34,8 +34,8 @@ class StorageUpdateSpec extends TreeHubSpec with UsageUpdateSpec {
     val ns0 = Namespace("namespace0")
     val ns1 = Namespace("namespace1")
 
-    objectRepository.create(TObject(ns0, objId, text.length))
-    objectRepository.create(TObject(ns1, objId, text.length))
+    objectRepository.create(TObject(ns0, objId, text.length, ObjectStatus.UPLOADED))
+    objectRepository.create(TObject(ns1, objId, text.length, ObjectStatus.UPLOADED))
 
     subject ! UpdateStorage(ns0)
     subject ! UpdateStorage(ns1)

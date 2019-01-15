@@ -21,42 +21,9 @@ import com.advancedtelematic.libats.http.LogDirectives._
 import com.advancedtelematic.libats.http.monitoring.MetricsSupport
 import com.advancedtelematic.metrics.{AkkaHttpRequestMetrics, InfluxdbMetricsReporterSupport}
 import com.advancedtelematic.metrics.prometheus.PrometheusMetricsSupport
+import com.advancedtelematic.treehub.daemon.StaleObjectArchiveActor
 import com.advancedtelematic.treehub.delta_store.{LocalDeltaStorage, S3DeltaStorage}
 
-
-trait Settings {
-  private lazy val _config = ConfigFactory.load()
-
-  val host = _config.getString("server.host")
-  val port = _config.getInt("server.port")
-  val coreUri = _config.getString("core.baseUri")
-  val packagesApi = _config.getString("core.packagesApi")
-
-  val treeHubUri = {
-    val uri = Uri(_config.getString("server.treehubUri"))
-    if(!uri.isAbsolute) throw new IllegalArgumentException("Treehub host is not an absolute uri")
-    uri
-  }
-
-  val localStorePath = Paths.get(_config.getString("treehub.localStorePath"))
-
-  val deviceRegistryUri = Uri(_config.getString("device_registry.baseUri"))
-  val deviceRegistryMyApi = Uri(_config.getString("device_registry.mydeviceUri"))
-
-  lazy val s3Credentials = {
-    val accessKey = _config.getString("treehub.s3.accessKey")
-    val secretKey = _config.getString("treehub.s3.secretKey")
-    val objectBucketId = _config.getString("treehub.s3.bucketId")
-    val deltasBucketId = _config.getString("treehub.s3.deltasBucketId")
-    val region = Regions.fromName(_config.getString("treehub.s3.region"))
-
-    new S3Credentials(accessKey, secretKey, objectBucketId, deltasBucketId, region)
-  }
-
-  lazy val useS3 = _config.getString("treehub.storage").equals("s3")
-
-  lazy val allowRedirectsToS3 = _config.getBoolean("treehub.s3.allowRedirects")
-}
 
 object Boot extends BootApp with Directives with Settings with VersionInfo
   with BootMigrations
@@ -103,6 +70,10 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   val coreBusClient = new CoreBusClient(msgPublisher, treeHubUri)
 
   val usageHandler = system.actorOf(UsageMetricsRouter(msgPublisher, objectStore), "usage-router")
+
+  if(objectStorage.supportsOutOfBandStorage) {
+    system.actorOf(StaleObjectArchiveActor.withBackOff(objectStorage, staleObjectExpireAfter, autoStart = true), "stale-objects-archiver")
+  }
 
   val routes: Route =
     (versionHeaders(version) & requestMetrics(metricRegistry) & logResponseMetrics(projectName)) {

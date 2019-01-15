@@ -2,27 +2,28 @@ package com.advancedtelematic.treehub.object_store
 
 import java.io.File
 import java.nio.file.Paths
+import java.time.temporal.ChronoUnit
 import java.time.{Duration, Instant}
+import java.util.Date
 
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
 import akka.stream.Materializer
-import akka.stream.scaladsl.{FileIO, Source, StreamConverters}
+import akka.stream.scaladsl.{Source, StreamConverters}
 import akka.util.ByteString
-import cats.syntax.either._
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.libats.data.DataType.Namespace
+import com.advancedtelematic.treehub.object_store.BlobStore.UploadAt
+import com.amazonaws.HttpMethod
 import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider}
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import com.amazonaws.services.s3.model.{CannedAccessControlList, PutObjectRequest}
+import com.amazonaws.services.s3.model._
 import org.slf4j.LoggerFactory
 
 import scala.async.Async._
-import scala.concurrent.blocking
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.concurrent.{ExecutionContext, Future, blocking}
 
 class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
                  (implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
@@ -36,22 +37,41 @@ class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
       .withRegion(s3Credentials.region)
       .build()
 
-  override def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long] = {
+  override def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long] = {
     val filename = objectFilename(namespace, id)
-    val tempFile = File.createTempFile(filename, ".tmp")
 
-    // The s3 sdk requires us to specify the file size if using a stream
-    // so we always need to cache the file into the filesystem before uploading
-    val sink = FileIO.toPath(tempFile.toPath).mapMaterializedValue {
-      _.flatMap { result =>
-        if(result.wasSuccessful) {
-          upload(tempFile, filename).andThen { case _ => Try(tempFile.delete()) }
-        } else
-          Future.failed(result.getError)
+    val sink =  StreamConverters.asInputStream().mapMaterializedValue { is =>
+      val meta = new ObjectMetadata()
+      meta.setContentLength(size)
+      val request = new PutObjectRequest(s3Credentials.blobBucketId, filename, is, meta).withCannedAcl(CannedAccessControlList.AuthenticatedRead)
+
+      log.info(s"Uploading $filename to amazon s3")
+
+      async {
+        await(Future { blocking { s3client.putObject(request) } })
+        log.info(s"$filename with size $size uploaded to s3")
+        size
       }
     }
 
     blob.runWith(sink)
+  }
+
+  override def storeOutOfBand(namespace: Namespace, id: ObjectId): Future[BlobStore.OutOfBandStoreResult] = {
+    val filename = objectFilename(namespace, id)
+    val expiresAt = Date.from(Instant.now().plus(1, ChronoUnit.HOURS))
+
+    log.info(s"Requesting s3 pre signed url $filename")
+
+    val f = Future {
+      blocking {
+        val url = s3client.generatePresignedUrl(s3Credentials.blobBucketId, filename, expiresAt, HttpMethod.PUT)
+        log.debug(s"Signed s3 url for $filename")
+        url
+      }
+    }
+
+    f.map(url => UploadAt(url.toString))
   }
 
   protected def upload(file: File, filename: String): Future[Long] = {
@@ -120,6 +140,8 @@ class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
 
   private def objectFilename(namespace: Namespace, objectId: ObjectId): String =
     objectId.path(Paths.get(namespaceDir(namespace))).toString
+
+  override val supportsOutOfBandStorage: Boolean = true
 }
 
 class S3Credentials(accessKey: String, secretKey: String,
