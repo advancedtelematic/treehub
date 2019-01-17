@@ -6,6 +6,8 @@ package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model._
 import akka.pattern.ask
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.util.FakeUsageUpdate.{CurrentBandwith, CurrentStorage}
 import com.advancedtelematic.util.ResourceSpec.ClientTObject
@@ -15,7 +17,7 @@ import scala.concurrent.duration._
 
 class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectRepositorySupport {
 
-  test("POST creates a new blob") {
+  test("POST creates a new blob when uploading form with `file` field") {
     val obj = new ClientTObject()
 
     Post(apiUri(s"objects/${obj.prefixedObjectId}"), obj.form) ~> routes ~> check {
@@ -27,6 +29,32 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
 
       responseAs[Array[Byte]] shouldBe obj.blob
     }
+  }
+
+  // This is the same as using `curl -H "Content-Type: application/octet-stream" --data-binary @file`
+  test("POST creates a new blob when uploading application/octet-stream directory") {
+    val obj = new ClientTObject()
+
+    Post(apiUri(s"objects/${obj.prefixedObjectId}"), obj.blob) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
+    }
+
+    Get(apiUri(s"objects/${obj.prefixedObjectId}")) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[Array[Byte]] shouldBe obj.blob
+    }
+  }
+
+  test("POST redirects client to redirect endpoint if client supports it") {
+    val obj = new ClientTObject()
+
+    val accept = HttpHeader
+
+
+    Post(apiUri(s"objects/${obj.prefixedObjectId}"), obj.blob) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
+    }
+
   }
 
   test("POST hints updater to update current storage") {

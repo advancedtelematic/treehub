@@ -2,7 +2,7 @@ package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.Authorization
-import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1}
+import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1, ValidationRejection}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.libats.data.DataType.Namespace
@@ -11,6 +11,7 @@ import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBand
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 import slick.jdbc.MySQLProfile.api._
 import cats.syntax.either._
+
 import scala.concurrent.ExecutionContext
 import scala.util.Success
 
@@ -56,11 +57,24 @@ class ObjectResource(namespace: Directive1[Namespace],
         complete(f)
       } ~
       (post & hintNamespaceStorage(ns)) {
+        // TODO: Use storeUploadedFile and change ObjectStore api to accept File or DataBytes, when using databytes, require size, stream up
+
+        headerValueByName("x-ats-accept-redirect") { _ =>
+          val f = objectStore.storeOutOfBand(ns, objectId, content).map(_ => StatusCodes.OK)
+          complete(f)
+        } ~
         fileUpload("file") { case (_, content) =>
           val f = objectStore.store(ns, objectId, content).map(_ => StatusCodes.OK)
           complete(f)
-        }
+        } ~
+          extractRequestEntity { entity =>
+            entity.contentLengthOption match {
+              case Some(size) => complete(objectStore.storeStream(ns, objectId, size, entity.dataBytes).map(_ => StatusCodes.OK))
+              case None => reject
+            }
+          }
       }
     }
   }
+
 }

@@ -16,16 +16,39 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
 
   import scala.async.Async._
 
-  def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[TObject] = {
-    // TODO: Do we already know size somehow? Sort of...
+  def storeOutOfBand(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[TObject] = {
+    blobStore.storeStream()
+  }
 
+  // TODO:SM Almost the same as `store`
+  def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[TObject] = {
+    val obj = TObject(namespace, id, size, ObjectStatus.SERVER_UPLOADING)
+    lazy val createF = objectRepository.create(obj)
+
+    lazy val uploadF = async {
+      val _size = await(blobStore.storeStream(namespace, id, size, blob))
+      val newObj = obj.copy(byteSize = _size, status = ObjectStatus.UPLOADED)
+      await(objectRepository.update(namespace, id, _size, ObjectStatus.UPLOADED))
+      newObj
+    }.recoverWith {
+      case e =>
+        objectRepository.delete(namespace, id)
+          .flatMap(_ => FastFuture.failed(e))
+          .recoverWith { case _ => FastFuture.failed(e) }
+    }
+
+    createF.flatMap(_ => uploadF)
+  }
+
+
+  def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[TObject] = {
     val obj = TObject(namespace, id, -1, ObjectStatus.SERVER_UPLOADING)
     lazy val createF = objectRepository.create(obj)
 
     lazy val uploadF = async {
-      val size = await(blobStore.store(namespace, id, blob))
-      val newObj = obj.copy(byteSize = size, status = ObjectStatus.UPLOADED)
-      await(objectRepository.update(namespace, id, size, ObjectStatus.UPLOADED))
+      val _size = await(blobStore.store(namespace, id, blob))
+      val newObj = obj.copy(byteSize = _size, status = ObjectStatus.UPLOADED)
+      await(objectRepository.update(namespace, id, _size, ObjectStatus.UPLOADED))
       newObj
     }.recoverWith {
       case e =>

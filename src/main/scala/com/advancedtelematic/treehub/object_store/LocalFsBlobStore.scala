@@ -49,6 +49,9 @@ class LocalFsBlobStore(root: Path)(implicit ec: ExecutionContext, mat: Materiali
     } yield res
   }
 
+  override def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long] =
+    store(namespace, id, blob)
+
   override def buildResponse(ns: Namespace, id: ObjectId): Future[HttpResponse] = {
     exists(ns, id).flatMap {
       case true =>
