@@ -90,4 +90,6 @@ class LocalFsBlobStore(root: Path)(implicit ec: ExecutionContext, mat: Materiali
       path
     }
   }
+
+  override val supportsOutOfBandStorage: Boolean = false
 }

@@ -18,6 +18,8 @@ object BlobStore {
 trait BlobStore {
   def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long]
 
+  val supportsOutOfBandStorage: Boolean
+
   def storeOutOfBand(namespace: Namespace, id: ObjectId): Future[OutOfBandStoreResult]
 
   def buildResponse(namespace: Namespace, id: ObjectId): Future[HttpResponse]

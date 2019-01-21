@@ -141,6 +141,7 @@ class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
   private def objectFilename(namespace: Namespace, objectId: ObjectId): String =
     objectId.path(Paths.get(namespaceDir(namespace))).toString
 
+  override val supportsOutOfBandStorage: Boolean = true
 }
 
 class S3Credentials(accessKey: String, secretKey: String,

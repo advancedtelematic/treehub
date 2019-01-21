@@ -15,13 +15,14 @@ import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-// TODO: Use shapeless union type ?
 class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Database) extends ObjectRepositorySupport {
 
   import scala.async.Async._
 
   def completeClientUpload(namespace: Namespace, id: ObjectId): Future[Unit] =
     objectRepository.setCompleted(namespace, id).map(_ => ())
+
+  def outOfBandStorageEnabled: Boolean = blobStore.supportsOutOfBandStorage
 
   def storeOutOfBand(namespace: Namespace, id: ObjectId, size: Long): Future[OutOfBandStoreResult] = {
     val obj = TObject(namespace, id, size, ObjectStatus.CLIENT_UPLOADING)

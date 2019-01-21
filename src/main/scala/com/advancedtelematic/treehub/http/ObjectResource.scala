@@ -3,7 +3,7 @@ package com.advancedtelematic.treehub.http
 import java.io.File
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1}
+import akka.http.scaladsl.server._
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.libats.data.DataType.Namespace
@@ -36,6 +36,10 @@ class ObjectResource(namespace: Directive1[Namespace],
     usageHandler ! UpdateBandwidth(namespace, usageBytes, objectId)
   }
 
+  import OutOfBandStorageHeader._
+
+  private val outOfBandStorageEnabled = validate(objectStore.outOfBandStorageEnabled, "Out of band storage not enabled")
+
   val route = namespace { ns =>
     path("objects" / PrefixedObjectId) { objectId =>
       head {
@@ -61,11 +65,7 @@ class ObjectResource(namespace: Directive1[Namespace],
         complete(objectStore.completeClientUpload(ns, objectId).map(_ => StatusCodes.NoContent))
       } ~
       (post & hintNamespaceStorage(ns)) {
-        // TODO: abstract header name/header
-        // TODO: Refactor all that repeated objectstore code
-        // TODO: Issue Reject if redirect is disabled, this way will bubble down to accept file anyway
-        // TODO: ^^^ Write test for that
-        (headerValueByName("x-ats-accept-redirect") & parameter("size".as[Long])) { (_, size) =>
+        (outOfBandStorageEnabled & headerValueByType[OutOfBandStorageHeader](()) & parameter("size".as[Long])) { (_, size) =>
           onSuccess(objectStore.storeOutOfBand(ns, objectId, size)) { case UploadAt(uri) =>
             redirect(uri, StatusCodes.Found)
           }

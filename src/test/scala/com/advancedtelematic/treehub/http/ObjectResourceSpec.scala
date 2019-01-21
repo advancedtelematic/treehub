@@ -5,16 +5,12 @@
 package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.unmarshalling.PredefinedFromEntityUnmarshallers.byteArrayUnmarshaller
 import akka.pattern.ask
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.util.FakeUsageUpdate.{CurrentBandwith, CurrentStorage}
 import com.advancedtelematic.util.ResourceSpec.ClientTObject
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
-import akka.http.scaladsl.unmarshalling.PredefinedFromEntityUnmarshallers.byteArrayUnmarshaller
-import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport.unmarshaller
-import com.advancedtelematic.libats.data.ErrorRepresentation
-import com.advancedtelematic.libats.data.ErrorRepresentation._
 
 import scala.concurrent.duration._
 
@@ -59,13 +55,17 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
     }
   }
 
-  test("cannot use redirects when storage method is local storage") {
+  test("request is still accepted and valid when client supports out of band storage but server does not") {
     val obj = new ClientTObject()
 
-    Post(apiUri(s"objects/${obj.prefixedObjectId}?size=${obj.blob.length}"))
-      .addHeader(RawHeader("x-ats-accept-redirect", "true")) ~> routes ~> check {
-      status shouldBe StatusCodes.BadRequest
-      responseAs[ErrorRepresentation].code shouldBe ErrorCodes.OutOfBandStorageNotSupported
+    Post(apiUri(s"objects/${obj.prefixedObjectId}?size=${obj.blob.length}"), obj.blob)
+      .addHeader(new OutOfBandStorageHeader) ~> routes ~> check {
+      status shouldBe StatusCodes.NoContent
+    }
+
+    Get(apiUri(s"objects/${obj.prefixedObjectId}")) ~> routes ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[Array[Byte]] shouldBe obj.blob
     }
   }
 

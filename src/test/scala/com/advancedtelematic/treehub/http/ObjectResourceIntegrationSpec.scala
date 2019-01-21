@@ -33,7 +33,7 @@ class ObjectResourceIntegrationSpec extends TreeHubSpec with ScalatestRouteTest 
     val obj = new ClientTObject()
 
     Post(s"/objects/${obj.prefixedObjectId}?size=${obj.blob.length}", obj.blob)
-      .addHeader(RawHeader("x-ats-accept-redirect", "true")) ~> routes ~> check {
+      .addHeader(new OutOfBandStorageHeader) ~> routes ~> check {
       status shouldBe StatusCodes.Found
       response.header[Location].get.uri.toString() should include("amazonaws.com")
     }
@@ -47,7 +47,7 @@ class ObjectResourceIntegrationSpec extends TreeHubSpec with ScalatestRouteTest 
     val obj = new ClientTObject()
 
     val url = Post(s"/objects/${obj.prefixedObjectId}?size=${obj.blob.length}", obj.blob)
-      .addHeader(RawHeader("x-ats-accept-redirect", "true")) ~> routes ~> check {
+      .addHeader(new OutOfBandStorageHeader) ~> routes ~> check {
       status shouldBe StatusCodes.Found
       response.header[Location].get.uri
     }
@@ -71,7 +71,7 @@ class ObjectResourceIntegrationSpec extends TreeHubSpec with ScalatestRouteTest 
     val obj = new ClientTObject()
 
     Post(s"/objects/${obj.prefixedObjectId}?size=${obj.blob.length}", obj.blob)
-      .addHeader(RawHeader("x-ats-accept-redirect", "true")) ~> routes ~> check {
+      .addHeader(new OutOfBandStorageHeader) ~> routes ~> check {
       status shouldBe StatusCodes.Found
     }
 
