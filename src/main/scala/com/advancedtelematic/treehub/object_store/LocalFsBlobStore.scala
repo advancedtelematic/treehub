@@ -34,11 +34,7 @@ object LocalFsBlobStore {
 }
 
 class LocalFsBlobStore(root: Path)(implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
-  override def store(ns: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long] = {
-    storeLocally(ns, id, blob).map(_._2)
-  }
-
-  private def storeLocally(ns: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[(Path, Long)] = {
+  def store(ns: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[(Path, Long)] = {
     for {
       path <- Future.fromTry(objectPath(ns, id))
       ioResult <- blob.runWith(FileIO.toPath(path, options = Set(READ, WRITE, CREATE)))
@@ -53,7 +49,7 @@ class LocalFsBlobStore(root: Path)(implicit ec: ExecutionContext, mat: Materiali
   }
 
   override def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long] =
-    store(namespace, id, blob)
+    store(namespace, id, blob).map(_._2)
 
   override def storeOutOfBand(namespace: Namespace, id: ObjectId): Future[BlobStore.OutOfBandStoreResult] =
     FastFuture.failed(Errors.OutOfBandStorageNotSupported)

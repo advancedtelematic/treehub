@@ -1,5 +1,7 @@
 package com.advancedtelematic.treehub.http
 
+import java.io.File
+
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1}
 import akka.stream.Materializer
@@ -59,16 +61,17 @@ class ObjectResource(namespace: Directive1[Namespace],
         complete(objectStore.completeClientUpload(ns, objectId).map(_ => StatusCodes.NoContent))
       } ~
       (post & hintNamespaceStorage(ns)) {
-        // TODO:SM Use storeUploadedFile and change ObjectStore api to accept File or DataBytes, when using databytes, require size, stream up
         // TODO: abstract header name/header
         // TODO: Refactor all that repeated objectstore code
+        // TODO: Issue Reject if redirect is disabled, this way will bubble down to accept file anyway
+        // TODO: ^^^ Write test for that
         (headerValueByName("x-ats-accept-redirect") & parameter("size".as[Long])) { (_, size) =>
           onSuccess(objectStore.storeOutOfBand(ns, objectId, size)) { case UploadAt(uri) =>
             redirect(uri, StatusCodes.Found)
           }
         } ~
-        fileUpload("file") { case (_, content) =>
-          val f = objectStore.store(ns, objectId, content).map(_ => StatusCodes.OK)
+        storeUploadedFile("file", _ => File.createTempFile("http-upload", ".tmp")) { case (_, file) =>
+          val f = objectStore.storeFile(ns, objectId, file).map(_ => StatusCodes.OK)
           complete(f)
         } ~
           extractRequestEntity { entity =>

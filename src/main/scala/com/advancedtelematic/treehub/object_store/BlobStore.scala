@@ -16,8 +16,6 @@ object BlobStore {
 }
 
 trait BlobStore {
-  def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long]
-
   def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long]
 
   def storeOutOfBand(namespace: Namespace, id: ObjectId): Future[OutOfBandStoreResult]

@@ -1,6 +1,6 @@
 package com.advancedtelematic.treehub.object_store
 
-import java.io.{File, InputStream}
+import java.io.File
 import java.nio.file.Paths
 import java.time.temporal.ChronoUnit
 import java.time.{Duration, Instant}
@@ -9,10 +9,8 @@ import java.util.Date
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
 import akka.stream.Materializer
-import akka.stream.scaladsl.{FileIO, Keep, Source, StreamConverters}
+import akka.stream.scaladsl.{Source, StreamConverters}
 import akka.util.ByteString
-import cats.instances.long
-import cats.syntax.either._
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.libats.data.DataType.Namespace
@@ -25,9 +23,7 @@ import com.amazonaws.services.s3.model._
 import org.slf4j.LoggerFactory
 
 import scala.async.Async._
-import scala.concurrent.blocking
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.concurrent.{ExecutionContext, Future, blocking}
 
 class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
                  (implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
@@ -41,7 +37,6 @@ class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
       .withRegion(s3Credentials.region)
       .build()
 
-  // TODO:SM very similar to below
   override def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long] = {
     val filename = objectFilename(namespace, id)
 
@@ -56,24 +51,6 @@ class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
         await(Future { blocking { s3client.putObject(request) } })
         log.info(s"$filename with size $size uploaded to s3")
         size
-      }
-    }
-
-    blob.runWith(sink)
-  }
-
-  override def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long] = {
-    val filename = objectFilename(namespace, id)
-    val tempFile = File.createTempFile(filename, ".tmp")
-
-    // The s3 sdk requires us to specify the file size if using a stream
-    // so we always need to cache the file into the filesystem before uploading
-    val sink = FileIO.toPath(tempFile.toPath).mapMaterializedValue {
-      _.flatMap { result =>
-        if (result.wasSuccessful) {
-          upload(tempFile, filename).andThen { case _ => Try(tempFile.delete()) }
-        } else
-          Future.failed(result.getError)
       }
     }
 

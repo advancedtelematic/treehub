@@ -35,7 +35,7 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
   test("saves object to database and blob store") {
     val blob = ByteString("some text")
     val tobj = TObject(defaultNs, ObjectId.parse("48eaf23f5ae202229c3f16a74f1c537efb5cae708aba89d1914b7cb13aec173e.filez").toOption.get, blob.length, ObjectStatus.UPLOADED)
-    val res = objectStore.store(defaultNs, tobj.id, Source.single(blob)).futureValue
+    val res = objectStore.storeStream(defaultNs, tobj.id, blob.size, Source.single(blob)).futureValue
 
     res shouldBe tobj
     objectRepository.exists(tobj.namespace, tobj.id).futureValue shouldBe true

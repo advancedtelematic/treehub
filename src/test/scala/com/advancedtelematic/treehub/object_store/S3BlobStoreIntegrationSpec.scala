@@ -33,7 +33,7 @@ class S3BlobStoreIntegrationSpec extends TreeHubSpec {
 
     val source = Source.single(blob)
 
-    val size = s3BlobStore.store(ns, tobj.id, source).futureValue
+    val size = s3BlobStore.storeStream(ns, tobj.id, blob.size, source).futureValue
 
     size shouldBe 13
   }
@@ -42,7 +42,7 @@ class S3BlobStoreIntegrationSpec extends TreeHubSpec {
     val obj = new ClientTObject()
 
     val f = async {
-      await(s3BlobStore.store(ns, obj.objectId, obj.byteSource))
+      await(s3BlobStore.storeStream(ns, obj.objectId, obj.blob.size, obj.byteSource))
       await(s3BlobStore.readFull(ns, obj.objectId))
     }
 
@@ -58,7 +58,7 @@ class S3BlobStoreIntegrationSpec extends TreeHubSpec {
     val source = Source.single(blob)
 
     val response = async {
-      await(redirectS3BlobStore.store(ns, tobj.id, source))
+      await(redirectS3BlobStore.storeStream(ns, tobj.id, blob.size, source))
       await(redirectS3BlobStore.buildResponse(tobj.namespace, tobj.id))
     }.futureValue
 
@@ -72,7 +72,7 @@ class S3BlobStoreIntegrationSpec extends TreeHubSpec {
     val source = Source.single(blob)
 
     val response = async {
-      await(s3BlobStore.store(ns, tobj.id, source))
+      await(s3BlobStore.storeStream(ns, tobj.id, blob.size, source))
       await(s3BlobStore.buildResponse(tobj.namespace, tobj.id))
     }.futureValue
 

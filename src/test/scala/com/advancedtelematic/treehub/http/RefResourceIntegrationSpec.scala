@@ -2,7 +2,6 @@ package com.advancedtelematic.treehub.http
 
 import java.io.File
 
-import cats.syntax.either._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.scaladsl.FileIO
@@ -23,13 +22,14 @@ class RefResourceIntegrationSpec extends TreeHubSpec with ResourceSpec with Obje
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
   def createCommitObject(fileName: String): Future[(Commit, TObject)] = {
-    val blob = FileIO.fromPath(new File(this.getClass.getResource(s"/blobs/$fileName").getFile).toPath)
+    val file = new File(this.getClass.getResource(s"/blobs/$fileName").getFile)
+    val blob = FileIO.fromPath(file.toPath)
     val blobBytes = blob.runReduce(_ ++ _).map(_.toArray)
 
     for {
       commit <- blobBytes.map(Commit.from).map(_.toOption.get)
       id = ObjectId.from(commit)
-      tobj <- objectStore.store(defaultNs, id, blob)
+      tobj <- objectStore.storeFile(defaultNs, id, file)
         .recover {
           case Errors.ObjectExists(_) =>
             log.info("TOBject already exists")

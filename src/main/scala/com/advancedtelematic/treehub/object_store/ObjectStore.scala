@@ -1,18 +1,21 @@
 package com.advancedtelematic.treehub.object_store
 
+import java.io.File
+
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.util.FastFuture
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.{ObjectId, ObjectStatus, TObject}
 import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.treehub.http.Errors
-import com.advancedtelematic.treehub.object_store.BlobStore.{OutOfBandStoreResult, UploadAt}
+import com.advancedtelematic.treehub.object_store.BlobStore.OutOfBandStoreResult
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
+// TODO: Use shapeless union type ?
 class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Database) extends ObjectRepositorySupport {
 
   import scala.async.Async._
@@ -37,7 +40,6 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
     createF.flatMap(_ => uploadF)
   }
 
-  // TODO:SM Almost the same as `store`
   def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[TObject] = {
     val obj = TObject(namespace, id, size, ObjectStatus.SERVER_UPLOADING)
     lazy val createF = objectRepository.create(obj)
@@ -57,25 +59,10 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
     createF.flatMap(_ => uploadF)
   }
 
-
-  // TODO:SM Accept File instead of source
-  def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[TObject] = {
-    val obj = TObject(namespace, id, -1, ObjectStatus.SERVER_UPLOADING)
-    lazy val createF = objectRepository.create(obj)
-
-    lazy val uploadF = async {
-      val _size = await(blobStore.store(namespace, id, blob))
-      val newObj = obj.copy(byteSize = _size, status = ObjectStatus.UPLOADED)
-      await(objectRepository.update(namespace, id, _size, ObjectStatus.UPLOADED))
-      newObj
-    }.recoverWith {
-      case e =>
-        objectRepository.delete(namespace, id)
-          .flatMap(_ => FastFuture.failed(e))
-          .recoverWith { case _ => FastFuture.failed(e) }
-    }
-
-    createF.flatMap(_ => uploadF)
+  def storeFile(namespace: Namespace, id: ObjectId, file: File): Future[TObject] = {
+    val size = file.length()
+    val source = FileIO.fromPath(file.toPath)
+    storeStream(namespace, id, size, source)
   }
 
   def exists(namespace: Namespace, id: ObjectId): Future[Boolean] =
