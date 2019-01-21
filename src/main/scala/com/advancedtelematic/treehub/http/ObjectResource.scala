@@ -1,16 +1,15 @@
 package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.headers.Authorization
-import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1, ValidationRejection}
+import akka.http.scaladsl.server.{Directive0, Directive1, PathMatcher1}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.libats.data.DataType.Namespace
+import com.advancedtelematic.treehub.object_store.BlobStore.UploadAt
 import com.advancedtelematic.treehub.object_store.ObjectStore
-import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
+import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
 import slick.jdbc.MySQLProfile.api._
-import cats.syntax.either._
 
 import scala.concurrent.ExecutionContext
 import scala.util.Success
@@ -56,12 +55,17 @@ class ObjectResource(namespace: Directive1[Namespace],
 
         complete(f)
       } ~
+      (put & hintNamespaceStorage(ns)) {
+        complete(objectStore.completeClientUpload(ns, objectId).map(_ => StatusCodes.NoContent))
+      } ~
       (post & hintNamespaceStorage(ns)) {
-        // TODO: Use storeUploadedFile and change ObjectStore api to accept File or DataBytes, when using databytes, require size, stream up
-
-        headerValueByName("x-ats-accept-redirect") { _ =>
-          val f = objectStore.storeOutOfBand(ns, objectId, content).map(_ => StatusCodes.OK)
-          complete(f)
+        // TODO:SM Use storeUploadedFile and change ObjectStore api to accept File or DataBytes, when using databytes, require size, stream up
+        // TODO: abstract header name/header
+        // TODO: Refactor all that repeated objectstore code
+        (headerValueByName("x-ats-accept-redirect") & parameter("size".as[Long])) { (_, size) =>
+          onSuccess(objectStore.storeOutOfBand(ns, objectId, size)) { case UploadAt(uri) =>
+            redirect(uri, StatusCodes.Found)
+          }
         } ~
         fileUpload("file") { case (_, content) =>
           val f = objectStore.store(ns, objectId, content).map(_ => StatusCodes.OK)
@@ -69,12 +73,11 @@ class ObjectResource(namespace: Directive1[Namespace],
         } ~
           extractRequestEntity { entity =>
             entity.contentLengthOption match {
-              case Some(size) => complete(objectStore.storeStream(ns, objectId, size, entity.dataBytes).map(_ => StatusCodes.OK))
+              case Some(size) => complete(objectStore.storeStream(ns, objectId, size, entity.dataBytes).map(_ => StatusCodes.NoContent))
               case None => reject
             }
           }
       }
     }
   }
-
 }

@@ -5,13 +5,16 @@
 package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.pattern.ask
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.util.FakeUsageUpdate.{CurrentBandwith, CurrentStorage}
 import com.advancedtelematic.util.ResourceSpec.ClientTObject
 import com.advancedtelematic.util.{ResourceSpec, TreeHubSpec}
+import akka.http.scaladsl.unmarshalling.PredefinedFromEntityUnmarshallers.byteArrayUnmarshaller
+import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport.unmarshaller
+import com.advancedtelematic.libats.data.ErrorRepresentation
+import com.advancedtelematic.libats.data.ErrorRepresentation._
 
 import scala.concurrent.duration._
 
@@ -26,17 +29,16 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
 
     Get(apiUri(s"objects/${obj.prefixedObjectId}")) ~> routes ~> check {
       status shouldBe StatusCodes.OK
-
       responseAs[Array[Byte]] shouldBe obj.blob
     }
   }
 
   // This is the same as using `curl -H "Content-Type: application/octet-stream" --data-binary @file`
-  test("POST creates a new blob when uploading application/octet-stream directory") {
+  test("POST creates a new blob when uploading application/octet-stream directly") {
     val obj = new ClientTObject()
 
     Post(apiUri(s"objects/${obj.prefixedObjectId}"), obj.blob) ~> routes ~> check {
-      status shouldBe StatusCodes.OK
+      status shouldBe StatusCodes.NoContent
     }
 
     Get(apiUri(s"objects/${obj.prefixedObjectId}")) ~> routes ~> check {
@@ -45,16 +47,26 @@ class ObjectResourceSpec extends TreeHubSpec with ResourceSpec with ObjectReposi
     }
   }
 
-  test("POST redirects client to redirect endpoint if client supports it") {
+  test("cannot report object upload when object is not in status CLIENT_UPLOADING") {
     val obj = new ClientTObject()
 
-    val accept = HttpHeader
-
-
     Post(apiUri(s"objects/${obj.prefixedObjectId}"), obj.blob) ~> routes ~> check {
-      status shouldBe StatusCodes.OK
+      status shouldBe StatusCodes.NoContent
     }
 
+    Put(apiUri(s"objects/${obj.prefixedObjectId}")) ~> routes ~> check {
+      status shouldBe StatusCodes.NotFound
+    }
+  }
+
+  test("cannot use redirects when storage method is local storage") {
+    val obj = new ClientTObject()
+
+    Post(apiUri(s"objects/${obj.prefixedObjectId}?size=${obj.blob.length}"))
+      .addHeader(RawHeader("x-ats-accept-redirect", "true")) ~> routes ~> check {
+      status shouldBe StatusCodes.BadRequest
+      responseAs[ErrorRepresentation].code shouldBe ErrorCodes.OutOfBandStorageNotSupported
+    }
   }
 
   test("POST hints updater to update current storage") {

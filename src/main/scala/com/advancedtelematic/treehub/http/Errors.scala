@@ -13,6 +13,7 @@ object ErrorCodes {
   val ObjectAExists = ErrorCode("object_exists")
   val SummaryDoesNotExist = ErrorCode("summary_missing")
   val StaticDeltaDoesNotExist = ErrorCode("delta_missing")
+  val OutOfBandStorageNotSupported = ErrorCode("out_of_band_storage_not_supported")
 }
 
 object Errors {
@@ -23,4 +24,5 @@ object Errors {
   val ObjectNotFound = RawError(ErrorCodes.ObjectNotFound, StatusCodes.NotFound, "object not found")
   val SummaryDoesNotExist = RawError(ErrorCodes.ObjectAExists, StatusCodes.NotFound, "summary does not exist")
   val StaticDeltaDoesNotExist = RawError(ErrorCodes.ObjectAExists, StatusCodes.NotFound, "delta does not exist")
+  val OutOfBandStorageNotSupported = RawError(ErrorCodes.OutOfBandStorageNotSupported, StatusCodes.BadRequest, "out of band storage not supported for Local storage")
 }

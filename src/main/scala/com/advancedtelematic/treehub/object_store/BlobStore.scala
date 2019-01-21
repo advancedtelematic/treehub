@@ -13,15 +13,14 @@ import scala.util.control.NoStackTrace
 object BlobStore {
   sealed trait OutOfBandStoreResult
   case class UploadAt(uri: Uri) extends OutOfBandStoreResult
-  case class Failure(cause: Throwable) extends OutOfBandStoreResult
 }
 
 trait BlobStore {
   def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long]
 
-//  def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long]
+  def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long]
 
-  def storeOutOfBand(namespace: Namespace, id: ObjectId, blob: => Source[ByteString, _]): Future[OutOfBandStoreResult]
+  def storeOutOfBand(namespace: Namespace, id: ObjectId): Future[OutOfBandStoreResult]
 
   def buildResponse(namespace: Namespace, id: ObjectId): Future[HttpResponse]
 

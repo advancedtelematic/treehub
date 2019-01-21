@@ -16,6 +16,8 @@ import com.advancedtelematic.util.FakeUsageUpdate.{CurrentBandwith, CurrentStora
 import eu.timepit.refined.api.Refined
 import java.nio.file.Files
 
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
 import org.scalatest.Suite
 
 import scala.util.Random
@@ -27,7 +29,7 @@ import com.advancedtelematic.libats.test.DatabaseSpec
 import com.advancedtelematic.treehub.delta_store.LocalDeltaStorage
 
 object ResourceSpec {
-  class ClientTObject(blobStr: String = Random.nextString(10)) {
+  class ClientTObject(val blobStr: String = Random.nextString(10)) {
     lazy val blob = blobStr.getBytes
 
     lazy val checkSum = DigestCalculator.digest()(blobStr)
@@ -41,10 +43,12 @@ object ResourceSpec {
     lazy val commit: Commit = Refined.unsafeApply(checkSum)
 
     lazy val formFile =
-      BodyPart("file", HttpEntity(MediaTypes.`application/octet-stream`, blobStr.getBytes),
+      BodyPart("file", HttpEntity(MediaTypes.`application/octet-stream`, blob),
         Map("filename" -> s"$checkSum.commit"))
 
     lazy val form = Multipart.FormData(formFile)
+
+    lazy val byteSource = Source.single(ByteString(blob))
   }
 
 }

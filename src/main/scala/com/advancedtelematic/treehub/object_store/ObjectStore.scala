@@ -8,6 +8,7 @@ import com.advancedtelematic.data.DataType.{ObjectId, ObjectStatus, TObject}
 import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.db.ObjectRepositorySupport
 import com.advancedtelematic.treehub.http.Errors
+import com.advancedtelematic.treehub.object_store.BlobStore.{OutOfBandStoreResult, UploadAt}
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,8 +17,24 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
 
   import scala.async.Async._
 
-  def storeOutOfBand(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[TObject] = {
-    blobStore.storeStream()
+  def completeClientUpload(namespace: Namespace, id: ObjectId): Future[Unit] =
+    objectRepository.setCompleted(namespace, id).map(_ => ())
+
+  def storeOutOfBand(namespace: Namespace, id: ObjectId, size: Long): Future[OutOfBandStoreResult] = {
+    val obj = TObject(namespace, id, size, ObjectStatus.CLIENT_UPLOADING)
+    lazy val createF = objectRepository.create(obj)
+
+    lazy val uploadF =
+      blobStore
+        .storeOutOfBand(namespace, id)
+        .recoverWith {
+          case e =>
+            objectRepository.delete(namespace, id)
+              .flatMap(_ => FastFuture.failed(e))
+              .recoverWith { case _ => FastFuture.failed(e) }
+        }
+
+    createF.flatMap(_ => uploadF)
   }
 
   // TODO:SM Almost the same as `store`
@@ -41,6 +58,7 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
   }
 
 
+  // TODO:SM Accept File instead of source
   def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[TObject] = {
     val obj = TObject(namespace, id, -1, ObjectStatus.SERVER_UPLOADING)
     lazy val createF = objectRepository.create(obj)

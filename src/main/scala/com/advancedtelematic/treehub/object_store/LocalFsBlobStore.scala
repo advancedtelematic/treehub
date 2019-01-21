@@ -1,21 +1,20 @@
 package com.advancedtelematic.treehub.object_store
 
-import java.io.File
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.StandardOpenOption.{CREATE, READ, WRITE}
+import java.nio.file.{Files, Path}
 
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.util.FastFuture
 import akka.stream.Materializer
-import akka.stream.scaladsl.{FileIO, Sink, Source}
+import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.ObjectId
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.http.Errors
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import java.nio.file.StandardOpenOption.{CREATE, READ, WRITE}
-
-import akka.http.scaladsl.model.HttpResponse
-import com.advancedtelematic.libats.data.DataType.Namespace
 
 
 object LocalFsBlobStore {
@@ -36,6 +35,10 @@ object LocalFsBlobStore {
 
 class LocalFsBlobStore(root: Path)(implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
   override def store(ns: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long] = {
+    storeLocally(ns, id, blob).map(_._2)
+  }
+
+  private def storeLocally(ns: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[(Path, Long)] = {
     for {
       path <- Future.fromTry(objectPath(ns, id))
       ioResult <- blob.runWith(FileIO.toPath(path, options = Set(READ, WRITE, CREATE)))
@@ -46,11 +49,14 @@ class LocalFsBlobStore(root: Path)(implicit ec: ExecutionContext, mat: Materiali
           Future.failed(BlobStoreError(s"Error storing local blob ${ioResult.getError.getLocalizedMessage}", ioResult.getError))
         }
       }
-    } yield res
+    } yield path -> res
   }
 
   override def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long] =
     store(namespace, id, blob)
+
+  override def storeOutOfBand(namespace: Namespace, id: ObjectId): Future[BlobStore.OutOfBandStoreResult] =
+    FastFuture.failed(Errors.OutOfBandStorageNotSupported)
 
   override def buildResponse(ns: Namespace, id: ObjectId): Future[HttpResponse] = {
     exists(ns, id).flatMap {
