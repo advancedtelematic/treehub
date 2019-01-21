@@ -77,7 +77,7 @@ class ObjectResource(namespace: Directive1[Namespace],
           extractRequestEntity { entity =>
             entity.contentLengthOption match {
               case Some(size) => complete(objectStore.storeStream(ns, objectId, size, entity.dataBytes).map(_ => StatusCodes.NoContent))
-              case None => reject
+              case None => reject(MalformedHeaderRejection("Content-Length", "a finite length request is required to upload a file", cause = None))
             }
           }
       }
