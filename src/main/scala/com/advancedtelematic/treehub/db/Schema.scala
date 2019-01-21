@@ -1,9 +1,12 @@
 package com.advancedtelematic.treehub.db
 
+import java.time.Instant
+
 import com.advancedtelematic.data.DataType.ObjectStatus.ObjectStatus
 import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import slick.jdbc.MySQLProfile.api._
+import com.advancedtelematic.libats.slick.db.SlickExtensions.javaInstantMapping
 
 object Schema {
   import com.advancedtelematic.libats.slick.db.SlickAnyVal._
@@ -16,6 +19,7 @@ object Schema {
     def id = column[ObjectId]("object_id")
     def size = column[Long]("size")
     def status = column[ObjectStatus]("status")
+    def createdAt = column[Instant]("created_at")
 
     def pk = primaryKey("pk_object", (namespace, id))
 
@@ -25,6 +29,18 @@ object Schema {
   }
 
   val objects = TableQuery[TObjectTable]
+
+  class ArchivedObjectsTable(tag: Tag) extends Table[(Namespace, ObjectId, Long, Instant, String)](tag, "archived_objects") {
+    def namespace = column[Namespace]("namespace")
+    def id = column[ObjectId]("object_id")
+    def reason = column[String]("reason")
+    def clientCreatedAt = column[Instant]("client_created_at")
+    def size = column[Long]("size")
+
+    override def * = (namespace, id, size, clientCreatedAt, reason)
+  }
+
+  val archivedObjects = TableQuery[ArchivedObjectsTable]
 
   case class RefTable(tag: Tag) extends Table[Ref](tag, "ref") {
     def namespace = column[Namespace]("namespace")
