@@ -91,7 +91,9 @@ trait ArchivedObjectRepositorySupport {
 
 protected class ArchivedObjectRepository()(implicit db: Database, ec: ExecutionContext) {
   def archive(obj: TObject, clientCreatedAt: Instant, reason: String): Future[Unit] = db.run {
-    Schema.archivedObjects += (obj.namespace, obj.id, obj.byteSize, clientCreatedAt, reason)
+    Schema.objects.filter(_.namespace === obj.namespace).filter(_.id === obj.id).delete.andThen {
+      Schema.archivedObjects.insertOrUpdate((obj.namespace, obj.id, obj.byteSize, clientCreatedAt, reason))
+    }.transactionally
   }.map(_ => ())
 
   def find(ns: Namespace, objectId: ObjectId) = db.run {

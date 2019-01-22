@@ -30,7 +30,7 @@ object Schema {
 
   val objects = TableQuery[TObjectTable]
 
-  class ArchivedObjectsTable(tag: Tag) extends Table[(Namespace, ObjectId, Long, Instant, String)](tag, "archived_objects") {
+  class ArchivedObjectsTable(tag: Tag) extends Table[(Namespace, ObjectId, Long, Instant, String)](tag, "archived_object") {
     def namespace = column[Namespace]("namespace")
     def id = column[ObjectId]("object_id")
     def reason = column[String]("reason")

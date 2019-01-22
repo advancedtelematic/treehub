@@ -4,6 +4,7 @@ import java.time.Instant
 
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging, Props}
+import akka.pattern.{Backoff, BackoffSupervisor}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Sink}
 import com.advancedtelematic.data.DataType.{ObjectId, ObjectStatus, TObject}
@@ -16,13 +17,15 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 object StaleObjectArchiveActor {
-  sealed trait Msg
   case object Tick
   case class Done(count: Long)
 
   val expiresAfter = java.time.Duration.ofHours(1)
 
   def props(blobStore: BlobStore)(implicit db: Database, mat: Materializer) = Props(new StaleObjectArchiveActor(blobStore))
+
+  def withBackOff(blobStore: BlobStore)(implicit db: Database, mat: Materializer) =
+    BackoffSupervisor.props(Backoff.onFailure(props(blobStore), "stale-obj-worker", 5.seconds, 5.minutes, 0.25))
 }
 
 class StaleObjectArchiveActor(blobStore: BlobStore)(implicit db: Database, mat: Materializer) extends Actor
@@ -33,11 +36,11 @@ class StaleObjectArchiveActor(blobStore: BlobStore)(implicit db: Database, mat: 
   import akka.pattern.pipe
   import context.dispatcher
 
-  override def preStart(): Unit = { // TODO:SM Best to just use postRestart?
+  import scala.async.Async._
+
+  override def postRestart(reason: Throwable): Unit = {
     self ! Tick
   }
-
-  import scala.async.Async._
 
   def isExpired(createdAt: Instant): Boolean = {
     createdAt.isBefore(Instant.now().minus(StaleObjectArchiveActor.expiresAfter))
@@ -48,20 +51,14 @@ class StaleObjectArchiveActor(blobStore: BlobStore)(implicit db: Database, mat: 
 
     if(exists) {
       await(objectRepository.setCompleted(obj.namespace, obj.id))
-      obj.id
     } else if(isExpired(createdAt)) {
       log.info(s"Object ${obj.id} is stale, client did not finish upload within ${StaleObjectArchiveActor.expiresAfter}, archiving")
       await(archivedObjectRepository.archive(obj, createdAt, s"Expired, client did not upload within ${StaleObjectArchiveActor.expiresAfter}"))
-      obj.id
     } else {
       log.debug(s"No change needed for object ${obj.id}, did not expire yet")
-      obj.id
     }
-  }
 
-  val logObjectProcessed = Flow[ObjectId].map { id =>
-    log.info(s"Processed object $id")
-    id
+    obj.id
   }
 
   override def receive: Receive = {
@@ -74,13 +71,22 @@ class StaleObjectArchiveActor(blobStore: BlobStore)(implicit db: Database, mat: 
       context.system.scheduler.scheduleOnce(5.seconds, self, Tick)
 
     case Failure(ex) =>
-      throw ex // TODO:SM This caused infinite restart because it schedules Tick right after, which still fails
+      throw ex
 
     case Tick =>
       val source = objectRepository.findAllByStatus(ObjectStatus.CLIENT_UPLOADING)
 
+      val logObjectProcessed = Flow[ObjectId].map { id =>
+        log.info(s"Processed object $id")
+        id
+      }
+
       val sink = Sink.fold[Long, ObjectId](0) { (count, _) => count + 1 }
 
-      source.mapAsyncUnordered(3)((handle _).tupled).via(logObjectProcessed).runWith(sink).map(Done.apply).pipeTo(self) // TODO:SM best use sender() to test?
+      source
+        .mapAsyncUnordered(3)((handle _).tupled)
+        .via(logObjectProcessed)
+        .runWith(sink).map(Done.apply).pipeTo(sender()) // TODO:SM best use sender() to test?
+
   }
 }
