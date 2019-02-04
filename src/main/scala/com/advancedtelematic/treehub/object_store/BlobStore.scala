@@ -1,16 +1,26 @@
 package com.advancedtelematic.treehub.object_store
 
-import akka.http.scaladsl.model.{HttpEntity, HttpResponse, MediaTypes, StatusCodes}
+import akka.http.scaladsl.model._
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.libats.data.DataType.Namespace
+import com.advancedtelematic.treehub.object_store.BlobStore.OutOfBandStoreResult
 
 import scala.concurrent.Future
 import scala.util.control.NoStackTrace
 
+object BlobStore {
+  sealed trait OutOfBandStoreResult
+  case class UploadAt(uri: Uri) extends OutOfBandStoreResult
+}
+
 trait BlobStore {
-  def store(namespace: Namespace, id: ObjectId, blob: Source[ByteString, _]): Future[Long]
+  def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long]
+
+  val supportsOutOfBandStorage: Boolean
+
+  def storeOutOfBand(namespace: Namespace, id: ObjectId): Future[OutOfBandStoreResult]
 
   def buildResponse(namespace: Namespace, id: ObjectId): Future[HttpResponse]
 

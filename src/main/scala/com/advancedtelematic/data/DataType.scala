@@ -2,11 +2,13 @@ package com.advancedtelematic.data
 
 import java.nio.file.{Path, Paths}
 import java.util.Base64
+
 import com.advancedtelematic.common.DigestCalculator
 import com.advancedtelematic.libats.data.DataType.Namespace
 import eu.timepit.refined.api.{Refined, Validate}
 import eu.timepit.refined.refineV
 import cats.syntax.either._
+import com.advancedtelematic.data.DataType.ObjectStatus.ObjectStatus
 import com.advancedtelematic.libats.messaging_datatype.DataType.{Commit, ValidCommit}
 import org.apache.commons.codec.binary.Hex
 import com.advancedtelematic.libats.data.RefinedUtils.RefineTry
@@ -64,11 +66,13 @@ object DataType {
     def parse(string: String): Either[String, ObjectId] = refineV[ValidObjectId](string)
   }
 
-  case class TObject(namespace: Namespace, id: ObjectId, byteSize: Long)
+  object ObjectStatus extends Enumeration {
+    type ObjectStatus = Value
 
-  object TObject {
-    val reserveSize: Long = -1
+    val UPLOADED, CLIENT_UPLOADING, SERVER_UPLOADING = Value
   }
+
+  case class TObject(namespace: Namespace, id: ObjectId, byteSize: Long, status: ObjectStatus)
 
   protected def toBase64(value: String): Try[Array[Byte]] = {
     Try(Base64.getDecoder.decode(value.replace("/", "").replace("_", "/")))
