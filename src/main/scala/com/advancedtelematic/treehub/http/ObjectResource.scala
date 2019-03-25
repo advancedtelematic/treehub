@@ -5,12 +5,15 @@ import java.io.File
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
 import akka.stream.Materializer
+import com.advancedtelematic.data.DataType
 import com.advancedtelematic.data.DataType.ObjectId
 import com.advancedtelematic.libats.data.DataType.Namespace
+import com.advancedtelematic.treehub.http.Errors.ObjectExists
 import com.advancedtelematic.treehub.object_store.BlobStore.UploadAt
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
+import eu.timepit.refined.api.Refined
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
@@ -39,6 +42,17 @@ class ObjectResource(namespace: Directive1[Namespace],
   import OutOfBandStorageHeader._
 
   private val outOfBandStorageEnabled = validate(objectStore.outOfBandStorageEnabled, "Out of band storage not enabled")
+
+  def ensureNotExists(ns: Namespace, objectId: ObjectId): Directive0 = {
+    Directive.Empty.tflatMap { _ =>
+      val f = objectStore.exists(ns, objectId)
+
+      onSuccess(f).flatMap {
+        case false => pass
+        case true => failWith(ObjectExists(objectId))
+      }
+    }
+  }
 
   val route = namespace { ns =>
     path("objects" / PrefixedObjectId) { objectId =>
@@ -70,7 +84,7 @@ class ObjectResource(namespace: Directive1[Namespace],
             redirect(uri, StatusCodes.Found)
           }
         } ~
-        storeUploadedFile("file", _ => File.createTempFile("http-upload", ".tmp")) { case (_, file) =>
+        (ensureNotExists(ns, objectId) & storeUploadedFile("file", _ => File.createTempFile("http-upload", ".tmp"))) { case (_, file) =>
           val f = objectStore.storeFile(ns, objectId, file).map(_ => StatusCodes.OK)
           complete(f)
         } ~
