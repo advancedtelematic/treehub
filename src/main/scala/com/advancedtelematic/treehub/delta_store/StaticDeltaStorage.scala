@@ -13,6 +13,7 @@ import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.delta_store.StaticDeltaStorage.{StaticDeltaContent, StaticDeltaRedirectResponse, StaticDeltaResponse}
 import com.advancedtelematic.treehub.http.Errors
 import com.advancedtelematic.treehub.object_store.S3Credentials
+import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
@@ -51,10 +52,18 @@ object StaticDeltaStorage {
 class S3DeltaStorage(s3Credentials: S3Credentials)(implicit ec: ExecutionContext) extends StaticDeltaStorage {
   private val _log = LoggerFactory.getLogger(this.getClass)
 
-  private lazy val s3client = AmazonS3ClientBuilder.standard()
-    .withCredentials(s3Credentials)
-    .withRegion(s3Credentials.region)
-    .build()
+  protected lazy val s3client = {
+    if(s3Credentials.endpointUrl.length() > 0) {
+      _log.info(s"Using custom S3 url: ${s3Credentials.endpointUrl}")
+      AmazonS3ClientBuilder.standard()
+        .withCredentials(s3Credentials)
+        .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3Credentials.endpointUrl, s3Credentials.region.getName()))
+    } else {
+      AmazonS3ClientBuilder.standard()
+        .withCredentials(s3Credentials)
+        .withRegion(s3Credentials.region)
+    }
+  }.build()
 
   override def summary(namespace: Namespace): Future[Source[ByteString, _]] = {
     val path = summaryPath(namespace)

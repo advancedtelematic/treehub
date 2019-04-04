@@ -17,6 +17,7 @@ import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.object_store.BlobStore.UploadAt
 import com.amazonaws.HttpMethod
 import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider}
+import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model._
@@ -32,10 +33,18 @@ class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
 
   private val bucketId = s3Credentials.blobBucketId
 
-  private lazy val s3client = AmazonS3ClientBuilder.standard()
-      .withCredentials(s3Credentials)
-      .withRegion(s3Credentials.region)
-      .build()
+  protected lazy val s3client = {
+    if(s3Credentials.endpointUrl.length() > 0) {
+      log.info(s"Using custom S3 url: ${s3Credentials.endpointUrl}")
+      AmazonS3ClientBuilder.standard()
+        .withCredentials(s3Credentials)
+        .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3Credentials.endpointUrl, s3Credentials.region.getName()))
+    } else {
+      AmazonS3ClientBuilder.standard()
+        .withCredentials(s3Credentials)
+        .withRegion(s3Credentials.region)
+    }
+  }.build()
 
   override def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long] = {
     val filename = objectFilename(namespace, id)
@@ -147,7 +156,8 @@ class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
 class S3Credentials(accessKey: String, secretKey: String,
                     val blobBucketId: String,
                     val deltasBucketId: String,
-                    val region: Regions) extends AWSCredentials with AWSCredentialsProvider {
+                    val region: Regions,
+                    val endpointUrl: String) extends AWSCredentials with AWSCredentialsProvider {
   override def getAWSAccessKeyId: String = accessKey
 
   override def getAWSSecretKey: String = secretKey

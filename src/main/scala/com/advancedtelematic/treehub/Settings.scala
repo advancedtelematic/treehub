@@ -32,8 +32,9 @@ trait Settings {
     val objectBucketId = _config.getString("treehub.storage.s3.bucketId")
     val deltasBucketId = _config.getString("treehub.storage.s3.deltasBucketId")
     val region = Regions.fromName(_config.getString("treehub.storage.s3.region"))
+    val endpointUrl = _config.getString("treehub.storage.s3.endpointUrl")
 
-    new S3Credentials(accessKey, secretKey, objectBucketId, deltasBucketId, region)
+    new S3Credentials(accessKey, secretKey, objectBucketId, deltasBucketId, region, endpointUrl)
   }
 
   lazy val useS3 = _config.getString("treehub.storage.type").equals("s3")
