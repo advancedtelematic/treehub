@@ -7,14 +7,15 @@ import akka.stream.scaladsl.Source
 import com.advancedtelematic.data.DataType.ObjectStatus.ObjectStatus
 import com.advancedtelematic.data.DataType.{ObjectId, ObjectStatus, TObject}
 import com.advancedtelematic.libats.data.DataType.Namespace
-import com.advancedtelematic.treehub.db.Schema.TObjectTable
-import com.advancedtelematic.treehub.http.Errors
-import slick.jdbc.MySQLProfile.api._
-import scala.concurrent.{ExecutionContext, Future}
-import SlickMappings._
 import com.advancedtelematic.libats.slick.codecs.SlickRefined._
 import com.advancedtelematic.libats.slick.db.SlickAnyVal._
 import com.advancedtelematic.libats.slick.db.SlickExtensions._
+import com.advancedtelematic.treehub.db.Schema.TObjectTable
+import com.advancedtelematic.treehub.db.SlickMappings._
+import com.advancedtelematic.treehub.http.Errors
+import slick.jdbc.MySQLProfile.api._
+
+import scala.concurrent.{ExecutionContext, Future}
 
 
 
@@ -24,9 +25,18 @@ trait ObjectRepositorySupport {
 
 protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) {
 
+  // Not depending on += and and handleIntegrityErrors due to https://github.com/advancedtelematic/treehub/issues/76
   def create(obj: TObject): Future[TObject] = {
-    val io = (Schema.objects += obj).map(_ => obj).handleIntegrityErrors(Errors.ObjectExists(obj.id))
-    db.run(io)
+    val io = for {
+      o <- findQuery(obj.namespace, obj.id).result.headOption
+      _ <- if(o.isDefined)
+        DBIO.failed(Errors.ObjectExists(obj.id))
+      else
+        DBIO.successful(())
+        _ <- (Schema.objects += obj).map(_ => obj).handleIntegrityErrors(Errors.ObjectExists(obj.id))
+    } yield obj
+
+    db.run(io.transactionally)
   }
 
   def setCompleted(namespace: Namespace, id: ObjectId): Future[Unit] = {
@@ -41,7 +51,7 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
   def update(namespace: Namespace, id: ObjectId, size: Long, status: ObjectStatus): Future[Unit] = {
     val io = findQuery(namespace, id)
       .map { r => r.size -> r.status }
-      .update((size, ObjectStatus.UPLOADED))
+      .update((size, status))
       .handleSingleUpdateError(Errors.ObjectNotFound)
     db.run(io)
   }
