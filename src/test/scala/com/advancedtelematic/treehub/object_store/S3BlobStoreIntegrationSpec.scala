@@ -29,7 +29,7 @@ class S3BlobStoreIntegrationSpec extends TreeHubSpec {
   override implicit def patienceConfig = PatienceConfig().copy(timeout = Span(15, Seconds))
 
   test("can construct custom")  {
-    val creds = new S3Credentials("", "", "", "", Regions.fromName("us-central-1"), "https://storage.googleapis.com")
+    val creds = new S3Credentials("", "", "", "", Regions.fromName("eu-central-1"), "https://storage.googleapis.com")
     val s3BlobStore = new S3BlobStore(creds, false)
   }
 
