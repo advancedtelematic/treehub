@@ -34,14 +34,15 @@ class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
   private val bucketId = s3Credentials.blobBucketId
 
   protected lazy val s3client = {
+    val builder = AmazonS3ClientBuilder.standard()
+      .withCredentials(s3Credentials)
+
     if(s3Credentials.endpointUrl.length() > 0) {
       log.info(s"Using custom S3 url: ${s3Credentials.endpointUrl}")
-      AmazonS3ClientBuilder.standard()
-        .withCredentials(s3Credentials)
+      builder
         .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3Credentials.endpointUrl, s3Credentials.region.getName()))
     } else {
-      AmazonS3ClientBuilder.standard()
-        .withCredentials(s3Credentials)
+      builder
         .withRegion(s3Credentials.region)
     }
   }.build()
