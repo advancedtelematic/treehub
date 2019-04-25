@@ -22,11 +22,6 @@ class S3DeltaStorageIntegrationSpec extends TreeHubSpec with BeforeAndAfterAll {
 
   val s3DeltaStore = new S3DeltaStorage(s3Credentials)
 
-  val s3Client = AmazonS3ClientBuilder.standard()
-    .withCredentials(s3Credentials)
-    .withRegion(s3Credentials.region)
-    .build()
-
   override implicit def patienceConfig = PatienceConfig().copy(timeout = Span(5, Seconds))
 
   import com.advancedtelematic.libats.data.RefinedUtils.RefineTry
@@ -39,9 +34,9 @@ class S3DeltaStorageIntegrationSpec extends TreeHubSpec with BeforeAndAfterAll {
     val summaryPath = s3DeltaStore.summaryPath(defaultNs)
     val superBlockPath = s3DeltaStore.deltaDir(defaultNs, deltaId).resolve("superblock")
 
-    s3Client.putObject(s3Credentials.deltasBucketId, summaryPath.toString, "some summary")
+    s3DeltaStore.s3client.putObject(s3Credentials.deltasBucketId, summaryPath.toString, "some summary")
 
-    s3Client.putObject(s3Credentials.deltasBucketId, superBlockPath.toString, "superblockstuff")
+    s3DeltaStore.s3client.putObject(s3Credentials.deltasBucketId, superBlockPath.toString, "superblockstuff")
   }
 
   test("can retrieve delta superblock") {

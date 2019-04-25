@@ -52,7 +52,7 @@ object StaticDeltaStorage {
 class S3DeltaStorage(s3Credentials: S3Credentials)(implicit ec: ExecutionContext) extends StaticDeltaStorage {
   private val _log = LoggerFactory.getLogger(this.getClass)
 
-  protected lazy val s3client = {
+  protected[delta_store] lazy val s3client = {
     if(s3Credentials.endpointUrl.length() > 0) {
       _log.info(s"Using custom S3 url: ${s3Credentials.endpointUrl}")
       AmazonS3ClientBuilder.standard()
