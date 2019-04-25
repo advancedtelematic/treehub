@@ -35,7 +35,7 @@ class ObjectResourceIntegrationSpec extends TreeHubSpec with ScalatestRouteTest 
     Post(s"/objects/${obj.prefixedObjectId}?size=${obj.blob.length}", obj.blob)
       .addHeader(new OutOfBandStorageHeader) ~> routes ~> check {
       status shouldBe StatusCodes.Found
-      response.header[Location].get.uri.toString() should include("amazonaws.com")
+      response.header[Location].get.uri.toString() should include("X-Amz-Signature")
     }
 
     Get(s"/objects/${obj.prefixedObjectId}") ~> routes ~> check {
