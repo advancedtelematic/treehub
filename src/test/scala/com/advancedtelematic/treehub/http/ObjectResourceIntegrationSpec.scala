@@ -2,7 +2,7 @@ package com.advancedtelematic.treehub.http
 
 import akka.actor.Props
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.{Location, RawHeader}
+import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.ActorMaterializer
@@ -19,7 +19,7 @@ class ObjectResourceIntegrationSpec extends TreeHubSpec with ScalatestRouteTest 
 
   val ns = DataType.Namespace("ObjectResourceIntegrationSpec")
 
-  val s3BlobStore = new S3BlobStore(s3Credentials, false)
+  val s3BlobStore = S3BlobStore(s3Credentials, allowRedirects = false)
 
   val fakeUsageUpdate = system.actorOf(Props(new FakeUsageUpdate), "fake-usage-update")
 

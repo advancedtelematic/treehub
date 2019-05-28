@@ -126,7 +126,7 @@ class StaleObjectArchiveActorSpec extends StaleObjectArchiveActorSpecUtil {
 class StaleObjectArchiveActorIntegrationSpec extends StaleObjectArchiveActorSpecUtil {
   import system.dispatcher
 
-  val storage = new S3BlobStore(s3Credentials, allowRedirects = false)
+  val storage = S3BlobStore(s3Credentials, allowRedirects = false)
   lazy val subject = system.actorOf(StaleObjectArchiveActor.withBackOff(storage))
 
   test("marks uploaded objects as UPLOADED") {
