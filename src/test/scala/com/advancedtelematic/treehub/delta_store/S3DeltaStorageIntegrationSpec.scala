@@ -6,6 +6,8 @@ import com.advancedtelematic.data.DataType.ValidDeltaId
 import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.delta_store.StaticDeltaStorage.StaticDeltaRedirectResponse
 import com.advancedtelematic.treehub.http.Errors
+import com.advancedtelematic.treehub.object_store
+import com.advancedtelematic.treehub.object_store.S3Client
 import com.advancedtelematic.util.TreeHubSpec
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import org.scalatest.BeforeAndAfterAll
@@ -20,12 +22,9 @@ class S3DeltaStorageIntegrationSpec extends TreeHubSpec with BeforeAndAfterAll {
 
   implicit lazy val mat = ActorMaterializer()
 
-  val s3DeltaStore = new S3DeltaStorage(s3Credentials)
+  val s3Client = object_store.S3Client(s3Credentials)
 
-  val s3Client = AmazonS3ClientBuilder.standard()
-    .withCredentials(s3Credentials)
-    .withRegion(s3Credentials.region)
-    .build()
+  val s3DeltaStore = new S3DeltaStorage(s3Credentials, s3Client)
 
   override implicit def patienceConfig = PatienceConfig().copy(timeout = Span(5, Seconds))
 
@@ -39,9 +38,9 @@ class S3DeltaStorageIntegrationSpec extends TreeHubSpec with BeforeAndAfterAll {
     val summaryPath = s3DeltaStore.summaryPath(defaultNs)
     val superBlockPath = s3DeltaStore.deltaDir(defaultNs, deltaId).resolve("superblock")
 
-    s3Client.putObject(s3Credentials.deltasBucketId, summaryPath.toString, "some summary")
+    s3DeltaStore.s3client.putObject(s3Credentials.deltasBucketId, summaryPath.toString, "some summary")
 
-    s3Client.putObject(s3Credentials.deltasBucketId, superBlockPath.toString, "superblockstuff")
+    s3DeltaStore.s3client.putObject(s3Credentials.deltasBucketId, superBlockPath.toString, "superblockstuff")
   }
 
   test("can retrieve delta superblock") {

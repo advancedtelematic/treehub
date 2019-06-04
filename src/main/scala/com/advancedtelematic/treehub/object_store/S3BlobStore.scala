@@ -17,25 +17,27 @@ import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.treehub.object_store.BlobStore.UploadAt
 import com.amazonaws.HttpMethod
 import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider}
+import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.regions.Regions
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.amazonaws.services.s3.model._
 import org.slf4j.LoggerFactory
 
 import scala.async.Async._
 import scala.concurrent.{ExecutionContext, Future, blocking}
 
-class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
+object S3BlobStore {
+  def apply(s3Credentials: S3Credentials, allowRedirects: Boolean)
+           (implicit ec: ExecutionContext, mat: Materializer): S3BlobStore =
+    new S3BlobStore(s3Credentials, S3Client(s3Credentials), allowRedirects)
+}
+
+class S3BlobStore(s3Credentials: S3Credentials, s3client: AmazonS3, allowRedirects: Boolean)
                  (implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
   private val bucketId = s3Credentials.blobBucketId
-
-  private lazy val s3client = AmazonS3ClientBuilder.standard()
-      .withCredentials(s3Credentials)
-      .withRegion(s3Credentials.region)
-      .build()
 
   override def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long] = {
     val filename = objectFilename(namespace, id)
@@ -144,10 +146,30 @@ class S3BlobStore(s3Credentials: S3Credentials, allowRedirects: Boolean)
   override val supportsOutOfBandStorage: Boolean = true
 }
 
+object S3Client {
+  private val _log = LoggerFactory.getLogger(this.getClass)
+
+  def apply(s3Credentials: S3Credentials): AmazonS3 = {
+    val defaultClientBuilder = AmazonS3ClientBuilder.standard().withCredentials(s3Credentials)
+
+    if (s3Credentials.endpointUrl.length() > 0) {
+      _log.info(s"Using custom S3 url: ${s3Credentials.endpointUrl}")
+      defaultClientBuilder
+        .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3Credentials.endpointUrl, s3Credentials.region.getName))
+        .build()
+    } else {
+      defaultClientBuilder
+        .withRegion(s3Credentials.region)
+        .build()
+    }
+  }
+}
+
 class S3Credentials(accessKey: String, secretKey: String,
                     val blobBucketId: String,
                     val deltasBucketId: String,
-                    val region: Regions) extends AWSCredentials with AWSCredentialsProvider {
+                    val region: Regions,
+                    val endpointUrl: String) extends AWSCredentials with AWSCredentialsProvider {
   override def getAWSAccessKeyId: String = accessKey
 
   override def getAWSSecretKey: String = secretKey

@@ -47,7 +47,7 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   lazy val objectStorage = {
     if(useS3) {
       log.info("Using s3 storage for object blobs")
-      new S3BlobStore(s3Credentials, allowRedirectsToS3)
+      S3BlobStore(s3Credentials, allowRedirectsToS3)
     } else {
       log.info(s"Using local storage a t$localStorePath for object blobs")
       LocalFsBlobStore(localStorePath.resolve("object-storage"))
@@ -57,7 +57,7 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   lazy val deltaStorage = {
     if(useS3) {
       log.info("Using s3 storage for object blobs")
-      new S3DeltaStorage(s3Credentials)
+      S3DeltaStorage(s3Credentials)
     } else {
       log.info(s"Using local storage at $localStorePath for object blobs")
       new LocalDeltaStorage(localStorePath.resolve("delta-storage"))
