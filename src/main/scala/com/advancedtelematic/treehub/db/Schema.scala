@@ -37,6 +37,8 @@ object Schema {
     def clientCreatedAt = column[Instant]("client_created_at")
     def size = column[Long]("size")
 
+    def pk = primaryKey("pk_archived_object", (namespace, id))
+
     override def * = (namespace, id, size, clientCreatedAt, reason)
   }
 
