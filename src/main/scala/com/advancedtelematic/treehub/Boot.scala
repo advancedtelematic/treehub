@@ -1,28 +1,24 @@
 package com.advancedtelematic.treehub
 
-import java.nio.file.Paths
-
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.{Directives, Route}
+import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.http.BootApp
+import com.advancedtelematic.libats.http.LogDirectives._
+import com.advancedtelematic.libats.http.VersionDirectives._
+import com.advancedtelematic.libats.http.monitoring.MetricsSupport
+import com.advancedtelematic.libats.http.tracing.Tracing
 import com.advancedtelematic.libats.messaging.MessageBus
 import com.advancedtelematic.libats.slick.db.{BootMigrations, DatabaseConfig}
 import com.advancedtelematic.libats.slick.monitoring.DatabaseMetrics
-import com.advancedtelematic.treehub.client._
-import com.advancedtelematic.treehub.http.{TreeHubRoutes, Http => TreeHubHttp}
-import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore, S3BlobStore, S3Credentials}
-import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
-import com.amazonaws.regions.Regions
-import com.typesafe.config.ConfigFactory
-import com.advancedtelematic.libats.data.DataType.Namespace
-import com.advancedtelematic.libats.http.VersionDirectives._
-import com.advancedtelematic.libats.http.LogDirectives._
-import com.advancedtelematic.libats.http.monitoring.MetricsSupport
-import com.advancedtelematic.metrics.{AkkaHttpRequestMetrics, InfluxdbMetricsReporterSupport}
 import com.advancedtelematic.metrics.prometheus.PrometheusMetricsSupport
+import com.advancedtelematic.metrics.{AkkaHttpRequestMetrics, InfluxdbMetricsReporterSupport}
+import com.advancedtelematic.treehub.client._
 import com.advancedtelematic.treehub.daemon.StaleObjectArchiveActor
 import com.advancedtelematic.treehub.delta_store.{LocalDeltaStorage, S3DeltaStorage}
+import com.advancedtelematic.treehub.http.{TreeHubRoutes, Http => TreeHubHttp}
+import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore, S3BlobStore}
+import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 
 
 object Boot extends BootApp with Directives with Settings with VersionInfo
@@ -69,6 +65,8 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   val coreHttpClient = new CoreHttpClient(coreUri, packagesApi, treeHubUri)
   val coreBusClient = new CoreBusClient(msgPublisher, treeHubUri)
 
+  val tracing = Tracing.fromConfig(config, projectName)
+
   val usageHandler = system.actorOf(UsageMetricsRouter(msgPublisher, objectStore), "usage-router")
 
   if(objectStorage.supportsOutOfBandStorage) {
@@ -78,8 +76,10 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   val routes: Route =
     (versionHeaders(version) & requestMetrics(metricRegistry) & logResponseMetrics(projectName)) {
       prometheusMetricsRoutes ~
-      new TreeHubRoutes(tokenValidator, namespaceExtractor, coreHttpClient, coreBusClient,
-                        deviceNamespace, objectStore, deltaStorage, usageHandler).routes
+        tracing.traceRequests { _ =>
+          new TreeHubRoutes(tokenValidator, namespaceExtractor, coreHttpClient, coreBusClient,
+            deviceNamespace, objectStore, deltaStorage, usageHandler).routes
+        }
     }
 
   Http().bindAndHandle(routes, host, port)
