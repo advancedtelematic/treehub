@@ -18,7 +18,6 @@ lazy val ItTest = config("it").extend(Test)
 
 lazy val UnitTest = config("ut").extend(Test)
 
-
 lazy val root = (project in file("."))
   .enablePlugins(BuildInfoPlugin)
   .configs(ItTest)
@@ -28,16 +27,17 @@ lazy val root = (project in file("."))
   .settings(testOptions in UnitTest := Seq(Tests.Filter(unitFilter)))
   .settings(testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)))
   .settings(Seq(libraryDependencies ++= {
-    val akkaV = "2.5.7"
-    val akkaHttpV = "10.0.10"
+    val akkaV = "2.5.20"
+    val akkaHttpV = "10.1.7"
     val scalaTestV = "3.0.0"
-    val libatsV = "0.3.0-12-gcc90349"
+    val libatsV = "0.3.0-16-gaa02547"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
       "com.typesafe.akka" %% "akka-stream" % akkaV,
+      "com.typesafe.akka" %% "akka-stream-testkit" % akkaV % "test",
       "com.typesafe.akka" %% "akka-http" % akkaHttpV,
-      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV,
+      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test",
       "com.typesafe.akka" %% "akka-slf4j" % akkaV,
       "org.scalatest"     %% "scalatest" % scalaTestV % "test,it",
 
@@ -45,12 +45,15 @@ lazy val root = (project in file("."))
       "org.slf4j" % "slf4j-api" % "1.7.16",
 
       "com.advancedtelematic" %% "libats" % libatsV,
+      "com.advancedtelematic" %% "libats-http" % libatsV,
+      "com.advancedtelematic" %% "libats-http-tracing" % libatsV,
       "com.advancedtelematic" %% "libats-messaging" % libatsV,
       "com.advancedtelematic" %% "libats-messaging-datatype" % libatsV,
       "com.advancedtelematic" %% "libats-auth" % libatsV,
       "com.advancedtelematic" %% "libats-slick" % libatsV,
       "com.advancedtelematic" %% "libats-metrics-akka" % libatsV,
       "com.advancedtelematic" %% "libats-metrics-prometheus" % libatsV,
+      "com.advancedtelematic" %% "libats-logging" % libatsV,
       "com.advancedtelematic" %% "libats-logging" % libatsV,
 
       "org.scala-lang.modules" %% "scala-async" % "0.9.6",
