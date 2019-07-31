@@ -28,18 +28,18 @@ object Release {
   lazy val setReleaseVersion: ReleaseStep = setVersionOnly(_._1)
 
   lazy val settings = {
-    val showNextVersion = settingKey[String]("the future version once releaseNextVersion has been applied to it")
-    val showReleaseVersion = settingKey[String]("the future version once releaseNextVersion has been applied to it")
+    val showNextVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
+    val showReleaseVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
 
     Seq(
-      releaseVersion <<= (releaseVersionBump) (bumper => {
+      releaseVersion     := {
         ver => Version(ver)
           .map(_.withoutQualifier)
-          .map(_.bump(bumper).string).getOrElse(versionFormatError)
-      }),
+          .map(_.bump(releaseVersionBump.value).string).getOrElse(versionFormatError(ver))
+      },
 
-      showReleaseVersion <<= (version, releaseVersion) ((v, f) => f(v)),
-      showNextVersion <<= (version, releaseNextVersion) ((v, f) => f(v)),
+      showReleaseVersion := { val rV = releaseVersion.value.apply(version.value); println(rV); rV },
+      showNextVersion := { val nV = releaseNextVersion.value.apply(version.value); println(nV); nV },
 
       releaseProcess := Seq(
         checkSnapshotDependencies,
