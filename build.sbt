@@ -1,6 +1,6 @@
 name := "treehub"
 organization := "com.advancedtelematic.com"
-scalaVersion := "2.12.4"
+scalaVersion := "2.12.8"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
@@ -27,10 +27,10 @@ lazy val root = (project in file("."))
   .settings(testOptions in UnitTest := Seq(Tests.Filter(unitFilter)))
   .settings(testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)))
   .settings(Seq(libraryDependencies ++= {
-    val akkaV = "2.5.20"
-    val akkaHttpV = "10.1.7"
+    val akkaV = "2.5.23"
+    val akkaHttpV = "10.1.8"
     val scalaTestV = "3.0.0"
-    val libatsV = "0.3.0-16-gaa02547"
+    val libatsV = "0.3.0-28-ga2b5f8f"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
@@ -41,8 +41,8 @@ lazy val root = (project in file("."))
       "com.typesafe.akka" %% "akka-slf4j" % akkaV,
       "org.scalatest"     %% "scalatest" % scalaTestV % "test,it",
 
-      "ch.qos.logback" % "logback-classic" % "1.1.3",
-      "org.slf4j" % "slf4j-api" % "1.7.16",
+      "ch.qos.logback" % "logback-classic" % "1.2.3",
+      "org.slf4j" % "slf4j-api" % "1.7.25",
 
       "com.advancedtelematic" %% "libats" % libatsV,
       "com.advancedtelematic" %% "libats-http" % libatsV,
