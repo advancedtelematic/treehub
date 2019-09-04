@@ -30,7 +30,7 @@ lazy val root = (project in file("."))
     val akkaV = "2.5.23"
     val akkaHttpV = "10.1.8"
     val scalaTestV = "3.0.0"
-    val libatsV = "0.3.0-28-ga2b5f8f"
+    val libatsV = "0.3.0-38-g6acedb6"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
@@ -75,13 +75,14 @@ dockerRepository in Docker := Some("advancedtelematic")
 
 packageName in Docker := packageName.value
 
-dockerUpdateLatest in Docker := true
+dockerUpdateLatest in Docker := false
+
+dockerAliases in Docker ++= Seq(dockerAlias.value.withTag(git.formattedShaVersion.value))
 
 defaultLinuxInstallLocation in Docker := s"/opt/${moduleName.value}"
 
 dockerCommands := Seq(
   Cmd("FROM", "advancedtelematic/alpine-jre:adoptopenjdk-jdk8u222"),
-  Cmd("RUN", "apk update && apk add --update bash coreutils"),
   ExecCmd("RUN", "mkdir", "-p", s"/var/log/${moduleName.value}"),
   Cmd("ADD", "opt /opt"),
   Cmd("WORKDIR", s"/opt/${moduleName.value}"),

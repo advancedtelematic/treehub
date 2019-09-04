@@ -9,7 +9,7 @@ import com.advancedtelematic.libats.http.VersionDirectives._
 import com.advancedtelematic.libats.http.monitoring.MetricsSupport
 import com.advancedtelematic.libats.http.tracing.Tracing
 import com.advancedtelematic.libats.messaging.MessageBus
-import com.advancedtelematic.libats.slick.db.{BootMigrations, DatabaseConfig}
+import com.advancedtelematic.libats.slick.db.{BootMigrations, CheckMigrations, DatabaseConfig}
 import com.advancedtelematic.libats.slick.monitoring.DatabaseMetrics
 import com.advancedtelematic.metrics.prometheus.PrometheusMetricsSupport
 import com.advancedtelematic.metrics.{AkkaHttpRequestMetrics, InfluxdbMetricsReporterSupport}
@@ -28,7 +28,8 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   with DatabaseMetrics
   with InfluxdbMetricsReporterSupport
   with AkkaHttpRequestMetrics
-  with PrometheusMetricsSupport {
+  with PrometheusMetricsSupport
+  with CheckMigrations {
 
   implicit val _db = db
 
