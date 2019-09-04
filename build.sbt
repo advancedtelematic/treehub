@@ -71,13 +71,13 @@ buildInfoOptions += BuildInfoOption.BuildTime
 
 import com.typesafe.sbt.packager.docker._
 
-dockerRepository in Docker := Some("advancedtelematic")
+dockerRepository := Some("advancedtelematic")
 
 packageName in Docker := packageName.value
 
-dockerUpdateLatest in Docker := false
+dockerUpdateLatest := false
 
-dockerAliases in Docker ++= Seq(dockerAlias.value.withTag(git.formattedShaVersion.value))
+dockerAliases ++= Seq(dockerAlias.value.withTag(git.formattedShaVersion.value))
 
 defaultLinuxInstallLocation in Docker := s"/opt/${moduleName.value}"
 
