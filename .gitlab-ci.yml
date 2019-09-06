@@ -1,0 +1,23 @@
+stages:
+  - trigger
+
+
+trigger-veracode-scan:
+  # prepare and submit for static code analysis
+  stage: trigger
+  only:
+    variables:
+      - $VERACODE_API_ID
+  image: advancedtelematic/gitlab-jobs:0.1.0
+  before_script:
+    # The latest wrapper version can be found in https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/
+    - wget -q -O veracode-wrapper.jar https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/${VERACODE_WRAPPER_VERSION}/vosp-api-wrappers-java-${VERACODE_WRAPPER_VERSION}.jar
+    - ./sbt package
+    - mv target/scala-*/treehub_*.jar ./scan.jar
+  script:
+    - java -jar veracode-wrapper.jar -vid ${VERACODE_API_ID} -vkey ${VERACODE_API_KEY}
+      -action UploadAndScan -appname "OTA Backend - treehub" -createprofile true -autoscan true
+      -filepath scan.jar -version "job ${CI_JOB_ID} in pipeline ${CI_PIPELINE_ID} for ${CI_PROJECT_NAME} repo"
+  artifacts:
+    paths:
+      - scan.jar
