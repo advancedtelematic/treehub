@@ -1,5 +1,6 @@
 stages:
   - trigger
+  - publish
 
 
 trigger-veracode-scan:
@@ -21,3 +22,30 @@ trigger-veracode-scan:
   artifacts:
     paths:
       - scan.jar
+
+trigger-deps-scan:
+  # perform dependencies CVE analysis
+  stage: trigger
+  only:
+    - schedules
+  image: advancedtelematic/gitlab-jobs:0.1.0
+  script:
+    - ./sbt dependencyCheckAggregate
+    - mv target/scala-*/dependency-check-report.html ./depchk.html
+  artifacts:
+    paths:
+      - depchk.html
+
+pages:
+  stage: publish
+  only:
+    - schedules
+  dependencies:
+    - trigger-deps-scan
+  script:
+    - mkdir -p public
+    - mv depchk.html public/index.html
+  artifacts:
+    paths:
+      - public
+    expire_in: 64 days
