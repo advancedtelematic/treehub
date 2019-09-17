@@ -1,7 +1,86 @@
 stages:
+  - test
+  - build image
+  - trigger deploy
   - trigger
   - publish
 
+variables:
+  MYSQL_ROOT_PASSWORD: "root"
+  MYSQL_DATABASE: "ota_treehub"
+  MYSQL_USER: "treehub"
+  MYSQL_PASSWORD: "treehub"
+  VAULT_ADDR: "http://vault.sit-ota.aws.in.here.com"
+
+default:
+  services:
+    - name: mariadb:10.1
+      alias: db
+      command:
+        - --character-set-server=utf8
+        - --collation-server=utf8_unicode_ci
+        - --max_connections=1000
+
+test:
+  stage: test
+  tags:
+    - docker-sock
+  image: advancedtelematic/gitlab-jobs:0.2.0
+  variables:
+    DB_URL: "jdbc:mariadb://db:3306/ota_treehub"
+  before_script:
+    - echo "GRANT ALL PRIVILEGES ON \`ota\_treehub%\`.* TO 'treehub'@'%'; FLUSH PRIVILEGES;" > db_user.sql
+    - mysqladmin ping --protocol=TCP -h db -P 3306 -u root -proot
+    - mysql -v -h db -u root -proot < db_user.sql
+  script:
+    - ./sbt -sbt-dir ./.sbt -ivy ./.ivy2 -J-Xmx1G -J-XX:MaxPermSize=256m -J-XX:ReservedCodeCacheSize=128m ut:test
+  cache:
+    paths:
+      - .ivy2/
+      - .sbt
+
+build docker image:
+  stage: build image
+  only:
+    - master
+  tags:
+    - docker-sock
+  image: advancedtelematic/gitlab-jobs:0.2.0
+  script:
+    - env | sort
+    - export VAULT_TOKEN=$(cat /opt/vault/token)
+    - gitlab-docker-login $VAULT_ADDR
+    - ./sbt -x -sbt-dir ./.sbt -ivy ./.ivy2 -batch docker:publish -J-Xmx1G -J-XX:MaxPermSize=256m -J-XX:ReservedCodeCacheSize=128m -Dsbt.log.noformat=true
+  cache:
+    paths:
+      - .ivy2/
+      - .sbt/
+
+trigger dev deploy:
+  stage: trigger deploy
+  only:
+    - master
+  variables:
+    ENV: "dev"
+    NEW_TAG: $CI_COMMIT_SHA
+    SERVICE: treehub
+    CREATE_COMMIT: "true"
+  trigger:
+    project: OLP/EDGE/OTA/infra/deployment-descriptors
+    branch: master
+
+trigger sit deploy:
+  stage: trigger deploy
+  only:
+    - deploy/sit
+  variables:
+    ENV: "sit"
+    NEW_TAG: $CI_COMMIT_SHA
+    SERVICE: treehub
+    CREATE_COMMIT: "true"
+  trigger:
+    project: OLP/EDGE/OTA/infra/deployment-descriptors
+    branch: master
 
 trigger-veracode-scan:
   # prepare and submit for static code analysis
