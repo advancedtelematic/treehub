@@ -2,8 +2,9 @@ stages:
   - test
   - build image
   - trigger deploy
-  - trigger
-  - publish
+  - veracode scan
+  - deps scan
+  - generate pages
 
 variables:
   MYSQL_ROOT_PASSWORD: "root"
@@ -82,32 +83,27 @@ trigger sit deploy:
     project: OLP/EDGE/OTA/infra/deployment-descriptors
     branch: master
 
-trigger-veracode-scan:
+veracode scan:
   # prepare and submit for static code analysis
-  stage: trigger
+  stage: veracode scan
   only:
     variables:
       - $VERACODE_API_ID
-  image: advancedtelematic/gitlab-jobs:0.1.0
+  image: advancedtelematic/veracode:0.1.1
   before_script:
-    # The latest wrapper version can be found in https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/
-    - wget -q -O veracode-wrapper.jar https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/${VERACODE_WRAPPER_VERSION}/vosp-api-wrappers-java-${VERACODE_WRAPPER_VERSION}.jar
     - ./sbt package
-    - mv target/scala-*/treehub_*.jar ./scan.jar
   script:
-    - java -jar veracode-wrapper.jar -vid ${VERACODE_API_ID} -vkey ${VERACODE_API_KEY}
-      -action UploadAndScan -appname "OTA Backend - treehub" -createprofile true -autoscan true
-      -filepath scan.jar -version "job ${CI_JOB_ID} in pipeline ${CI_PIPELINE_ID} for ${CI_PROJECT_NAME} repo"
+    - run-veracode.sh
   artifacts:
     paths:
-      - scan.jar
+      - /tmp/package.zip
 
-trigger-deps-scan:
+deps scan:
   # perform dependencies CVE analysis
-  stage: trigger
+  stage: deps scan
   only:
     - schedules
-  image: advancedtelematic/gitlab-jobs:0.1.0
+  image: advancedtelematic/gitlab-jobs:0.2.0
   script:
     - ./sbt dependencyCheckAggregate
     - mv target/scala-*/dependency-check-report.html ./depchk.html
@@ -116,11 +112,11 @@ trigger-deps-scan:
       - depchk.html
 
 pages:
-  stage: publish
+  stage: generate pages
   only:
     - schedules
   dependencies:
-    - trigger-deps-scan
+    - deps scan
   script:
     - mkdir -p public
     - mv depchk.html public/index.html
