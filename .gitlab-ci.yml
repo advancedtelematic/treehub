@@ -26,7 +26,7 @@ test:
   stage: test
   tags:
     - docker-sock
-  image: advancedtelematic/gitlab-jobs:0.2.0
+  image: advancedtelematic/gitlab-jobs:0.2.3
   variables:
     DB_URL: "jdbc:mariadb://db:3306/ota_treehub"
   before_script:
@@ -34,7 +34,7 @@ test:
     - mysqladmin ping --protocol=TCP -h db -P 3306 -u root -proot
     - mysql -v -h db -u root -proot < db_user.sql
   script:
-    - ./sbt -sbt-dir ./.sbt -ivy ./.ivy2 -J-Xmx1G -J-XX:MaxPermSize=256m -J-XX:ReservedCodeCacheSize=128m ut:test
+    - sbt -sbt-dir ./.sbt -ivy ./.ivy2 -J-Xmx1G -J-XX:MaxPermSize=256m -J-XX:ReservedCodeCacheSize=128m ut:test
   cache:
     paths:
       - .ivy2/
@@ -42,16 +42,18 @@ test:
 
 build docker image:
   stage: build image
+  except:
+    - schedules
   only:
     - master
   tags:
     - docker-sock
-  image: advancedtelematic/gitlab-jobs:0.2.0
+  image: advancedtelematic/gitlab-jobs:0.2.3
   script:
     - env | sort
     - export VAULT_TOKEN=$(cat /opt/vault/token)
     - gitlab-docker-login $VAULT_ADDR
-    - ./sbt -x -sbt-dir ./.sbt -ivy ./.ivy2 -batch docker:publish -J-Xmx1G -J-XX:MaxPermSize=256m -J-XX:ReservedCodeCacheSize=128m -Dsbt.log.noformat=true
+    - sbt -x -sbt-dir ./.sbt -ivy ./.ivy2 -batch docker:publish -J-Xmx1G -J-XX:MaxPermSize=256m -J-XX:ReservedCodeCacheSize=128m -Dsbt.log.noformat=true
   cache:
     paths:
       - .ivy2/
@@ -59,6 +61,8 @@ build docker image:
 
 trigger dev deploy:
   stage: trigger deploy
+  except:
+    - schedules
   only:
     - master
   variables:
@@ -72,6 +76,8 @@ trigger dev deploy:
 
 trigger sit deploy:
   stage: trigger deploy
+  except:
+    - schedules
   only:
     - deploy/sit
   variables:
@@ -89,9 +95,9 @@ veracode scan:
   only:
     variables:
       - $VERACODE_API_ID
-  image: advancedtelematic/veracode:0.1.1
+  image: advancedtelematic/veracode:0.1.3
   before_script:
-    - ./sbt package
+    - sbt package
   script:
     - run-veracode.sh
   artifacts:
@@ -103,9 +109,9 @@ deps scan:
   stage: deps scan
   only:
     - schedules
-  image: advancedtelematic/gitlab-jobs:0.2.0
+  image: advancedtelematic/gitlab-jobs:0.2.3
   script:
-    - ./sbt dependencyCheckAggregate
+    - sbt dependencyCheckAggregate
     - mv target/scala-*/dependency-check-report.html ./depchk.html
   artifacts:
     paths:
