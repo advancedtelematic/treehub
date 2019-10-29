@@ -27,10 +27,10 @@ lazy val root = (project in file("."))
   .settings(testOptions in UnitTest := Seq(Tests.Filter(unitFilter)))
   .settings(testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)))
   .settings(Seq(libraryDependencies ++= {
-    val akkaV = "2.5.23"
-    val akkaHttpV = "10.1.8"
-    val scalaTestV = "3.0.0"
-    val libatsV = "0.3.0-38-g6acedb6"
+    val akkaV = "2.5.25"
+    val akkaHttpV = "10.1.10"
+    val scalaTestV = "3.0.8"
+    val libatsV = "0.3.0-48-g745df1f"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
@@ -75,9 +75,9 @@ dockerRepository := Some("advancedtelematic")
 
 packageName in Docker := packageName.value
 
-dockerUpdateLatest := false
+dockerUpdateLatest := true
 
-dockerAliases ++= Seq(dockerAlias.value.withTag(git.formattedShaVersion.value))
+dockerAliases ++= Seq(dockerAlias.value.withTag(git.gitHeadCommit.value))
 
 defaultLinuxInstallLocation in Docker := s"/opt/${moduleName.value}"
 

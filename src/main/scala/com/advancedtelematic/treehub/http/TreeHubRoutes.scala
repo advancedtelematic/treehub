@@ -30,6 +30,7 @@ class TreeHubRoutes(tokenValidator: Directive0,
     new ConfResource().route ~
     new ObjectResource(nsExtract, objectStore, usageHandler).route ~
     new RefResource(nsExtract, coreClient, objectStore).route ~
+    new ManifestResource(nsExtract).route ~
     new DeltaResource(nsExtract, deltaStorage, usageHandler).route
   }
 

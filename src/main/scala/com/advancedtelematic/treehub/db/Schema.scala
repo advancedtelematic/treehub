@@ -7,6 +7,8 @@ import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import slick.jdbc.MySQLProfile.api._
 import com.advancedtelematic.libats.slick.db.SlickExtensions.javaInstantMapping
+import io.circe.Json
+import com.advancedtelematic.libats.slick.db.SlickCirceMapper.jsonMapper
 
 object Schema {
   import com.advancedtelematic.libats.slick.db.SlickAnyVal._
@@ -59,4 +61,19 @@ object Schema {
   }
 
   protected[db] val refs = TableQuery[RefTable]
+
+  // TODO: Naming
+  case class RevisionManifest(namespace: Namespace, commit: Commit, contents: Json)
+
+  case class ManifestTable(tag: Tag) extends Table[RevisionManifest](tag, "manifest") {
+    def namespace = column[Namespace]("namespace")
+    def commit: Rep[Commit] = column[Commit]("commit") // TODO: Object id?
+    def content = column[Json]("content")
+
+    def pk = primaryKey("pk_ref", (namespace, commit)) // TODO: Check this
+
+    override def * = (namespace, commit, content) <> ((RevisionManifest.apply _).tupled, RevisionManifest.unapply)
+  }
+
+  protected[db] val manifests = TableQuery[ManifestTable]
 }
