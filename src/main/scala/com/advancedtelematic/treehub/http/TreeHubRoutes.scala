@@ -4,6 +4,7 @@ import akka.http.scaladsl.server.{Directives, _}
 import akka.stream.Materializer
 import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.http.{DefaultRejectionHandler, ErrorHandler}
+import com.advancedtelematic.libats.messaging.MessageBusPublisher
 import com.advancedtelematic.libats.slick.monitoring.DbHealthResource
 import com.advancedtelematic.treehub.VersionInfo
 import com.advancedtelematic.treehub.delta_store.StaticDeltaStorage
@@ -16,6 +17,7 @@ import slick.jdbc.MySQLProfile.api._
 class TreeHubRoutes(tokenValidator: Directive0,
                     namespaceExtractor: Directive1[Namespace],
                     deviceNamespace: Directive1[Namespace],
+                    messageBus: MessageBusPublisher,
                     objectStore: ObjectStore,
                     deltaStorage: StaticDeltaStorage,
                     usageHandler: UsageMetricsRouter.HandlerRef)
@@ -27,6 +29,7 @@ class TreeHubRoutes(tokenValidator: Directive0,
     new ConfResource().route ~
     new ObjectResource(nsExtract, objectStore, usageHandler).route ~
     new RefResource(nsExtract, objectStore).route ~
+    new ManifestResource(nsExtract, messageBus).route ~
     new DeltaResource(nsExtract, deltaStorage, usageHandler).route
   }
 

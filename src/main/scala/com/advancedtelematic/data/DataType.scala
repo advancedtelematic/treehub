@@ -12,6 +12,7 @@ import com.advancedtelematic.data.DataType.ObjectStatus.ObjectStatus
 import com.advancedtelematic.libats.messaging_datatype.DataType.{Commit, ValidCommit}
 import org.apache.commons.codec.binary.Hex
 import com.advancedtelematic.libats.data.RefinedUtils.RefineTry
+import io.circe.Json
 
 import scala.util.Try
 
@@ -21,6 +22,8 @@ object DataType {
   case class Ref(namespace: Namespace, name: RefName, value: Commit, objectId: ObjectId)
 
   case class RefName(get: String) extends AnyVal
+
+  case class CommitManifest(namespace: Namespace, commit: ObjectId, contents: Json)
 
   case class ValidObjectId()
 

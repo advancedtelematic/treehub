@@ -76,7 +76,8 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
       prometheusMetricsRoutes ~
         tracing.traceRequests { _ =>
           new TreeHubRoutes(tokenValidator, namespaceExtractor,
-            deviceNamespace, objectStore, deltaStorage, usageHandler).routes
+            deviceNamespace, msgPublisher,
+            objectStore, deltaStorage, usageHandler).routes
         }
     }
 

@@ -24,6 +24,7 @@ import scala.util.Random
 import cats.syntax.either._
 import com.advancedtelematic.libats.auth.NamespaceDirectives
 import com.advancedtelematic.libats.data.DataType.Namespace
+import com.advancedtelematic.libats.messaging.test.MockMessageBus
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import com.advancedtelematic.libats.test.DatabaseSpec
 import com.advancedtelematic.treehub.delta_store.LocalDeltaStorage
@@ -94,9 +95,12 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec with Settings {
 
   val fakeUsageUpdate = system.actorOf(Props(new FakeUsageUpdate), "fake-usage-update")
 
+  lazy val messageBus = new MockMessageBus()
+
   lazy val routes = new TreeHubRoutes(Directives.pass,
     namespaceExtractor,
     namespaceExtractor,
+    messageBus,
     objectStore,
     deltaStore,
     fakeUsageUpdate).routes

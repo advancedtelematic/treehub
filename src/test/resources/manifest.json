@@ -1,0 +1,85 @@
+{
+  "manifest": {
+    "remote": [
+      {
+        "@fetch": "https://github.com",
+        "@name": "github",
+        "@pushurl": "ssh://git@github.com"
+      },
+      {
+        "@fetch": "git://git.openembedded.org/",
+        "@name": "openembedded"
+      },
+      {
+        "@fetch": "https://git.yoctoproject.org/git/",
+        "@name": "yocto"
+      }
+    ],
+    "default": {
+      "@remote": "github",
+      "@revision": "master"
+    },
+    "project": [
+      {
+        "@name": "advancedtelematic/meta-updater",
+        "@path": "meta-updater",
+        "@revision": "6e1c9cf5cc59437ce07f5aec2dc62d665d218bdb",
+        "@upstream": "master"
+      },
+      {
+        "@name": "advancedtelematic/meta-updater-minnowboard",
+        "@path": "meta-updater-minnowboard",
+        "@revision": "c822d05f860c3a2437236696b22ef7536c0a1311",
+        "@upstream": "master"
+      },
+      {
+        "@name": "advancedtelematic/meta-updater-qemux86-64",
+        "@path": "meta-updater-qemux86-64",
+        "@revision": "162d1378659343a3ad34569c1315babe7246ec86",
+        "@upstream": "master"
+      },
+      {
+        "@name": "advancedtelematic/meta-updater-raspberrypi",
+        "@path": "meta-updater-raspberrypi",
+        "@revision": "501156e6d12e3207a5acb611984dce1856a7729c",
+        "@upstream": "master"
+      },
+      {
+        "@name": "meta-intel",
+        "@remote": "yocto",
+        "@revision": "eacd8eb9f762c90cec2825736e8c4d483966c4d4",
+        "@upstream": "master"
+      },
+      {
+        "@name": "meta-openembedded",
+        "@remote": "openembedded",
+        "@revision": "18506b797bcfe162999223b79919e7c730875bb4",
+        "@upstream": "master"
+      },
+      {
+        "@name": "meta-raspberrypi",
+        "@remote": "yocto",
+        "@revision": "254c9366b9c3309db6dc07beb80aba55e0c87f94",
+        "@upstream": "master"
+      },
+      {
+        "@name": "poky",
+        "@remote": "yocto",
+        "@revision": "3a751d5564fc6ee9aef225653cc7b8630fd25a35",
+        "@upstream": "master"
+      },
+      {
+        "@name": "ricardosalveti/meta-updater-riscv",
+        "@path": "meta-updater-riscv",
+        "@revision": "8164a21c04a7de91f90ada763104063540a84961",
+        "@upstream": "master"
+      },
+      {
+        "@name": "riscv/meta-riscv",
+        "@path": "meta-riscv",
+        "@revision": "0ba537b9270046b1c08d2b2f1cc9a9ca96ea0328",
+        "@upstream": "master"
+      }
+    ]
+  }
+}

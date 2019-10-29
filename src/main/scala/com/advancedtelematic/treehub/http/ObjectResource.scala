@@ -13,7 +13,6 @@ import com.advancedtelematic.treehub.object_store.BlobStore.UploadAt
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
-import eu.timepit.refined.api.Refined
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
