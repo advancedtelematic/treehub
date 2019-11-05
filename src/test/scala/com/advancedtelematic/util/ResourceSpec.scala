@@ -86,9 +86,6 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec with Settings {
   def apiUri(path: String): String = "/api/v2/" + path
   def apiUri(version: Int, path: String): String = s"/api/v$version/" + path
 
-  val testHttpCore = new FakeHttpCore()
-  val testBusCore = new FakeBusCore()
-
   lazy val namespaceExtractor = NamespaceDirectives.defaultNamespaceExtractor.map(_.namespace)
 
   val objectStore = new ObjectStore(new LocalFsBlobStore(Files.createTempDirectory("treehub-obj")))
@@ -99,8 +96,6 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec with Settings {
 
   lazy val routes = new TreeHubRoutes(Directives.pass,
     namespaceExtractor,
-    testHttpCore,
-    testBusCore,
     namespaceExtractor,
     objectStore,
     deltaStore,

@@ -2,26 +2,25 @@ package com.advancedtelematic.treehub.http
 
 import akka.http.scaladsl.server.{Directive, Directive1, Route}
 import akka.stream.Materializer
-import com.advancedtelematic.data.DataType.{Commit, Ref, RefName}
+import com.advancedtelematic.data.DataType.{Ref, RefName}
 import com.advancedtelematic.libats.data.DataType.Namespace
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
-import com.advancedtelematic.treehub.client.Core
 import com.advancedtelematic.treehub.db.RefRepository.RefNotFound
-import com.advancedtelematic.treehub.db.{ObjectRepositorySupport, RefRepositorySupport}
+import com.advancedtelematic.treehub.db.RefRepositorySupport
 import com.advancedtelematic.treehub.object_store.ObjectStore
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class RefResource(namespace: Directive1[Namespace], coreClient: Core, objectStore: ObjectStore)
+class RefResource(namespace: Directive1[Namespace], objectStore: ObjectStore)
                  (implicit db: Database, ec: ExecutionContext, mat: Materializer)
   extends RefRepositorySupport {
 
   import akka.http.scaladsl.server.Directives._
   import com.advancedtelematic.libats.http.RefinedMarshallingSupport._
 
-  private val refUpdateProcess = new RefUpdateProcess(coreClient, objectStore)
+  private val refUpdateProcess = new RefUpdateProcess(objectStore)
 
   private val RefNameUri = Segments.map(s => RefName(s.mkString("/")))
 
