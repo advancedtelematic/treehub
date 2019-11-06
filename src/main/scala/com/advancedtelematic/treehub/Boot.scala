@@ -63,9 +63,6 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
 
   val objectStore = new ObjectStore(objectStorage)
   val msgPublisher = MessageBus.publisher(system, config)
-  val coreHttpClient = new CoreHttpClient(coreUri, packagesApi, treeHubUri)
-  val coreBusClient = new CoreBusClient(msgPublisher, treeHubUri)
-
   val tracing = Tracing.fromConfig(config, projectName)
 
   val usageHandler = system.actorOf(UsageMetricsRouter(msgPublisher, objectStore), "usage-router")
@@ -78,8 +75,9 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
     (versionHeaders(version) & requestMetrics(metricRegistry) & logResponseMetrics(projectName)) {
       prometheusMetricsRoutes ~
         tracing.traceRequests { _ =>
-          new TreeHubRoutes(tokenValidator, namespaceExtractor, coreHttpClient, coreBusClient,
-            deviceNamespace, objectStore, deltaStorage, usageHandler).routes
+          new TreeHubRoutes(tokenValidator, namespaceExtractor,
+            deviceNamespace, msgPublisher,
+            objectStore, deltaStorage, usageHandler).routes
         }
     }
 

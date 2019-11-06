@@ -24,6 +24,7 @@ import scala.util.Random
 import cats.syntax.either._
 import com.advancedtelematic.libats.auth.NamespaceDirectives
 import com.advancedtelematic.libats.data.DataType.Namespace
+import com.advancedtelematic.libats.messaging.test.MockMessageBus
 import com.advancedtelematic.libats.messaging_datatype.DataType.Commit
 import com.advancedtelematic.libats.test.DatabaseSpec
 import com.advancedtelematic.treehub.delta_store.LocalDeltaStorage
@@ -86,9 +87,6 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec with Settings {
   def apiUri(path: String): String = "/api/v2/" + path
   def apiUri(version: Int, path: String): String = s"/api/v$version/" + path
 
-  val testHttpCore = new FakeHttpCore()
-  val testBusCore = new FakeBusCore()
-
   lazy val namespaceExtractor = NamespaceDirectives.defaultNamespaceExtractor.map(_.namespace)
 
   val objectStore = new ObjectStore(new LocalFsBlobStore(Files.createTempDirectory("treehub-obj")))
@@ -97,11 +95,12 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec with Settings {
 
   val fakeUsageUpdate = system.actorOf(Props(new FakeUsageUpdate), "fake-usage-update")
 
+  lazy val messageBus = new MockMessageBus()
+
   lazy val routes = new TreeHubRoutes(Directives.pass,
     namespaceExtractor,
-    testHttpCore,
-    testBusCore,
     namespaceExtractor,
+    messageBus,
     objectStore,
     deltaStore,
     fakeUsageUpdate).routes
