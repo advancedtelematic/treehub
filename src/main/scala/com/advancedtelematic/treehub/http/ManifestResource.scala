@@ -1,5 +1,7 @@
 package com.advancedtelematic.treehub.http
 
+import java.time.Instant
+
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directive1
 import akka.stream.Materializer
@@ -37,7 +39,8 @@ class ManifestResource(namespace: Directive1[Namespace],
             .map(_ => StatusCodes.OK)
             .andThen {
               case Success(_) =>
-                messageBus.publishSafe(CommitManifestUpdated(ns, commit, manifestEntity.entity.releaseBranch, manifestEntity.entity.metaUpdaterVersion))
+                messageBus.publishSafe(CommitManifestUpdated(ns, commit, manifestEntity.entity.releaseBranch,
+                                       manifestEntity.entity.metaUpdaterVersion, Instant.now))
             }
 
           complete(f)
