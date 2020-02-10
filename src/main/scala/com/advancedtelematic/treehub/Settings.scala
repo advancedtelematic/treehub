@@ -12,8 +12,6 @@ trait Settings {
 
   val host = _config.getString("server.host")
   val port = _config.getInt("server.port")
-  val coreUri = _config.getString("core.baseUri")
-  val packagesApi = _config.getString("core.packagesApi")
 
   val treeHubUri = {
     val uri = Uri(_config.getString("server.treehubUri"))
