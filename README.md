@@ -24,7 +24,7 @@ To test the current implementation, the following steps can be followed:
 
    This can be done with your package manager, for example:
 
-        apt-get install ostree
+        apt install ostree
   
 2. Create a ostree repository
 
@@ -39,16 +39,15 @@ To test the current implementation, the following steps can be followed:
           --branch=master --tree=dir=developer-files
         
 
-4. Push your local `ostree` repository to treehub using the `garage-push` tool.
+4. Push your local `ostree` repository to treehub using the `garage-push` tool. Please follow the instructions for installation in the [aktualizr repository](https://github.com/advancedtelematic/aktualizr/#installation). It will suffice to only build garage-push with `make garage-push` instead of all default targets with `make`. Then run garage-push:
 
-        sudo apt-get install build-essential cmake g++ libboost-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev libcurl4-gnutls-dev
-        git clone https://github.com/advancedtelematic/sota-tools
-        cd sota-tools
-        mkdir build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Debug ..
-        make garage-push
-        ./garage-push --repo myrepo-developer --ref master --user somedeveloper
+        ./src/sota_tools/garage-push --repo myrepo-developer --ref master --credentials <credentials.zip>
+
+5. You will also need to manually push the OSTree ref to treehub:
+
+        curl -XPOST https://treehub.ota.api.here.com/api/v3/refs/heads/master \
+          -H "Authorization: Bearer $DEVICE_TOKEN" \
+          -d $(cat myrepo-developer/refs/heads/master)
 
 5. You can now pull your changes in another machine, acting as the
    client, or the same machine, to test the changes.
@@ -57,7 +56,7 @@ To test the current implementation, the following steps can be followed:
    
         ostree --repo=myrepo-client remote add \
           --no-gpg-verify garage \
-          https://treehub-staging.gw.prod01.advancedtelematic.com/api/v2/mydevice master
+          https://treehub.ota.api.here.com/api/v3/ master
      
         ostree --repo=myrepo-client pull \
         --http-header="Authorization=Bearer $DEVICE_TOKEN" garage
@@ -72,6 +71,6 @@ To test the current implementation, the following steps can be followed:
 
 ## License
 
-This code is licensed under the [Mozilla Public License 2.0](LICENSE), a copy of which can be found in this repository. All code is copyright [ATS Advanced Telematic Systems GmbH](https://www.advancedtelematic.com), 2016-2018.
+This code is licensed under the [Mozilla Public License 2.0](LICENSE), a copy of which can be found in this repository. All code is copyright HERE Europe B.V., 2016-2020.
 
 [1]: https://github.com/advancedtelematic/ota-community-edition
