@@ -38,12 +38,11 @@ To test the current implementation, the following steps can be followed:
         ostree --repo=myrepo-developer commit --subject 'created my new shiny file' \
           --branch=master --tree=dir=developer-files
         
-
 4. Push your local `ostree` repository to treehub using the `garage-push` tool. Please follow the instructions for installation in the [aktualizr repository](https://github.com/advancedtelematic/aktualizr/#installation). It will suffice to only build garage-push with `make garage-push` instead of all default targets with `make`. Then run garage-push:
 
         ./src/sota_tools/garage-push --repo myrepo-developer --ref master --credentials <credentials.zip>
 
-5. You will also need to manually push the OSTree ref to treehub:
+5. For versions of aktualizr/garage-push before [6d025cf17d1600a780a13a7624f8e287c9aaf94c](https://github.com/advancedtelematic/aktualizr/commit/6d025cf17d1600a780a13a7624f8e287c9aaf94c), you will also need to manually push the OSTree ref to treehub:
 
         curl -XPOST https://treehub.ota.api.here.com/api/v3/refs/heads/master \
           -H "Authorization: Bearer $DEVICE_TOKEN" \
