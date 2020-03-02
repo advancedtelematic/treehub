@@ -69,8 +69,4 @@ To test the current implementation, the following steps can be followed:
 
         This is my file. There are many files like this, but this one is mine.
 
-## License
-
-This code is licensed under the [Mozilla Public License 2.0](LICENSE), a copy of which can be found in this repository. All code is copyright HERE Europe B.V., 2016-2020.
-
 [1]: https://github.com/advancedtelematic/ota-community-edition
