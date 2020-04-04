@@ -14,6 +14,7 @@ object ErrorCodes {
   val SummaryDoesNotExist = ErrorCode("summary_missing")
   val StaticDeltaDoesNotExist = ErrorCode("delta_missing")
   val OutOfBandStorageNotSupported = ErrorCode("out_of_band_storage_not_supported")
+  val TimeoutOnWaiting = ErrorCode("timeout_on_waiting")
 }
 
 object Errors {
