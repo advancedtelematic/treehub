@@ -45,8 +45,8 @@ class TreeHubRoutes(tokenValidator: Directive0,
 
   val routes: Route =
     handleRejections(DefaultRejectionHandler.rejectionHandler) {
-      treehubExceptionHandler {
-        ErrorHandler.handleErrors {
+      ErrorHandler.handleErrors {
+        treehubExceptionHandler {
           (pathPrefix("api" / "v2") & tokenValidator) {
             allRoutes(namespaceExtractor) ~
               pathPrefix("mydevice") {
