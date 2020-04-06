@@ -93,6 +93,8 @@ veracode scan:
   # prepare and submit for static code analysis
   stage: veracode scan
   only:
+    refs:
+      - schedules
     variables:
       - $VERACODE_API_ID
   image: advancedtelematic/veracode:0.1.3
