@@ -26,6 +26,7 @@ lazy val root = (project in file("."))
   .settings(inConfig(UnitTest)(Defaults.testTasks): _*)
   .settings(testOptions in UnitTest := Seq(Tests.Filter(unitFilter)))
   .settings(testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)))
+  .settings(sonarSettings)
   .settings(Seq(libraryDependencies ++= {
     val akkaV = "2.5.25"
     val akkaHttpV = "10.1.10"
@@ -102,3 +103,15 @@ Release.settings
 
 enablePlugins(Versioning.Plugin)
 
+lazy val sonarSettings = Seq(
+  sonarProperties ++= Map(
+    "sonar.projectName" -> "OTA Connect Treehub",
+    "sonar.projectKey" -> "ota-connect-treehub",
+    "sonar.host.url" -> "http://sonar.in.here.com",
+    "sonar.links.issue" -> "https://saeljira.it.here.com/projects/OTA/issues",
+    "sonar.links.scm" -> "https://main.gitlab.in.here.com/olp/edge/ota/connect/back-end/treehub",
+    "sonar.links.ci" -> "https://main.gitlab.in.here.com/olp/edge/ota/connect/back-end/treehub/pipelines",
+    "sonar.language" -> "scala",
+    "sonar.projectVersion" -> version.value,
+  )
+)

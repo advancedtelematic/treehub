@@ -24,8 +24,6 @@ default:
 
 test:
   stage: test
-  tags:
-    - docker-sock
   image: advancedtelematic/gitlab-jobs:0.2.3
   variables:
     DB_URL: "jdbc:mariadb://db:3306/ota_treehub"
@@ -34,7 +32,7 @@ test:
     - mysqladmin ping --protocol=TCP -h db -P 3306 -u root -proot
     - mysql -v -h db -u root -proot < db_user.sql
   script:
-    - sbt -sbt-dir ./.sbt -ivy ./.ivy2 -J-Xmx1G -J-XX:MaxPermSize=256m -J-XX:ReservedCodeCacheSize=128m ut:test
+    - sbt -sbt-dir ./.sbt -ivy ./.ivy2 -J-Xmx1G -J-XX:MaxPermSize=256m -J-XX:ReservedCodeCacheSize=128m clean coverage ut:test coverageReport sonarScan
   cache:
     paths:
       - .ivy2/
