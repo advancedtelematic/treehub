@@ -4,11 +4,11 @@ scalaVersion := "2.12.8"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
-resolvers += "ATS Releases" at "http://nexus.advancedtelematic.com:8081/content/repositories/releases"
+resolvers += "ATS Releases" at "https://nexus.ota.here.com/content/repositories/releases"
 
-resolvers += "ATS Snapshots" at "http://nexus.advancedtelematic.com:8081/content/repositories/snapshots"
+resolvers += "ATS Snapshots" at "https://nexus.ota.here.com/content/repositories/snapshots"
 
-resolvers += "commons-logging-empty" at "http://version99.qos.ch"
+resolvers += "commons-logging-empty" at "https://version99.qos.ch"
 
 def itFilter(name: String): Boolean = name endsWith "IntegrationSpec"
 
@@ -31,7 +31,7 @@ lazy val root = (project in file("."))
     val akkaV = "2.5.25"
     val akkaHttpV = "10.1.10"
     val scalaTestV = "3.0.8"
-    val libatsV = "0.3.0-98-g11dd194"
+    val libatsV = "0.3.0-109-ge12f057"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
