@@ -11,6 +11,8 @@ variables:
   MYSQL_USER: "treehub"
   MYSQL_PASSWORD: "treehub"
   VAULT_ADDR: "http://vault.sit-ota.aws.in.here.com"
+  # The same image have to be used by test and code coverage jobs:
+  TEST_IMAGE: advancedtelematic/gitlab-jobs:0.2.4
 
 default:
   services:
@@ -23,7 +25,7 @@ default:
 
 test:
   stage: test
-  image: advancedtelematic/gitlab-jobs:0.2.3
+  image: $TEST_IMAGE
   variables:
     DB_URL: "jdbc:mariadb://db:3306/ota_treehub"
   before_script:
@@ -39,12 +41,12 @@ test:
   cache:
     paths:
       - .ivy2/
-      - .sbt
+      - .sbt/
 
 code coverage:
   extends: .report_scala_coverage
   allow_failure: true
-  image: advancedtelematic/gitlab-jobs:0.2.3
+  image: $TEST_IMAGE
 
 build docker image:
   stage: build image
@@ -100,5 +102,5 @@ trigger sit deploy:
 
 include:
   - project: olp/edge/ota/infra/security
-    ref: v0.0.5
+    ref: v0.0.7
     file: /shared.yaml
