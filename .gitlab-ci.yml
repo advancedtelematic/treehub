@@ -101,6 +101,7 @@ trigger sit deploy:
 
 
 include:
+  - template: License-Scanning.gitlab-ci.yml
   - project: olp/edge/ota/infra/security
     ref: v0.0.7
     file: /shared.yaml
