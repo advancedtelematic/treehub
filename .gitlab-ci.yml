@@ -48,31 +48,63 @@ code coverage:
   allow_failure: true
   image: $TEST_IMAGE
 
+export docker credentials:
+  extends: .export_docker_credentials
+  stage: test
+  rules:
+    - if: '$CI_COMMIT_BRANCH != "master"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - when: on_success
+
 build docker image:
   stage: build image
-  except:
-    - schedules
-  only:
-    - master
+  rules:
+    - if: '$CI_COMMIT_BRANCH != "master"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - when: on_success
   tags:
     - docker-sock
-  image: advancedtelematic/gitlab-jobs:0.2.3
+  image: advancedtelematic/gitlab-jobs:0.2.4
   script:
-    - env | sort
-    - export VAULT_TOKEN=$(cat /opt/vault/token)
-    - gitlab-docker-login $VAULT_ADDR
-    - sbt -x -sbt-dir ./.sbt -ivy ./.ivy2 -batch docker:publish -J-Xmx1G -J-XX:MaxPermSize=256m -J-XX:ReservedCodeCacheSize=128m -Dsbt.log.noformat=true
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - sbt -x -sbt-dir ./.sbt -ivy ./.ivy2 -batch docker:publish -J-Xmx1G -J-XX:ReservedCodeCacheSize=128m -Dsbt.log.noformat=true
+  dependencies:
+    - export docker credentials
+  artifacts:
+    paths:
+      - "target/docker/stage/Dockerfile"
   cache:
     paths:
       - .ivy2/
       - .sbt/
 
+container_scanning:
+  stage: static scans
+  rules:
+    - if: '$CI_COMMIT_BRANCH != "master"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - when: on_success
+  variables:
+    CI_APPLICATION_REPOSITORY: registry.hub.docker.com/advancedtelematic/treehub
+    DOCKERFILE_PATH: target/docker/stage/Dockerfile
+  dependencies:
+    - export docker credentials
+    - build docker image
+
 trigger dev deploy:
   stage: trigger deploy
-  except:
-    - schedules
-  only:
-    - master
+  rules:
+    - if: '$CI_COMMIT_BRANCH != "master"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - when: on_success
   variables:
     ENV: "dev"
     NEW_TAG: $CI_COMMIT_SHA
@@ -102,8 +134,9 @@ trigger sit deploy:
 
 include:
   - template: SAST.gitlab-ci.yml
+  - template: Container-Scanning.gitlab-ci.yml
   - template: Secret-Detection.gitlab-ci.yml
   - template: License-Scanning.gitlab-ci.yml
   - project: olp/edge/ota/infra/security
-    ref: v0.0.7
+    ref: v0.0.8
     file: /shared.yaml
