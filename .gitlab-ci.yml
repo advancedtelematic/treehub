@@ -1,8 +1,8 @@
 stages:
   - test
   - build image
-  - trigger deploy
   - static scans
+  - trigger deploy
   - publish pages
 
 variables:
