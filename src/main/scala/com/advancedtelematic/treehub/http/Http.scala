@@ -10,7 +10,7 @@ import scala.concurrent.ExecutionContext
 object Http {
   import Directives._
 
-  lazy val extractNamespace = NamespaceDirectives.fromConfig()
+  lazy val extractNamespace = NamespaceDirectives.defaultNamespaceExtractor
 
   def deviceNamespace(deviceRegistry: DeviceRegistryClient)
                      (implicit ec: ExecutionContext): Directive1[Namespace] = {
