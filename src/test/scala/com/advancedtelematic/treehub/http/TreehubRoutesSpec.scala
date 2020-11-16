@@ -32,7 +32,7 @@ class TreehubRoutesSpec extends TreeHubSpec with ResourceSpec {
 
   val errorObjectStore = new ObjectStore(errorBlobStore)
 
-  override lazy val routes = new TreeHubRoutes(Directives.pass,
+  override lazy val routes = new TreeHubRoutes(
     namespaceExtractor, namespaceExtractor, messageBus, errorObjectStore, deltaStore, fakeUsageUpdate).routes
 
   test("returns 408 when an aws.SdkClientException is thrown") {
