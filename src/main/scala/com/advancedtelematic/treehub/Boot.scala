@@ -35,7 +35,6 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
 
   val deviceRegistry = new DeviceRegistryHttpClient(deviceRegistryUri, deviceRegistryMyApi)
 
-  val tokenValidator = TreeHubHttp.tokenValidator
   val namespaceExtractor = TreeHubHttp.extractNamespace.map(_.namespace.get).map(Namespace.apply)
   val deviceNamespace = TreeHubHttp.deviceNamespace(deviceRegistry)
 
@@ -73,9 +72,14 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
     (versionHeaders(version) & requestMetrics(metricRegistry) & logResponseMetrics(projectName)) {
       prometheusMetricsRoutes ~
         tracing.traceRequests { _ =>
-          new TreeHubRoutes(tokenValidator, namespaceExtractor,
-            deviceNamespace, msgPublisher,
-            objectStore, deltaStorage, usageHandler).routes
+          new TreeHubRoutes(
+            namespaceExtractor,
+            deviceNamespace,
+            msgPublisher,
+            objectStore,
+            deltaStorage,
+            usageHandler
+          ).routes
         }
     }
 

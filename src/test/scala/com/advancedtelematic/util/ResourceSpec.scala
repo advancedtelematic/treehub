@@ -97,7 +97,7 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec with Settings {
 
   lazy val messageBus = new MockMessageBus()
 
-  lazy val routes = new TreeHubRoutes(Directives.pass,
+  lazy val routes = new TreeHubRoutes(
     namespaceExtractor,
     namespaceExtractor,
     messageBus,
