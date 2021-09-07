@@ -135,7 +135,8 @@ trigger sit deploy:
 include:
   - template: SAST.gitlab-ci.yml
   - template: Container-Scanning.gitlab-ci.yml
-  - template: Secret-Detection.gitlab-ci.yml
+  - project: "poit/spc/be/prodsec-secret-detection"
+    file: "ITT-Secret-Detection.gitlab-ci.yml"
   - template: License-Scanning.gitlab-ci.yml
   - project: olp/edge/ota/infra/security
     ref: v0.0.9
