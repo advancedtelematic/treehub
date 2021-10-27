@@ -42,6 +42,18 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
     localStorage.exists(tobj.namespace, tobj.id).futureValue shouldBe true
   }
 
+  test("removes object from database and blob store") {
+    val blob = ByteString("some text")
+    val tobj = TObject(defaultNs, ObjectId.parse("0066465c1c9c21b2df6b0d190ff5660972bb332620b2bed6158209ee93f97421.filez").toOption.get, blob.length, ObjectStatus.UPLOADED)
+
+    objectStore.storeStream(defaultNs, tobj.id, blob.size, Source.single(blob)).flatMap { _ =>
+      objectStore.deleteByNamespace(defaultNs)
+    }.futureValue
+
+    objectRepository.exists(tobj.namespace, tobj.id).futureValue shouldBe false
+    localStorage.exists(tobj.namespace, tobj.id).futureValue shouldBe false
+  }
+
   test("findBlob fails if object is not found") {
     val tobj = TObject(defaultNs, ObjectId.parse("ce720e82a727efa4b30a6ab73cefe31a8d4ec6c0d197d721f07605913d2a279a.commit").toOption.get, 0L, ObjectStatus.UPLOADED)
 

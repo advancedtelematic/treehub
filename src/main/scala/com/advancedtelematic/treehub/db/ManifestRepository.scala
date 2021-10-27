@@ -33,4 +33,10 @@ protected class ManifestRepository()(implicit db: Database, ec: ExecutionContext
       .handleIntegrityErrors(Errors.CommitMissing)
       .map(_ => ())
   }
+
+  def deleteByNamespace(namespace: Namespace): Future[Int] = db.run {
+    Schema.manifests
+      .filter(_.namespace === namespace)
+      .delete
+  }
 }

@@ -28,6 +28,8 @@ trait BlobStore {
 
   def exists(namespace: Namespace, id: ObjectId): Future[Boolean]
 
+  def deleteByNamespace(namespace: Namespace): Future[Unit]
+
   protected def buildResponseFromBytes(source: Source[ByteString, _]): HttpResponse = {
     val entity = HttpEntity(MediaTypes.`application/octet-stream`, source)
     HttpResponse(StatusCodes.OK, entity = entity)

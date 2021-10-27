@@ -28,6 +28,8 @@ class TreehubRoutesSpec extends TreeHubSpec with ResourceSpec {
     override def readFull(namespace: DataType.Namespace, id: ObjectId): Future[ByteString] = ???
 
     override def exists(namespace: DataType.Namespace, id: ObjectId): Future[Boolean] = FastFuture.failed(new SdkClientException("Timeout on waiting"))
+
+    override def deleteByNamespace(namespace: DataType.Namespace): Future[Unit] = ???
   }
 
   val errorObjectStore = new ObjectStore(errorBlobStore)

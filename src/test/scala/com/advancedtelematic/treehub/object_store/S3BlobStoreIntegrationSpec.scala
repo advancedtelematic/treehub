@@ -56,6 +56,17 @@ class S3BlobStoreIntegrationSpec extends TreeHubSpec {
     s3BlobStore.exists(ns, obj.objectId).futureValue shouldBe true
   }
 
+  test("can delete an object") {
+    val obj = new ClientTObject()
+
+    async {
+      await(s3BlobStore.storeStream(ns, obj.objectId, obj.blob.size, obj.byteSource))
+      await(s3BlobStore.deleteByNamespace(ns))
+    }.futureValue
+
+    s3BlobStore.exists(ns, obj.objectId).futureValue shouldBe false
+  }
+
   test("build response builds a redirect") {
     val redirectS3BlobStore = S3BlobStore(s3Credentials, allowRedirects = true)
 

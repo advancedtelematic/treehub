@@ -5,7 +5,6 @@ import java.nio.file.Paths
 import java.time.temporal.ChronoUnit
 import java.time.{Duration, Instant}
 import java.util.Date
-
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
 import akka.stream.Materializer
@@ -22,9 +21,14 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.amazonaws.services.s3.model._
 import org.slf4j.LoggerFactory
+import cats.syntax.traverse._
+import cats.instances.list._
+import cats.instances.future._
 
 import scala.async.Async._
+import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.util.Random
 
 object S3BlobStore {
   def apply(s3Credentials: S3Credentials, allowRedirects: Boolean)
@@ -34,6 +38,8 @@ object S3BlobStore {
 
 class S3BlobStore(s3Credentials: S3Credentials, s3client: AmazonS3, allowRedirects: Boolean)
                  (implicit ec: ExecutionContext, mat: Materializer) extends BlobStore {
+
+  private val DeleteObjectsBatchSize = 1000
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
@@ -144,6 +150,45 @@ class S3BlobStore(s3Credentials: S3Credentials, s3client: AmazonS3, allowRedirec
     objectId.path(Paths.get(namespaceDir(namespace))).toString
 
   override val supportsOutOfBandStorage: Boolean = true
+
+  override def deleteByNamespace(namespace: Namespace): Future[Unit] = {
+    retrieveNamespaceObjects(namespace)
+      .flatMap(deleteObjects)
+      .map(deletedCount => log.info(s"Finished cleanup OSTree storage for namespace: $namespace. Deleted $deletedCount objects"))
+  }
+
+  private def retrieveNamespaceObjects(namespace: Namespace): Future[Seq[String]] = {
+    def retrieveObjects(objectListing: Option[ObjectListing] = None, acc: Seq[String] = Seq.empty): Future[Seq[String]] =
+      objectListing match {
+        case None =>
+          Future(blocking(s3client.listObjects(bucketId, Paths.get(namespaceDir(namespace)).toString)))
+            .flatMap(listing => retrieveObjects(Some(listing), acc ++ listing.getObjectSummaries.asScala.map(_.getKey)))
+
+        case Some(listing) if listing.isTruncated =>
+          Future(blocking(s3client.listNextBatchOfObjects(listing)))
+            .flatMap(nextListing => retrieveObjects(Some(nextListing), acc ++ nextListing.getObjectSummaries.asScala.map(_.getKey)))
+
+        case Some(_) =>
+          Future.successful(acc)
+      }
+
+    retrieveObjects()
+  }
+
+
+  private def deleteObjects(keys: Seq[String]): Future[Int] = {
+    def delete(batches: List[Seq[String]], deletedAcc: Int = 0): Future[Int] = batches match {
+      case head :: tail =>
+        Future(blocking(s3client.deleteObjects(new DeleteObjectsRequest(bucketId).withKeys(head: _*)).getDeletedObjects.size()))
+          .flatMap(deleted => delete(tail, deletedAcc + deleted))
+
+      case Nil =>
+        Future.successful(deletedAcc)
+    }
+
+    delete(keys.grouped(DeleteObjectsBatchSize).toList)
+  }
+
 }
 
 object S3Client {
