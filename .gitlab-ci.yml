@@ -26,6 +26,9 @@ default:
 
 test:
   stage: test
+  except:
+    refs:
+      - deploy/sit
   image: $TEST_IMAGE
   variables:
     DB_URL: "jdbc:mariadb://db:3306/ota_treehub"
@@ -47,6 +50,9 @@ test:
 
 code coverage:
   extends: .report_scala_coverage
+  except:
+    refs:
+      - deploy/sit
   allow_failure: true
   image: $TEST_IMAGE_SONAR
 
