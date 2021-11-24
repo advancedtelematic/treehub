@@ -28,10 +28,10 @@ lazy val root = (project in file("."))
   .settings(testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)))
   .settings(sonarSettings)
   .settings(Seq(libraryDependencies ++= {
-    val akkaV = "2.5.25"
+    val akkaV = "2.6.5"
     val akkaHttpV = "10.1.10"
     val scalaTestV = "3.0.8"
-    val libatsV = "0.3.0-109-ge12f057"
+    val libatsV = "0.4.0-24-ge63c753"
 
     Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaV,
@@ -53,6 +53,7 @@ lazy val root = (project in file("."))
       "com.advancedtelematic" %% "libats-auth" % libatsV,
       "com.advancedtelematic" %% "libats-slick" % libatsV,
       "com.advancedtelematic" %% "libats-metrics-akka" % libatsV,
+      "com.advancedtelematic" %% "libats-metrics-kafka" % libatsV,
       "com.advancedtelematic" %% "libats-metrics-prometheus" % libatsV,
       "com.advancedtelematic" %% "libats-logging" % libatsV,
       "com.advancedtelematic" %% "libats-logging" % libatsV,

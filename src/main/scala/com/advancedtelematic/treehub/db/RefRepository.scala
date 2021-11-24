@@ -40,14 +40,11 @@ protected class RefRepository()(implicit db: Database, ec: ExecutionContext) {
         .failIfNotSingle(RefNotFound)
     }
 
-  def setPublished(namespace: Namespace, name: RefName, published: Boolean): Future[Unit] =
+  def deleteByNamespace(namespace: Namespace): Future[Int] = {
     db.run {
-      findQuery(namespace, name)
-        .map(_.published)
-        .update(published)
-        .handleSingleUpdateError(RefNotFound)
+      Schema.refs
+        .filter(_.namespace === namespace)
+        .delete
     }
-
-  def isPublished(namespace: Namespace, name: RefName): Future[Boolean] =
-    db.run(findQuery(namespace, name).map(_.published).result.failIfNotSingle(RefNotFound))
+  }
 }

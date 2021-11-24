@@ -61,6 +61,12 @@ protected class ObjectRepository()(implicit db: Database, ec: ExecutionContext) 
     db.run(io)
   }
 
+  def deleteByNamespace(namespace: Namespace): Future[Int] = db.run {
+    Schema.objects
+      .filter(_.namespace === namespace)
+      .delete
+  }
+
   def exists(namespace: Namespace, id: ObjectId): Future[Boolean] =
     db.run(findQuery(namespace, id).exists.result)
 

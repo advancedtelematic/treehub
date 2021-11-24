@@ -100,4 +100,11 @@ class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Datab
       case false => Future.failed(Errors.ObjectNotFound)
     }
   }
+
+  def deleteByNamespace(namespace: Namespace): Future[Unit] = {
+    for {
+      _ <- blobStore.deleteByNamespace(namespace)
+      _ <- objectRepository.deleteByNamespace(namespace)
+    } yield ()
+  }
 }
