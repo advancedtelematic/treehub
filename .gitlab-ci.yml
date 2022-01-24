@@ -74,14 +74,17 @@ build docker image:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
     - when: on_success
-  tags:
-    - docker-sock
-  image: advancedtelematic/gitlab-jobs:0.2.5
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://docker:2375
+  image: advancedtelematic/gitlab-jobs:0.3.3
+  services:
+    - docker:19.03.12-dind
   script:
-    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - gitlab-docker-login $VAULT_ADDR
     - sbt -x -sbt-dir ./.sbt -ivy ./.ivy2 -batch docker:publish -J-Xmx1G -J-XX:ReservedCodeCacheSize=128m -Dsbt.log.noformat=true
-  dependencies:
-    - export docker credentials
+    - docker tag advancedtelematic/treehub:${CI_COMMIT_SHA} hcr.data.here.com/ota_saas/treehub:${CI_COMMIT_SHA}
+    - docker push hcr.data.here.com/ota_saas/treehub:${CI_COMMIT_SHA}
   artifacts:
     paths:
       - "target/docker/stage/Dockerfile"
