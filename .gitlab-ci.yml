@@ -102,7 +102,9 @@ container_scanning:
       when: never
     - when: on_success
   variables:
-    CI_APPLICATION_REPOSITORY: registry.hub.docker.com/advancedtelematic/treehub
+    GIT_STRATEGY: fetch
+    CS_SEVERITY_THRESHOLD: High
+    CI_APPLICATION_REPOSITORY: hcr.data.here.com/ota_saas/treehub
     DOCKERFILE_PATH: target/docker/stage/Dockerfile
   dependencies:
     - export docker credentials
@@ -145,7 +147,7 @@ trigger sit deploy:
 
 include:
   - template: SAST.gitlab-ci.yml
-  - template: Container-Scanning.gitlab-ci.yml
+  - template: Security/Container-Scanning.gitlab-ci.yml
   - project: "poit/spc/be/prodsec-secret-detection"
     file: "ITT-Secret-Detection.gitlab-ci.yml"
   - template: License-Scanning.gitlab-ci.yml
