@@ -104,8 +104,8 @@ container_scanning:
   variables:
     GIT_STRATEGY: fetch
     CI_APPLICATION_REPOSITORY: hcr.data.here.com/ota_saas/treehub
-    CI_APPLICATION_TAG: ${CI_COMMIT_SHA}
-    #DOCKERFILE_PATH: /target/docker/stage/Dockerfile
+    CI_APPLICATION_TAG: latest
+    DOCKERFILE_PATH: /target/docker/stage/Dockerfile
     SECURE_LOG_LEVEL: debug
   dependencies:
     - export docker credentials
