@@ -103,7 +103,7 @@ container_scanning:
     - when: on_success
   variables:
     # CS_ANALYZER_IMAGE: registry.gitlab.com/security-products/container-scanning/grype:4
-    CI_APPLICATION_REPOSITORY: registry.hub.docker.com/advancedtelematic/treehub
+    CI_APPLICATION_REPOSITORY: registry.hub.docker.com/advancedtelematic/treehub:latest
     DOCKERFILE_PATH: target/docker/stage/Dockerfile
     SECURE_LOG_LEVEL: debug
   dependencies:
