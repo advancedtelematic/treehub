@@ -95,7 +95,6 @@ build docker image:
 
 container_scanning:
   stage: static scans
-  image: $TEST_IMAGE
   rules:
     # - if: '$CI_COMMIT_BRANCH != "master"'
     #   when: never
