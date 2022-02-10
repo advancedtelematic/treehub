@@ -95,6 +95,7 @@ build docker image:
 
 container_scanning:
   stage: static scans
+  image: $TEST_IMAGE
   rules:
     # - if: '$CI_COMMIT_BRANCH != "master"'
     #   when: never
@@ -102,8 +103,8 @@ container_scanning:
       when: never
     - when: on_success
   variables:
-    DOCKER_IMAGE: hcr.data.here.com/ota_saas/treehub:${CI_COMMIT_SHA}
-    DOCKERFILE_PATH: target/docker/stage/Dockerfile
+    CI_APPLICATION_REPOSITORY: registry.hub.docker.com/advancedtelematic/treehub
+    DOCKERFILE_PATH: /target/docker/stage/Dockerfile
     SECURE_LOG_LEVEL: debug
   dependencies:
     - export docker credentials
