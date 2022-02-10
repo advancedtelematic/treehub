@@ -102,6 +102,7 @@ container_scanning:
       when: never
     - when: on_success
   variables:
+    GIT_STRATEGY: fetch
     CI_APPLICATION_REPOSITORY: registry.hub.docker.com/advancedtelematic/treehub
     DOCKERFILE_PATH: target/docker/stage/Dockerfile
     SECURE_LOG_LEVEL: debug
