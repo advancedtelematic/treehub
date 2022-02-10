@@ -96,8 +96,8 @@ build docker image:
 container_scanning:
   stage: static scans
   rules:
-    # - if: '$CI_COMMIT_BRANCH != "master"'
-    #   when: never
+    - if: '$CI_COMMIT_BRANCH != "master"'
+      when: never
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
     - when: on_success
@@ -105,8 +105,7 @@ container_scanning:
     GIT_STRATEGY: fetch
     CS_SEVERITY_THRESHOLD: High
     CI_APPLICATION_REPOSITORY: hcr.data.here.com/ota_saas/treehub
-    CI_APPLICATION_TAG: latest
-    DOCKERFILE_PATH: /target/docker/stage/Dockerfile
+    DOCKERFILE_PATH: target/docker/stage/Dockerfile
   dependencies:
     - export docker credentials
     - build docker image
