@@ -103,10 +103,10 @@ container_scanning:
     - when: on_success
   variables:
     GIT_STRATEGY: fetch
+    CS_SEVERITY_THRESHOLD: High
     CI_APPLICATION_REPOSITORY: hcr.data.here.com/ota_saas/treehub
     CI_APPLICATION_TAG: latest
     DOCKERFILE_PATH: /target/docker/stage/Dockerfile
-    SECURE_LOG_LEVEL: debug
   dependencies:
     - export docker credentials
     - build docker image
