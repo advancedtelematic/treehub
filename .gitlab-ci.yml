@@ -96,8 +96,8 @@ build docker image:
 container_scanning:
   stage: static scans
   rules:
-    - if: '$CI_COMMIT_BRANCH != "master"'
-      when: never
+    # - if: '$CI_COMMIT_BRANCH != "master"'
+    #   when: never
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
     - when: on_success
@@ -144,8 +144,8 @@ trigger sit deploy:
 
 
 include:
-  - template: SAST.gitlab-ci.yml
-  - template: Container-Scanning.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Container-Scanning.gitlab-ci.yml
   - project: "poit/spc/be/prodsec-secret-detection"
     file: "ITT-Secret-Detection.gitlab-ci.yml"
   - template: License-Scanning.gitlab-ci.yml
