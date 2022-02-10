@@ -102,7 +102,7 @@ container_scanning:
       when: never
     - when: on_success
   variables:
-    CI_APPLICATION_REPOSITORY: registry.hub.docker.com/advancedtelematic/treehub
+    DOCKER_IMAGE: hcr.data.here.com/ota_saas/treehub:${CI_COMMIT_SHA}
     DOCKERFILE_PATH: target/docker/stage/Dockerfile
     SECURE_LOG_LEVEL: debug
   dependencies:
