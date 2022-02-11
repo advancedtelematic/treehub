@@ -106,6 +106,8 @@ container_scanning:
     CS_SEVERITY_THRESHOLD: High
     CI_APPLICATION_REPOSITORY: hcr.data.here.com/ota_saas/treehub
     DOCKERFILE_PATH: target/docker/stage/Dockerfile
+    DOCKER_USER: $CI_REGISTRY_USER
+    DOCKER_PASSWORD: $CI_REGISTRY_PASSWORD
   dependencies:
     - export docker credentials
     - build docker image
