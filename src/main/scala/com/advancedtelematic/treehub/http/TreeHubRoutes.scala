@@ -1,5 +1,6 @@
 package com.advancedtelematic.treehub.http
 
+import akka.actor.Scheduler
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, _}
 import akka.stream.Materializer
@@ -25,7 +26,7 @@ class TreeHubRoutes(namespaceExtractor: Directive1[Namespace],
                     objectStore: ObjectStore,
                     deltaStorage: StaticDeltaStorage,
                     usageHandler: UsageMetricsRouter.HandlerRef)
-                   (implicit val db: Database, ec: ExecutionContext, mat: Materializer) extends VersionInfo {
+                   (implicit val db: Database, ec: ExecutionContext, mat: Materializer, scheduler: Scheduler) extends VersionInfo {
 
   import Directives._
 

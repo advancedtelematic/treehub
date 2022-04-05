@@ -1,7 +1,8 @@
 package com.advancedtelematic.treehub.object_store
 
-import java.io.File
+import akka.actor.Scheduler
 
+import java.io.File
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.scaladsl.{FileIO, Source}
@@ -15,7 +16,7 @@ import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Database) extends ObjectRepositorySupport {
+class ObjectStore(blobStore: BlobStore)(implicit ec: ExecutionContext, db: Database, scheduler: Scheduler) extends ObjectRepositorySupport {
 
   import scala.async.Async._
 

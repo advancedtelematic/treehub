@@ -1,6 +1,6 @@
 package com.advancedtelematic.treehub.http
 
-import akka.actor.Props
+import akka.actor.{Props, Scheduler}
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Directives
@@ -16,6 +16,7 @@ import com.advancedtelematic.util.{FakeUsageUpdate, TreeHubSpec}
 
 class ObjectResourceIntegrationSpec extends TreeHubSpec with ScalatestRouteTest with DatabaseSpec with LongTest {
   implicit val mat = ActorMaterializer()
+  implicit val scheduler: Scheduler = system.scheduler
 
   val ns = DataType.Namespace("ObjectResourceIntegrationSpec")
 

@@ -1,5 +1,6 @@
 package com.advancedtelematic.treehub.http
 
+import akka.actor.Scheduler
 import akka.http.scaladsl.server.{Directive, Directive1, Route}
 import akka.stream.Materializer
 import com.advancedtelematic.data.DataType.{Ref, RefName}
@@ -14,7 +15,7 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 class RefResource(namespace: Directive1[Namespace], objectStore: ObjectStore)
-                 (implicit db: Database, ec: ExecutionContext, mat: Materializer)
+                 (implicit db: Database, ec: ExecutionContext, mat: Materializer, scheduler: Scheduler)
   extends RefRepositorySupport {
 
   import akka.http.scaladsl.server.Directives._

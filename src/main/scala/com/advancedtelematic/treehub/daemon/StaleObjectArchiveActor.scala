@@ -1,9 +1,8 @@
 package com.advancedtelematic.treehub.daemon
 
 import java.time.Instant
-
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{Actor, ActorLogging, Props, Scheduler}
 import akka.pattern.{Backoff, BackoffSupervisor}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Sink}
@@ -23,15 +22,16 @@ object StaleObjectArchiveActor {
   val defaultExpireDuration = java.time.Duration.ofHours(1)
 
   def props(blobStore: BlobStore, objectsExpireAfter: java.time.Duration = defaultExpireDuration, autoStart: Boolean = false)
-           (implicit db: Database, mat: Materializer) =
+           (implicit db: Database, mat: Materializer, scheduler: Scheduler) =
     Props(new StaleObjectArchiveActor(blobStore, objectsExpireAfter, autoStart))
 
   def withBackOff(blobStore: BlobStore, objectsExpireAfter: java.time.Duration = defaultExpireDuration, autoStart: Boolean = false)
-                 (implicit db: Database, mat: Materializer) =
+                 (implicit db: Database, mat: Materializer, scheduler: Scheduler) =
     BackoffSupervisor.props(Backoff.onFailure(props(blobStore, objectsExpireAfter, autoStart), "stale-obj-worker", 5.seconds, 5.minutes, 0.25))
 }
 
-class StaleObjectArchiveActor(blobStore: BlobStore, objectsExpireAfter: java.time.Duration, autoStart: Boolean = false)(implicit db: Database, mat: Materializer) extends Actor
+class StaleObjectArchiveActor(blobStore: BlobStore, objectsExpireAfter: java.time.Duration, autoStart: Boolean = false)
+                             (implicit db: Database, mat: Materializer, scheduler: Scheduler) extends Actor
   with ObjectRepositorySupport
   with ArchivedObjectRepositorySupport
   with ActorLogging {
