@@ -1,6 +1,7 @@
 package com.advancedtelematic.treehub.daemon
 
 import akka.Done
+import akka.actor.Scheduler
 import com.advancedtelematic.libats.messaging_datatype.Messages.OSTreeTargetDelete
 import com.advancedtelematic.treehub.db.{ManifestRepositorySupport, RefRepositorySupport}
 import com.advancedtelematic.treehub.http.Errors
@@ -13,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 object OSTreeTargetDeleteListener extends RefRepositorySupport with ManifestRepositorySupport {
   private val log = LoggerFactory.getLogger(this.getClass)
 
-    def delete(objectStore: ObjectStore)(osTreeDelete: OSTreeTargetDelete)(implicit db: Database, ec: ExecutionContext): Future[Done] = {
+    def delete(objectStore: ObjectStore)(osTreeDelete: OSTreeTargetDelete)(implicit db: Database, ec: ExecutionContext, scheduler: Scheduler): Future[Done] = {
       log.info(s"Removing osTree images for namespace ${osTreeDelete.namespace}")
       for {
         _ <- refRepository.deleteByNamespace(osTreeDelete.namespace)

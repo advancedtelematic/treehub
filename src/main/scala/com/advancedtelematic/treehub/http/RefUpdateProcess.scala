@@ -1,5 +1,6 @@
 package com.advancedtelematic.treehub.http
 
+import akka.actor.Scheduler
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.StatusCodes
 import com.advancedtelematic.data.DataType.{ObjectId, Ref, RefName, _}
@@ -13,7 +14,7 @@ import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class RefUpdateProcess(objectStore: ObjectStore)(implicit db: Database, ec: ExecutionContext)
+class RefUpdateProcess(objectStore: ObjectStore)(implicit db: Database, ec: ExecutionContext, scheduler: Scheduler)
   extends RefRepositorySupport {
 
   def update(ns: Namespace, ref: Ref, commit: Commit, forcePush: Boolean): Future[ToResponseMarshallable] = {

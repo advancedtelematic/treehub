@@ -4,8 +4,7 @@ import java.nio.file.Files
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-
-import akka.actor.{ActorRef, ActorSystem, PoisonPill}
+import akka.actor.{ActorRef, ActorSystem, PoisonPill, Scheduler}
 import akka.stream.ActorMaterializer
 import akka.testkit.{ImplicitSender, TestKitBase}
 import com.advancedtelematic.data.DataType.{ObjectStatus, TObject}
@@ -26,6 +25,7 @@ protected abstract class StaleObjectArchiveActorSpecUtil extends TreeHubSpec wit
   with ObjectRepositorySupport with Eventually with LongTest with BeforeAndAfterEach {
 
   override implicit lazy val system: ActorSystem = ActorSystem(this.getClass.getSimpleName)
+  implicit val scheduler: Scheduler = system.scheduler
 
   implicit lazy val mat = ActorMaterializer()
 

@@ -1,9 +1,8 @@
 package com.advancedtelematic.treehub.object_store
 
 import java.nio.file.Files
-
 import cats.syntax.either._
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Scheduler}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
@@ -23,6 +22,7 @@ class ObjectStoreSpec extends TreeHubSpec with DatabaseSpec with ObjectRepositor
   implicit val ec = ExecutionContext.global
   implicit val system = ActorSystem("ObjectStoreSpecSystem")
   implicit val mat = ActorMaterializer()
+  implicit val scheduler: Scheduler = system.scheduler
 
   override implicit def patienceConfig = PatienceConfig().copy(timeout = Span(3, Seconds))
 

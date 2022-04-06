@@ -1,5 +1,6 @@
 package com.advancedtelematic.treehub
 
+import akka.actor.Scheduler
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directives, Route}
 import com.advancedtelematic.libats.data.DataType.Namespace
@@ -33,6 +34,7 @@ object Boot extends BootApp with Directives with Settings with VersionInfo
   with CheckMigrations {
 
   implicit val _db = db
+  implicit val scheduler: Scheduler = system.scheduler
 
   log.info(s"Starting $version on http://$host:$port")
 

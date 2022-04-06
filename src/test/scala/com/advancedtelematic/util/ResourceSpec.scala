@@ -1,6 +1,6 @@
 package com.advancedtelematic.util
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{Actor, ActorLogging, Props, Scheduler}
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.model.{HttpEntity, MediaTypes, Multipart}
 import akka.http.scaladsl.server.Directives
@@ -14,8 +14,8 @@ import com.advancedtelematic.treehub.object_store.{LocalFsBlobStore, ObjectStore
 import com.advancedtelematic.treehub.repo_metrics.UsageMetricsRouter.{UpdateBandwidth, UpdateStorage}
 import com.advancedtelematic.util.FakeUsageUpdate.{CurrentBandwith, CurrentStorage}
 import eu.timepit.refined.api.Refined
-import java.nio.file.Files
 
+import java.nio.file.Files
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import org.scalatest.Suite
@@ -88,6 +88,8 @@ trait ResourceSpec extends ScalatestRouteTest with DatabaseSpec with Settings {
   def apiUri(version: Int, path: String): String = s"/api/v$version/" + path
 
   lazy val namespaceExtractor = NamespaceDirectives.defaultNamespaceExtractor.map(_.namespace)
+
+  implicit val scheduler: Scheduler = system.scheduler
 
   val objectStore = new ObjectStore(new LocalFsBlobStore(Files.createTempDirectory("treehub-obj")))
 

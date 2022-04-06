@@ -1,8 +1,7 @@
 package com.advancedtelematic.treehub.repo_metrics
 
 import java.nio.file.{Files, Paths}
-
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Scheduler}
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKitBase
 import com.advancedtelematic.libats.messaging.MessageBus
@@ -16,6 +15,7 @@ trait UsageUpdateSpec extends DatabaseSpec with ObjectRepositorySupport with Tes
   self: TreeHubSpec =>
 
   override implicit lazy val system: ActorSystem = ActorSystem(this.getClass.getSimpleName)
+  implicit val scheduler: Scheduler = system.scheduler
 
   import system.dispatcher
 
