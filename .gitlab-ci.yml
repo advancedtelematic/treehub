@@ -17,7 +17,7 @@ variables:
 
 default:
   services:
-    - name: mariadb:10.2
+    - name: mariadb:10.4
       alias: db
       command:
         - --character-set-server=utf8
