@@ -152,5 +152,5 @@ include:
     file: "ITT-Secret-Detection.gitlab-ci.yml"
   - template: License-Scanning.gitlab-ci.yml
   - project: olp/edge/ota/infra/security
-    ref: v0.1.0
+    ref: v0.1.1
     file: /shared.yaml
