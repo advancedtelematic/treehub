@@ -28,7 +28,7 @@ import cats.instances.future._
 import scala.async.Async._
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future, blocking}
-import scala.util.Random
+import scala.util.{Random, Try}
 
 object S3BlobStore {
   def apply(s3Credentials: S3Credentials, allowRedirects: Boolean)
@@ -45,6 +45,8 @@ class S3BlobStore(s3Credentials: S3Credentials, s3client: AmazonS3, allowRedirec
 
   private val bucketId = s3Credentials.blobBucketId
 
+  private val maxAllowedReadLimit = 10 * 1024 * 1024 //10Mb
+
   override def storeStream(namespace: Namespace, id: ObjectId, size: Long, blob: Source[ByteString, _]): Future[Long] = {
     val filename = objectFilename(namespace, id)
 
@@ -52,6 +54,9 @@ class S3BlobStore(s3Credentials: S3Credentials, s3client: AmazonS3, allowRedirec
       val meta = new ObjectMetadata()
       meta.setContentLength(size)
       val request = new PutObjectRequest(s3Credentials.blobBucketId, filename, is, meta).withCannedAcl(CannedAccessControlList.AuthenticatedRead)
+
+      // https://github.com/awsdocs/aws-java-developer-guide/blob/f5895eca4eb54302da434848ba7f7e6b25ed0dae/doc_source/best-practices.md
+      request.getRequestClientOptions.setReadLimit(Try(size.toInt).fold(_ => maxAllowedReadLimit, size => maxAllowedReadLimit.min(size + 1)))
 
       log.info(s"Uploading $filename to amazon s3")
 
