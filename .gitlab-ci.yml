@@ -150,7 +150,6 @@ include:
   - template: Security/Container-Scanning.gitlab-ci.yml
   - project: "poit/spc/be/prodsec-secret-detection"
     file: "ITT-Secret-Detection.gitlab-ci.yml"
-  - template: License-Scanning.gitlab-ci.yml
   - project: olp/edge/ota/infra/security
     ref: v0.1.1
     file: /shared.yaml
